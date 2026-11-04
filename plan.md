@@ -83,8 +83,8 @@ A gate is a check that must pass before money or time moves to the next phase.
 
 Week 1, days 1–2. Cost: $0.
 
-- [ ] **0.1 Scaffold the repo.** Create the layout in [Repo structure](#repo-structure), a `pyproject.toml`, and a `tests/` folder. Add `.gitignore` entries for `data/instances/`, `data/external/`, and `runs/`. Set up two environments from the same pins: a local CPU one for data, checker, and analysis, and a cloud GPU image for training and evaluation.
-- [ ] **0.2 Pin versions on day 1.** Pin exact versions of TRL (target v1.17.x), vLLM (0.19 or later, which supports Qwen3.5 in-tree and includes its LoRA fix), transformers, and PEFT. Never float them; a silent upgrade mid-project would make runs incomparable.
+- [x] **0.1 Scaffold the repo.** Create the layout in [Repo structure](#repo-structure), a `pyproject.toml`, and a `tests/` folder. Add `.gitignore` entries for `data/instances/`, `data/external/`, and `runs/`. Set up two environments from the same pins: a local CPU one for data, checker, and analysis, and a cloud GPU image for training and evaluation.
+- [x] **0.2 Pin versions on day 1.** Pin exact versions of TRL (target v1.17.x), vLLM (0.19 or later, which supports Qwen3.5 in-tree and includes its LoRA fix), transformers, and PEFT. Never float them; a silent upgrade mid-project would make runs incomparable. Pinned 2026-11-04: TRL 1.17.1, vLLM 0.32.0 (the newest TRL 1.17.1 accepts), torch 2.13.0, transformers 5.19.0, PEFT 0.21.2; `uv.lock` holds the rest.
 - [ ] **0.3 Check the 3 models.** Download configs and tokenizers (not weights) for `Qwen/Qwen3.5-2B`, `HuggingFaceTB/SmolLM3-3B`, and `google/gemma-4-E2B-it`. For each, record the chat template, the vocabulary size, the license, and how thinking mode turns on and off. Qwen3.5-2B's card warns that the 2B size is prone to thinking loops, so its thinking controls matter most.
 - [ ] **0.4 Get the evaluation data.** Download BIRD dev (1,534 questions) and the TrustSQL test set into `data/external/`, with a script that re-downloads them; keeping them out of git avoids redistributing CC BY-SA data. Check whether TrustSQL's EHRSQL-derived portion needs the MIMIC/eICU databases, which sit behind PhysioNet's credentialed-access agreement. If it does, either start that application now (it takes time) or drop that portion and say so in the write-up.
 - [ ] **0.5 Open the cloud accounts.** Create Modal and RunPod accounts and set a spending limit or alert on each if the platform offers one. Check in Modal's dashboard whether the $30 Starter credit covers GPU compute: the pricing page does not say, so that is UNVERIFIED until the dashboard confirms it.
@@ -296,6 +296,7 @@ abstain-sql/
   README.md
   plan.md                    # this file
   pyproject.toml             # pinned versions
+  uv.lock                    # exact versions of every package, for laptop and GPU alike
   research/
     REPORT.md                # findings, novelty table, cost model
     notes/                   # raw research notes behind the report

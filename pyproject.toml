@@ -1,0 +1,44 @@
+[project]
+name = "abstain-sql"
+version = "0.1.0"
+description = "Train a small text-to-SQL model to say \"I don't know\", then certify the error rate on the questions it answers."
+readme = "README.md"
+requires-python = "==3.12.*"
+# Shared by both environments: data generation, the checker, calibration, analysis.
+dependencies = [
+    "numpy==2.3.5",  # vLLM 0.32.0 caps numpy below 2.4 (through mistral-common and numba)
+    "scipy==1.18.1",
+    "pyyaml==6.0.3",
+]
+
+[project.optional-dependencies]
+# The training and evaluation stack, pinned exactly (plan step 0.2).
+# The cloud GPU image installs this extra. The laptop installs it only for the
+# CPU dry run in plan step 4.7; vLLM ships Linux wheels only, so it is skipped there.
+train = [
+    "trl==1.17.1",                            # newest release, 2026-10-30
+    "vllm==0.32.0; sys_platform == 'linux'",  # newest vLLM that TRL 1.17.1 accepts (<0.33)
+    "torch==2.13.0",                          # vLLM 0.32.0 requires exactly this
+    "transformers==5.19.0",                   # newest under vLLM 0.32.0's cap of <5.20
+    "peft==0.21.2",
+    "accelerate==1.15.0",
+    "datasets==5.1.0",
+]
+
+[dependency-groups]
+dev = ["pytest==9.2.0"]
+
+[tool.uv]
+# The repo is run from its root, not installed as a package.
+package = false
+# Lock for exactly the two machines this project uses: the Windows laptop and a Linux GPU box.
+environments = [
+    "sys_platform == 'win32' and platform_machine == 'AMD64'",
+    "sys_platform == 'linux' and platform_machine == 'x86_64'",
+]
+# vLLM caps setuptools below 81 on Linux; holding Windows to the same cap keeps one version everywhere.
+constraint-dependencies = ["setuptools<81"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

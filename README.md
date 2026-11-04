@@ -12,4 +12,16 @@ Research phase complete; verdict: go. As of 2026-11-04, no published work combin
 
 What to do next lives in [plan.md](plan.md): 14 phases with checkboxes, 5 gates that must pass before money moves, the reward table, open decisions with defaults, and the proposed repo structure. Why each step is there lives in [research/REPORT.md](research/REPORT.md), in 3 parts: the flags that changed the plan and the go/no-go verdict (Part 1), the novelty table with one row per paper (Part 2), and the cost model, where the full 8-run matrix is estimated at $20–36 against a $30–50 budget (Part 3). The raw research notes behind it sit in [research/notes/](research/notes/).
 
-Training has not started, and no money has been spent.
+Phase 0 is under way: the repo follows the layout in plan.md, and every dependency is pinned (steps 0.1 and 0.2). The code folders hold stubs that name the plan step each file implements. Training has not started, and no money has been spent.
+
+## Setup
+
+I pinned every dependency in one `pyproject.toml` and one `uv.lock`, so the laptop and the cloud GPU run identical versions of all 214 packages. The training stack is TRL 1.17.1, vLLM 0.32.0, torch 2.13.0, transformers 5.19.0, and PEFT 0.21.2. vLLM 0.32.0 is the newest release TRL 1.17.1 accepts; it fixes torch at 2.13.0 and caps transformers below 5.20, and its own dependencies cap numpy below 2.4.
+
+```bash
+uv sync                          # laptop: data generation, checker, calibration, analysis
+uv sync --frozen --extra train   # cloud GPU: adds TRL, vLLM, torch, transformers, PEFT
+uv run pytest
+```
+
+The GPU image needs glibc 2.31 or newer, the system C library that Ubuntu 20.04 and later ship. llguidance, which vLLM uses to constrain output to a format, publishes no Linux build for older systems.
