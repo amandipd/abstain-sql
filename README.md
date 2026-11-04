@@ -10,6 +10,6 @@ The method is GRPO, a reinforcement-learning algorithm that samples a group of c
 
 Research phase complete; verdict: go. As of 2026-11-04, no published work combines RL training, an explicit abstention reward, and risk–coverage evaluation (how many queries get answered vs. how often those answers are wrong) in text-to-SQL at any model size. Three near-misses each hold two of the three pieces; the full catalog and the differentiators are in the novelty table.
 
-The whole study lives in one document, [research/REPORT.md](research/REPORT.md), in 4 parts: the flags that changed the plan and the go/no-go verdict (Part 1), the novelty table with one row per paper (Part 2), the cost model, where the full 8-run matrix is estimated at $20–36 against a $30–50 budget (Part 3), and the revised 4-week plan with the proposed repo structure (Part 4). The raw research notes behind it sit in [research/notes/](research/notes/).
+What to do next lives in [plan.md](plan.md): 14 phases with checkboxes, 5 gates that must pass before money moves, the reward table, open decisions with defaults, and the proposed repo structure. Why each step is there lives in [research/REPORT.md](research/REPORT.md), in 3 parts: the flags that changed the plan and the go/no-go verdict (Part 1), the novelty table with one row per paper (Part 2), and the cost model, where the full 8-run matrix is estimated at $20–36 against a $30–50 budget (Part 3). The raw research notes behind it sit in [research/notes/](research/notes/).
 
 Training has not started, and no money has been spent.
