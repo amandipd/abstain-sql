@@ -12,7 +12,7 @@ Research phase complete; verdict: go. As of 2026-11-04, no published work combin
 
 What to do next lives in [plan.md](plan.md): 14 phases with checkboxes, 5 gates that must pass before money moves, the reward table, open decisions with defaults, and the proposed repo structure. Why each step is there lives in [research/REPORT.md](research/REPORT.md), in 3 parts: the flags that changed the plan and the go/no-go verdict (Part 1), the novelty table with one row per paper (Part 2), and the cost model, where the full 8-run matrix is estimated at $16–36 against a $30–50 budget (Part 3). The raw research notes behind it sit in [research/notes/](research/notes/).
 
-Phase 0 is under way: the repo follows the layout in plan.md, and every dependency is pinned (steps 0.1 and 0.2). The code folders hold stubs that name the plan step each file implements. Training has not started, and no money has been spent.
+Phase 0 is under way. The repo follows the layout in plan.md, every dependency is pinned, all 3 candidate models load under those pins, and the external evaluation data downloads and runs (steps 0.1 to 0.4). The code folders hold stubs that name the plan step each file implements. Training has not started, and no money has been spent.
 
 ## Setup
 
@@ -22,6 +22,9 @@ I pinned every dependency in one `pyproject.toml` and one `uv.lock`, so the lapt
 uv sync                          # laptop: data generation, checker, calibration, analysis
 uv sync --frozen --extra train   # cloud GPU: adds TRL, vLLM, torch, transformers, PEFT
 uv run pytest
+uv run python data/download_external.py   # BIRD dev and TrustSQL, about 470 MB
 ```
+
+The external data is not in git. The download script fetches it from the official sources and stops if any file's fingerprint differs from the one pinned in the script, since a changed upstream file would make results incomparable.
 
 The GPU image needs glibc 2.31 or newer, the system C library that Ubuntu 20.04 and later ship. llguidance, which vLLM uses to constrain output to a format, publishes no Linux build for older systems.
