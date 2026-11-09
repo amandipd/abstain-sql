@@ -100,3 +100,17 @@ For healthcare, step 1.2 produced:
 3. **Automatic checks** ([tests/test_schemas.py](../tests/test_schemas.py)) that every design has 3 to 8 tables, links that point at included tables, all 4 column types, and SQL that runs.
 
 Reviewing the 10 designs turned up 2 problems, both fixed: designs with 3 or 4 tables almost never came out, because the program discarded the chosen size along with oversized starting tables, and some names mismatched, such as a table called "facilities" with a column called "center_name".
+
+### If I wrote the menus myself, what was the point of Gretel?
+
+A small but real one: Gretel supplied the topics, not the data. Its role was 3 things.
+
+1. **A list to choose from.** Its 100 business topics gave the 25 picks an outside starting point with breadth, instead of whatever topics came to mind first. Sorting all 100 also exposed the near-duplicates and in-between topics that were dropped.
+2. **Hints for what each menu should hold.** Gretel's one-line descriptions shaped several menus. Pharmaceuticals is described as "clinical trial outcomes, drug approval data, sales figures, R&D expenditures", and its menu has a table for each; logistics' "freight forwarding, warehouse management, route optimization, reverse logistics" became shipments, warehouses, routes, and returns.
+3. **A citable source for the paper.** "Topics were drawn from the 100-domain taxonomy of gretelai/synthetic_text_to_sql (Apache 2.0); none of its examples were used" is a reproducible, defensible sentence; "I picked topics I liked" is not.
+
+None of its questions, databases, or SQL were used, for the reasons in the Gretel entry above. The project could have run without it; the topic choice would just have been harder to justify.
+
+### What are the "other 20 templates"?
+
+Every topic needs its own template (menu of tables), and there are 25 topics: 5 families of 5. The healthcare checkpoint built the first 5. The remaining 20 cover the other 4 families: finance (financial services, finance, insurance, venture capital, blockchain), logistics and transport (logistics, ocean shipping, public transportation, aerospace, automotive), retail and consumer (retail, fashion retail, beauty industry, restaurant operations, hospitality), and energy and natural resources (energy, oil and gas, mining operations, water resources, forestry). Each topic belongs to exactly one family, so that is one menu per topic and 5 per family, stored as one file per family (`data/generator/templates/<family>.yaml`). The program and its checks are already done and work for any family; only the menus are missing. With all 25, the program writes all 50 designs.

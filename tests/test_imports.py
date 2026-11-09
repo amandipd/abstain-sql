@@ -10,6 +10,7 @@ import pytest
 
 CPU_MODULES = [
     "data.generator",
+    "data.generator.schemas",
     "checker.execute",
     "checker.testsuite",
     "train.reward",

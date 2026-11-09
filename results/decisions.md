@@ -87,6 +87,13 @@ These were settled during Phase 0 and sit outside the plan's table.
 - **Why these families:** each differs from the others in vocabulary and table shapes, has at least 5 Gretel topics, supports every query shape in step 1.4, and supports the decline categories in step 1.5. Energy and natural resources resembles no external test database, which makes it the natural candidate to hold out. Media and entertainment, and public sector and education, were the runners-up.
 - **Why these topics:** each family's topics cover different sub-areas. 18 topics were dropped as near-duplicates or as straddling 2 families; the file lists each with its reason.
 
+### Schemas from hand-written templates, version 0 (2026-11-08)
+
+- **Choice:** generate schemas from 25 hand-written templates, one per topic, rather than having an LLM design them (the plan's version 1).
+- **Why:** templates are free, deterministic, and contamination-free, and they give every column a role (category, number, date, name, link) that steps 1.3 to 1.5 need for filling data, writing questions, and removing columns. Variety comes from sampling 3 to 8 of each topic's 9 to 11 tables and from synonyms for table and column names; the 2 schemas per topic always use different table sets.
+- **Checks:** reviewing the first 10 schemas turned up a sampling bias against 3- and 4-table schemas and 2 mismatched name pairs, all fixed. A scripted scan of all 50 schemas for column names that match a table's unused synonym flagged 40 spots, nearly all normal usage ("appointments.visit_date"); 1 odd case was fixed.
+- **Revisit:** move to version 1 if the model's zero-shot results in step 3.2 suggest these schemas are too easy or too uniform.
+
 ### Keep TrustSQL's hospital-records portion (2026-11-04)
 
 - **Choice:** evaluate on all 4 TrustSQL sources, EHRSQL included.

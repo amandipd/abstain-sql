@@ -29,6 +29,41 @@ The external data is not in git. The download script fetches it from the officia
 
 The GPU image needs glibc 2.31 or newer, the system C library that Ubuntu 20.04 and later ship. llguidance, which vLLM uses to constrain output to a format, publishes no Linux build for older systems.
 
+## How the synthetic data is built
+
+The training data comes from one hierarchy. Each level is built from the one above it; the right-hand column says which plan step builds it and whether it exists yet.
+
+```
+5 families                                    step 1.1   done
+│   healthcare, finance, logistics and transport,
+│   retail and consumer, energy and natural resources
+│
+└──► 5 topics per family = 25 topics          step 1.1   done
+     │   e.g. healthcare → hospitals, public health,
+     │   mental health, pharmaceuticals, biotechnology
+     │
+     └──► 1 menu per topic = 25 menus         step 1.2   done
+          │   each lists 9-11 tables that fit the topic;
+          │   one file per family holds its 5 menus
+          │
+          └──► 2 designs per topic = 50 designs        step 1.2   done
+               │   each picks 3-8 linked tables from its menu;
+               │   empty tables: columns and links, no rows
+               │
+               ├──► 3-5 filled copies per design         step 1.3   next
+               │       = 150-250 SQLite databases;
+               │       same tables, different made-up rows
+               │
+               └──► questions per design              steps 1.4-1.6
+                    ├──► answerable, about 70%:
+                    │       question + gold SQL, correct only
+                    │       if it matches on every filled copy
+                    └──► should decline, about 30%:
+                            unanswerable, ambiguous, out-of-scope
+```
+
+One path through it: the healthcare family contains the public health topic; its menu offers 10 tables; design `healthcare__public_health__02` picks 5 of them (districts, facilities, funding awards, staff, screenings); step 1.3 fills that design 3 to 5 times; step 1.4 writes its questions. Step 3.1 then splits whole designs, never single questions, into train, dev, calibration, and test sets.
+
 ## Codebase map
 
 Files marked *stub* hold only a docstring naming the plan step that fills them in. Everything else runs today.
@@ -46,9 +81,11 @@ abstain-sql/
     download_external.py     # fetches BIRD dev and TrustSQL, checks pinned fingerprints
     generator/               # synthetic schemas, data, questions, declines (Phase 1)
       families.yaml          # 5 schema families of 5 topics each (step 1.1)
+      templates/             # one file per family: a menu of tables for each topic (step 1.2)
+      schemas.py             # samples 3-8 linked tables per schema; writes 50 schemas (step 1.2)
     splits/                  # empty: train / dev / calibration / test manifests (Phase 3)
     external/                # gitignored: BIRD dev and TrustSQL, rebuilt by the script above
-    instances/               # gitignored: SQLite instances from the generator (Phase 1)
+    instances/               # gitignored: generated schemas, then their SQLite instances (Phase 1)
   checker/
     execute.py               # stub: read-only sandboxed SQL execution (step 2.1)
     testsuite.py             # stub: multi-instance correctness oracle (steps 2.2-2.4)
@@ -70,6 +107,7 @@ abstain-sql/
   tests/
     test_imports.py          # every CPU-side module imports
     test_families.py         # families.yaml keeps 5 families of 5 distinct topics
+    test_schemas.py          # every generated schema keeps the plan's rules; bad templates fail
   results/
     models.md                # the 3 models: architecture, vocabulary, license, thinking switch
     external_data.md         # BIRD and TrustSQL breakdown, gold-query runs, checker rules

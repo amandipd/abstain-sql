@@ -1,0 +1,485 @@
+# Schema templates for the healthcare family (plan step 1.2).
+#
+# One template per topic in families.yaml. Each lists a pool of tables; the
+# generator samples 3-8 linked tables per schema and picks among the synonyms.
+# The format is documented in data/generator/schemas.py.
+
+topics:
+
+  healthcare:
+    tables:
+      - key: departments
+        names: [departments, units]
+        id: [department_id, unit_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, values: [Cardiology, Oncology, Pediatrics, Neurology, Orthopedics, Emergency, Radiology, Internal Medicine]}
+          - {names: [floor, floor_number], type: integer, role: number, min: 1, max: 9, optional: true}
+          - {names: [annual_budget, budget], type: real, role: number, min: 500000, max: 20000000, optional: true}
+
+      - key: doctors
+        names: [doctors, physicians]
+        id: [doctor_id, physician_id]
+        columns:
+          - {role: fk, ref: departments, type: integer}
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [specialty], type: text, role: category, values: [cardiology, oncology, pediatrics, neurology, orthopedics, emergency medicine, family medicine, radiology]}
+          - {names: [hire_date, start_date], type: date, role: date, min: "1995-01-01", max: "2025-12-31"}
+          - {names: [annual_salary, salary], type: real, role: number, min: 180000, max: 650000, optional: true}
+
+      - key: patients
+        names: [patients]
+        id: [patient_id]
+        columns:
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [birth_date, date_of_birth], type: date, role: date, min: "1935-01-01", max: "2024-12-31"}
+          - {names: [sex], type: text, role: category, values: [F, M]}
+          - {names: [city, home_city], type: text, role: category, values: [Austin, Denver, Columbus, Raleigh, Portland, Tucson, Omaha, Boise]}
+          - {names: [insurance_type, coverage_type], type: text, role: category, values: [private, Medicare, Medicaid, uninsured], optional: true}
+
+      - key: visits
+        names: [visits, encounters, appointments]
+        id: [visit_id, encounter_id, appointment_id]
+        columns:
+          - {role: fk, ref: patients, type: integer}
+          - {role: fk, ref: doctors, type: integer}
+          - {names: [service_date, visit_date], type: date, role: date, min: "2021-01-01", max: "2025-12-31"}
+          - {names: [visit_type, care_setting], type: text, role: category, values: [outpatient, inpatient, emergency, telehealth]}
+          - {names: [total_cost, charge], type: real, role: number, min: 60, max: 25000}
+
+      - key: diagnoses
+        names: [diagnoses]
+        id: [diagnosis_id]
+        columns:
+          - {role: fk, ref: visits, type: integer}
+          - {names: [condition, condition_name], type: text, role: category, values: [hypertension, type 2 diabetes, asthma, pneumonia, fracture, migraine, influenza, heart failure]}
+          - {names: [severity], type: text, role: category, values: [mild, moderate, severe]}
+          - {names: [is_chronic], type: integer, role: flag, optional: true}
+
+      - key: medications
+        names: [medications, drugs]
+        id: [medication_id, drug_id]
+        columns:
+          - {names: [name, generic_name], type: text, role: entity_name, values: [lisinopril, metformin, albuterol, amoxicillin, ibuprofen, atorvastatin, sumatriptan, oseltamivir]}
+          - {names: [drug_class], type: text, role: category, values: [antihypertensive, antidiabetic, bronchodilator, antibiotic, analgesic, statin, antiviral]}
+          - {names: [unit_price, price_per_unit], type: real, role: number, min: 0.05, max: 45}
+
+      - key: prescriptions
+        names: [prescriptions]
+        id: [prescription_id]
+        columns:
+          - {role: fk, ref: visits, type: integer}
+          - {role: fk, ref: medications, type: integer}
+          - {names: [dosage_mg, dose_mg], type: integer, role: number, min: 5, max: 1000}
+          - {names: [days_supply, duration_days], type: integer, role: number, min: 3, max: 90}
+          - {names: [refills], type: integer, role: number, min: 0, max: 5, optional: true}
+
+      - key: rooms
+        names: [rooms]
+        id: [room_id]
+        columns:
+          - {role: fk, ref: departments, type: integer}
+          - {names: [room_number], type: integer, role: number, min: 100, max: 999}
+          - {names: [room_type], type: text, role: category, values: [private, semi-private, ICU, isolation]}
+          - {names: [daily_rate, nightly_rate], type: real, role: number, min: 400, max: 6000}
+
+      - key: admissions
+        names: [admissions, hospital_stays]
+        id: [admission_id, stay_id]
+        columns:
+          - {role: fk, ref: patients, type: integer}
+          - {role: fk, ref: rooms, type: integer}
+          - {names: [admit_date, admission_date], type: date, role: date, min: "2021-01-01", max: "2025-12-31"}
+          - {names: [length_of_stay_days, nights], type: integer, role: number, min: 1, max: 30}
+          - {names: [discharge_status], type: text, role: category, values: [home, transferred, rehab facility, deceased], optional: true}
+
+      - key: bills
+        names: [bills, invoices]
+        id: [bill_id, invoice_id]
+        columns:
+          - {role: fk, ref: visits, type: integer}
+          - {names: [amount_due, amount], type: real, role: number, min: 20, max: 30000}
+          - {names: [issued_date, billing_date], type: date, role: date, min: "2021-01-01", max: "2025-12-31"}
+          - {names: [status, payment_status], type: text, role: category, values: [paid, pending, overdue, written off]}
+
+      - key: lab_tests
+        names: [lab_tests, lab_results]
+        id: [test_id, result_id]
+        columns:
+          - {role: fk, ref: visits, type: integer}
+          - {names: [test_name], type: text, role: category, values: [hemoglobin A1c, LDL cholesterol, white blood cell count, creatinine, TSH, vitamin D]}
+          - {names: [result_value, value], type: real, role: number, min: 0.1, max: 400}
+          - {names: [test_date, collected_date], type: date, role: date, min: "2021-01-01", max: "2025-12-31"}
+          - {names: [is_abnormal, abnormal], type: integer, role: flag, optional: true}
+
+  public health:
+    tables:
+      - key: regions
+        names: [regions, districts]
+        id: [region_id, district_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, values: [North, South, East, West, Central, Coastal, Highland, Valley, Lakeside, Riverside]}
+          - {names: [population], type: integer, role: number, min: 20000, max: 2500000}
+          - {names: [area_km2, land_area_km2], type: real, role: number, min: 50, max: 15000, optional: true}
+
+      - key: health_centers
+        names: [health_centers, facilities]
+        id: [center_id, facility_id]
+        columns:
+          - {role: fk, ref: regions, type: integer}
+          - {names: [name], type: text, role: entity_name, kind: clinic}
+          - {names: [center_type, facility_type], type: text, role: category, values: [clinic, hospital, mobile unit, pharmacy]}
+          - {names: [opened_date, opening_date], type: date, role: date, min: "1980-01-01", max: "2024-12-31", optional: true}
+          - {names: [capacity, daily_capacity], type: integer, role: number, min: 20, max: 1500}
+
+      - key: diseases
+        names: [diseases, conditions]
+        id: [disease_id, condition_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, values: [influenza, measles, tuberculosis, dengue, salmonellosis, hepatitis A, pertussis, Lyme disease, COVID-19, chlamydia]}
+          - {names: [category, transmission_type], type: text, role: category, values: [respiratory, vector-borne, foodborne, vaccine-preventable, sexually transmitted]}
+          - {names: [is_notifiable, notifiable], type: integer, role: flag, optional: true}
+
+      - key: case_reports
+        names: [case_reports, weekly_cases]
+        id: [report_id, record_id]
+        columns:
+          - {role: fk, ref: diseases, type: integer}
+          - {role: fk, ref: regions, type: integer}
+          - {names: [report_date, week_start], type: date, role: date, min: "2020-01-01", max: "2025-12-31"}
+          - {names: [case_count, cases], type: integer, role: number, min: 0, max: 900}
+          - {names: [deaths, death_count], type: integer, role: number, min: 0, max: 40}
+
+      - key: vaccines
+        names: [vaccines]
+        id: [vaccine_id]
+        columns:
+          - {names: [name, vaccine_name], type: text, role: entity_name, values: [MMR, DTaP, Tdap, HPV, influenza (seasonal), hepatitis B, pneumococcal, varicella]}
+          - {names: [manufacturer], type: text, role: category, values: [Pfizer, Merck, Sanofi, GSK, Moderna, CSL Seqirus]}
+          - {names: [doses_required, dose_count], type: integer, role: number, min: 1, max: 4}
+
+      - key: vaccinations
+        names: [vaccinations, immunizations]
+        id: [vaccination_id, immunization_id]
+        columns:
+          - {role: fk, ref: health_centers, type: integer}
+          - {role: fk, ref: vaccines, type: integer}
+          - {names: [administered_date, given_on], type: date, role: date, min: "2020-01-01", max: "2025-12-31"}
+          - {names: [doses_given, dose_count], type: integer, role: number, min: 1, max: 400}
+          - {names: [age_group], type: text, role: category, values: [0-4, 5-17, 18-49, 50-64, 65+]}
+
+      - key: outbreaks
+        names: [outbreaks]
+        id: [outbreak_id]
+        columns:
+          - {role: fk, ref: diseases, type: integer}
+          - {role: fk, ref: regions, type: integer}
+          - {names: [start_date, detected_date], type: date, role: date, min: "2020-01-01", max: "2025-12-31"}
+          - {names: [status], type: text, role: category, values: [active, contained, resolved]}
+          - {names: [response_cost, estimated_cost], type: real, role: number, min: 5000, max: 4000000, optional: true}
+
+      - key: health_workers
+        names: [health_workers, staff]
+        id: [worker_id, staff_id]
+        columns:
+          - {role: fk, ref: health_centers, type: integer}
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [job_role, position], type: text, role: category, values: [nurse, physician, community health worker, epidemiologist, pharmacist]}
+          - {names: [hire_date], type: date, role: date, min: "2000-01-01", max: "2025-12-31"}
+          - {names: [annual_salary, salary], type: real, role: number, min: 38000, max: 240000, optional: true}
+
+      - key: screenings
+        names: [screenings, screening_events]
+        id: [screening_id, event_id]
+        columns:
+          - {role: fk, ref: health_centers, type: integer}
+          - {names: [screening_type, test_type], type: text, role: category, values: [blood pressure, diabetes, HIV, tuberculosis, cervical cancer, vision]}
+          - {names: [screening_date, event_date], type: date, role: date, min: "2020-01-01", max: "2025-12-31"}
+          - {names: [people_screened, participants], type: integer, role: number, min: 5, max: 600}
+          - {names: [positive_results, positives], type: integer, role: number, min: 0, max: 60}
+
+      - key: funding_grants
+        names: [grants, funding_awards]
+        id: [grant_id, award_id]
+        columns:
+          - {role: fk, ref: regions, type: integer}
+          - {names: [program, program_area], type: text, role: category, values: [immunization, maternal health, disease surveillance, nutrition, tobacco control, emergency preparedness]}
+          - {names: [amount, award_amount], type: real, role: number, min: 10000, max: 5000000}
+          - {names: [awarded_date, award_date], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+
+  mental health:
+    tables:
+      - key: clinics
+        names: [clinics, practices]
+        id: [clinic_id, practice_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: clinic}
+          - {names: [city], type: text, role: category, values: [Austin, Denver, Columbus, Raleigh, Portland, Tucson, Omaha, Boise]}
+          - {names: [clinic_type, practice_type], type: text, role: category, values: [community, private, hospital-based, telehealth]}
+
+      - key: therapists
+        names: [therapists, clinicians, providers]
+        id: [therapist_id, clinician_id, provider_id]
+        columns:
+          - {role: fk, ref: clinics, type: integer}
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [license_type, credential], type: text, role: category, values: [psychologist, psychiatrist, clinical social worker, licensed counselor, psychiatric nurse practitioner]}
+          - {names: [years_experience, experience_years], type: integer, role: number, min: 1, max: 40}
+          - {names: [hourly_rate, session_rate], type: real, role: number, min: 60, max: 350, optional: true}
+
+      - key: patients
+        names: [patients, clients]
+        id: [patient_id, client_id]
+        columns:
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [birth_date, date_of_birth], type: date, role: date, min: "1945-01-01", max: "2012-12-31"}
+          - {names: [sex], type: text, role: category, values: [F, M]}
+          - {names: [intake_date, first_visit_date], type: date, role: date, min: "2019-01-01", max: "2025-12-31"}
+          - {names: [referral_source], type: text, role: category, values: [self, primary care, school, employer, emergency department, court], optional: true}
+
+      - key: conditions
+        names: [conditions, disorders]
+        id: [condition_id, disorder_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, values: [major depression, generalized anxiety, PTSD, bipolar disorder, OCD, ADHD, insomnia, substance use disorder, panic disorder]}
+          - {names: [category, disorder_group], type: text, role: category, values: [mood, anxiety, trauma, neurodevelopmental, sleep, substance use]}
+
+      - key: diagnoses
+        names: [diagnoses]
+        id: [diagnosis_id]
+        columns:
+          - {role: fk, ref: patients, type: integer}
+          - {role: fk, ref: conditions, type: integer}
+          - {role: fk, ref: therapists, type: integer}
+          - {names: [diagnosis_date, diagnosed_on], type: date, role: date, min: "2019-01-01", max: "2025-12-31"}
+          - {names: [severity], type: text, role: category, values: [mild, moderate, severe]}
+
+      - key: treatments
+        names: [treatments, interventions]
+        id: [treatment_id, intervention_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, values: [CBT, DBT, EMDR, medication management, group therapy, mindfulness training, family therapy]}
+          - {names: [approach, modality], type: text, role: category, values: [psychotherapy, pharmacological, group, digital]}
+
+      - key: sessions
+        names: [sessions, appointments]
+        id: [session_id, appointment_id]
+        columns:
+          - {role: fk, ref: patients, type: integer}
+          - {role: fk, ref: therapists, type: integer}
+          - {role: fk, ref: treatments, type: integer}
+          - {names: [session_date, appointment_date], type: date, role: date, min: "2019-01-01", max: "2025-12-31"}
+          - {names: [duration_min, minutes], type: integer, role: number, min: 20, max: 120}
+          - {names: [fee, charge], type: real, role: number, min: 0, max: 400}
+          - {names: [status, attendance], type: text, role: category, values: [attended, cancelled, no-show]}
+
+      - key: assessments
+        names: [assessments, screenings]
+        id: [assessment_id, screening_id]
+        columns:
+          - {role: fk, ref: patients, type: integer}
+          - {names: [instrument, questionnaire], type: text, role: category, values: [PHQ-9, GAD-7, PCL-5, AUDIT]}
+          - {names: [score, total_score], type: integer, role: number, min: 0, max: 40}
+          - {names: [assessment_date, completed_date], type: date, role: date, min: "2019-01-01", max: "2025-12-31"}
+
+      - key: support_groups
+        names: [support_groups, therapy_groups]
+        id: [group_id, therapy_group_id]
+        columns:
+          - {role: fk, ref: clinics, type: integer}
+          - {names: [focus, topic], type: text, role: category, values: [grief, addiction recovery, anxiety, parenting, veterans, eating disorders]}
+          - {names: [meeting_day, weekday], type: text, role: category, values: [Monday, Tuesday, Wednesday, Thursday, Friday, Saturday]}
+          - {names: [max_members, capacity], type: integer, role: number, min: 6, max: 20}
+
+      - key: group_memberships
+        names: [group_memberships, group_enrollments]
+        id: [membership_id, enrollment_id]
+        columns:
+          - {role: fk, ref: support_groups, type: integer}
+          - {role: fk, ref: patients, type: integer}
+          - {names: [joined_date, enrolled_date], type: date, role: date, min: "2019-01-01", max: "2025-12-31"}
+          - {names: [is_active, active], type: integer, role: flag, optional: true}
+
+  pharmaceuticals:
+    tables:
+      - key: companies
+        names: [companies, manufacturers]
+        id: [company_id, manufacturer_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: company}
+          - {names: [country, headquarters_country], type: text, role: category, values: [USA, Switzerland, Germany, UK, Japan, France, Denmark, India]}
+          - {names: [founded_year, year_founded], type: integer, role: number, min: 1850, max: 2015}
+          - {names: [employee_count, employees], type: integer, role: number, min: 200, max: 120000, optional: true}
+
+      - key: drugs
+        names: [drugs, products]
+        id: [drug_id, product_id]
+        columns:
+          - {role: fk, ref: companies, type: integer}
+          - {names: [brand_name, product_name], type: text, role: entity_name, kind: drug}
+          - {names: [therapeutic_area], type: text, role: category, values: [oncology, cardiology, neurology, immunology, infectious disease, endocrinology, respiratory]}
+          - {names: [dosage_form, formulation], type: text, role: category, values: [tablet, capsule, injection, inhaler, topical cream, oral solution]}
+          - {names: [launch_date, market_entry_date], type: date, role: date, min: "1995-01-01", max: "2025-12-31"}
+          - {names: [list_price, price], type: real, role: number, min: 4, max: 18000}
+
+      - key: clinical_trials
+        names: [clinical_trials, trials, studies]
+        id: [trial_id, trial_id, study_id]
+        columns:
+          - {role: fk, ref: drugs, type: integer}
+          - {names: [phase, trial_phase], type: text, role: category, values: [Phase 1, Phase 2, Phase 3, Phase 4]}
+          - {names: [start_date], type: date, role: date, min: "2012-01-01", max: "2025-12-31"}
+          - {names: [planned_enrollment, target_enrollment], type: integer, role: number, min: 20, max: 4000}
+          - {names: [status, trial_status], type: text, role: category, values: [recruiting, active, completed, terminated, suspended]}
+          - {names: [budget, budget_usd], type: real, role: number, min: 500000, max: 250000000, optional: true}
+
+      - key: trial_sites
+        names: [trial_sites, study_sites]
+        id: [site_id, site_id]
+        columns:
+          - {role: fk, ref: clinical_trials, type: integer}
+          - {names: [city], type: text, role: category, values: [Boston, Houston, Toronto, London, Berlin, Tokyo, Sydney, Madrid]}
+          - {names: [country], type: text, role: category, values: [USA, Canada, UK, Germany, Japan, Australia, Spain]}
+          - {names: [enrolled_count, participants_enrolled], type: integer, role: number, min: 0, max: 400}
+
+      - key: adverse_events
+        names: [adverse_events, side_effect_reports]
+        id: [event_id, report_id]
+        columns:
+          - {role: fk, ref: clinical_trials, type: integer}
+          - {names: [event_type, reaction], type: text, role: category, values: [nausea, headache, rash, fatigue, liver toxicity, allergic reaction, dizziness]}
+          - {names: [severity, grade], type: text, role: category, values: [mild, moderate, severe, life-threatening]}
+          - {names: [reported_date, onset_date], type: date, role: date, min: "2012-01-01", max: "2025-12-31"}
+          - {names: [is_serious, serious], type: integer, role: flag, optional: true}
+
+      - key: approvals
+        names: [approvals, regulatory_decisions]
+        id: [approval_id, decision_id]
+        columns:
+          - {role: fk, ref: drugs, type: integer}
+          - {names: [agency, regulator], type: text, role: category, values: [FDA, EMA, PMDA, Health Canada, MHRA, TGA]}
+          - {names: [decision, outcome], type: text, role: category, values: [approved, rejected, pending, withdrawn]}
+          - {names: [decision_date], type: date, role: date, min: "1995-01-01", max: "2025-12-31"}
+
+      - key: sales
+        names: [sales, monthly_sales]
+        id: [sale_id, record_id]
+        columns:
+          - {role: fk, ref: drugs, type: integer}
+          - {names: [market, region], type: text, role: category, values: [North America, Europe, Japan, China, Latin America, Middle East]}
+          - {names: [sale_month, period_start], type: date, role: date, min: "2019-01-01", max: "2025-12-31"}
+          - {names: [units_sold, units], type: integer, role: number, min: 100, max: 900000}
+          - {names: [revenue, revenue_usd], type: real, role: number, min: 5000, max: 400000000}
+
+      - key: batches
+        names: [batches, production_lots]
+        id: [batch_id, lot_id]
+        columns:
+          - {role: fk, ref: drugs, type: integer}
+          - {names: [plant, facility], type: text, role: category, values: [Basel, Indianapolis, Cork, Singapore, Puerto Rico, Hyderabad]}
+          - {names: [produced_date, manufacture_date], type: date, role: date, min: "2019-01-01", max: "2025-12-31"}
+          - {names: [quantity, units_produced], type: integer, role: number, min: 1000, max: 2000000}
+          - {names: [passed_qc, released], type: integer, role: flag}
+
+      - key: rd_expenses
+        names: [rd_expenses, research_spending]
+        id: [expense_id, spending_id]
+        columns:
+          - {role: fk, ref: companies, type: integer}
+          - {names: [fiscal_year], type: integer, role: number, min: 2015, max: 2025}
+          - {names: [category, stage], type: text, role: category, values: [discovery, preclinical, clinical, regulatory, manufacturing scale-up]}
+          - {names: [amount, amount_usd], type: real, role: number, min: 1000000, max: 9000000000}
+
+  biotechnology:
+    tables:
+      - key: labs
+        names: [labs, laboratories]
+        id: [lab_id, laboratory_id]
+        columns:
+          - {names: [name, lab_name], type: text, role: entity_name, kind: lab}
+          - {names: [institution, organization], type: text, role: category, values: [university, research institute, biotech company, government lab, hospital]}
+          - {names: [city], type: text, role: category, values: [Boston, San Diego, San Francisco, Cambridge UK, Basel, Seattle, Raleigh]}
+          - {names: [biosafety_level, bsl], type: integer, role: number, min: 1, max: 4}
+
+      - key: researchers
+        names: [researchers, scientists]
+        id: [researcher_id, scientist_id]
+        columns:
+          - {role: fk, ref: labs, type: integer}
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [title, position], type: text, role: category, values: [PhD student, postdoc, research scientist, senior scientist, principal investigator]}
+          - {names: [hire_date, start_date], type: date, role: date, min: "2005-01-01", max: "2025-12-31"}
+
+      - key: projects
+        names: [projects, research_projects]
+        id: [project_id, project_id]
+        columns:
+          - {role: fk, ref: labs, type: integer}
+          - {role: fk, ref: researchers, type: integer, names: [lead_researcher_id, principal_investigator_id]}
+          - {names: [title, project_name], type: text, role: entity_name, kind: project}
+          - {names: [research_area, field], type: text, role: category, values: [genomics, synthetic biology, bioprocessing, biosensors, protein engineering, gene therapy]}
+          - {names: [start_date], type: date, role: date, min: "2012-01-01", max: "2025-12-31"}
+          - {names: [budget, total_budget], type: real, role: number, min: 50000, max: 12000000}
+
+      - key: samples
+        names: [samples, specimens]
+        id: [sample_id, specimen_id]
+        columns:
+          - {role: fk, ref: projects, type: integer}
+          - {names: [organism, species], type: text, role: category, values: [E. coli, yeast, mouse, human cell line, Arabidopsis, zebrafish]}
+          - {names: [sample_type, material], type: text, role: category, values: [DNA, RNA, protein, tissue, cell culture]}
+          - {names: [collected_date, collection_date], type: date, role: date, min: "2012-01-01", max: "2025-12-31"}
+          - {names: [storage_temp_c, storage_celsius], type: integer, role: number, min: -196, max: 4, optional: true}
+
+      - key: sequencing_runs
+        names: [sequencing_runs, sequencing_jobs]
+        id: [run_id, job_id]
+        columns:
+          - {role: fk, ref: samples, type: integer}
+          - {names: [platform, instrument], type: text, role: category, values: [Illumina NovaSeq, Illumina MiSeq, PacBio Revio, Oxford Nanopore]}
+          - {names: [run_date], type: date, role: date, min: "2014-01-01", max: "2025-12-31"}
+          - {names: [read_count, reads_millions], type: integer, role: number, min: 1, max: 4000}
+          - {names: [quality_score, mean_quality], type: real, role: number, min: 18, max: 40}
+
+      - key: experiments
+        names: [experiments, assays]
+        id: [experiment_id, assay_id]
+        columns:
+          - {role: fk, ref: projects, type: integer}
+          - {role: fk, ref: researchers, type: integer}
+          - {names: [experiment_type, method], type: text, role: category, values: [PCR, CRISPR edit, Western blot, flow cytometry, fermentation, ELISA]}
+          - {names: [run_date, performed_date], type: date, role: date, min: "2012-01-01", max: "2025-12-31"}
+          - {names: [outcome, result], type: text, role: category, values: [success, partial, failed]}
+          - {names: [cost, reagent_cost], type: real, role: number, min: 50, max: 40000, optional: true}
+
+      - key: equipment
+        names: [equipment, instruments]
+        id: [equipment_id, instrument_id]
+        columns:
+          - {role: fk, ref: labs, type: integer}
+          - {names: [equipment_type, instrument_type], type: text, role: category, values: [centrifuge, sequencer, bioreactor, microscope, PCR machine, incubator, mass spectrometer]}
+          - {names: [purchase_date, acquired_date], type: date, role: date, min: "2005-01-01", max: "2025-12-31"}
+          - {names: [purchase_price, cost], type: real, role: number, min: 2000, max: 1500000}
+
+      - key: grants
+        names: [grants, funding_awards]
+        id: [grant_id, award_id]
+        columns:
+          - {role: fk, ref: projects, type: integer}
+          - {names: [funder, funding_source], type: text, role: category, values: [NIH, NSF, Wellcome Trust, Gates Foundation, ERC, industry partner]}
+          - {names: [amount, award_amount], type: real, role: number, min: 25000, max: 8000000}
+          - {names: [awarded_date, award_date], type: date, role: date, min: "2010-01-01", max: "2025-12-31"}
+
+      - key: publications
+        names: [publications, papers]
+        id: [publication_id, paper_id]
+        columns:
+          - {role: fk, ref: projects, type: integer}
+          - {names: [journal, venue], type: text, role: category, values: [Nature Biotechnology, Cell, Science, PLOS ONE, Nucleic Acids Research, Genome Research]}
+          - {names: [published_date, publication_date], type: date, role: date, min: "2013-01-01", max: "2025-12-31"}
+          - {names: [citation_count, citations], type: integer, role: number, min: 0, max: 2500}

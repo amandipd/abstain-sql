@@ -1,0 +1,475 @@
+# Schema templates for the energy and natural resources family (plan step 1.2).
+#
+# One template per topic in families.yaml. Each lists a pool of tables; the
+# generator samples 3-8 linked tables per schema and picks among the synonyms.
+# The format is documented in data/generator/schemas.py.
+
+topics:
+
+  energy:
+    tables:
+      - key: operators
+        names: [operators, utilities]
+        id: [operator_id, utility_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: energy company}
+          - {names: [ownership, ownership_type], type: text, role: category, values: [investor-owned, municipal, cooperative, independent power producer]}
+          - {names: [hq_state, state], type: text, role: category, values: [TX, CA, FL, NY, AZ, IL, PA, WA]}
+
+      - key: power_plants
+        names: [power_plants, generating_stations]
+        id: [plant_id, station_id]
+        columns:
+          - {role: fk, ref: operators, type: integer}
+          - {names: [name], type: text, role: entity_name, kind: power plant}
+          - {names: [fuel_type, primary_fuel], type: text, role: category, values: [solar, wind, natural gas, coal, nuclear, hydro, geothermal]}
+          - {names: [capacity_mw, nameplate_mw], type: real, role: number, min: 5, max: 4000}
+          - {names: [commissioned_date, online_date], type: date, role: date, min: "1965-01-01", max: "2025-06-30"}
+          - {names: [state, location_state], type: text, role: category, values: [TX, CA, FL, NY, AZ, IL, PA, WA]}
+
+      - key: generation
+        names: [generation, monthly_output]
+        id: [generation_id, output_id]
+        columns:
+          - {role: fk, ref: power_plants, type: integer}
+          - {names: [period_month, reading_month], type: date, role: date, min: "2020-01-01", max: "2025-12-31"}
+          - {names: [net_generation_mwh, output_mwh], type: real, role: number, min: 0, max: 2500000}
+          - {names: [capacity_factor_pct, capacity_factor], type: real, role: number, min: 0, max: 98}
+
+      - key: storage_systems
+        names: [storage_systems, battery_sites]
+        id: [storage_id, site_id]
+        columns:
+          - {role: fk, ref: operators, type: integer}
+          - {names: [technology, storage_type], type: text, role: category, values: [lithium-ion, flow battery, pumped hydro, compressed air]}
+          - {names: [power_mw, rated_power_mw], type: real, role: number, min: 1, max: 1500}
+          - {names: [energy_mwh, storage_capacity_mwh], type: real, role: number, min: 2, max: 6000}
+          - {names: [online_date, commissioned_date], type: date, role: date, min: "2012-01-01", max: "2025-12-31"}
+
+      - key: emissions
+        names: [emissions, emission_reports]
+        id: [emission_id, report_id]
+        columns:
+          - {role: fk, ref: power_plants, type: integer}
+          - {names: [report_year, reporting_year], type: integer, role: number, min: 2015, max: 2025}
+          - {names: [co2_tonnes, co2_emissions_tonnes], type: real, role: number, min: 0, max: 20000000}
+          - {names: [nox_tonnes, nox_emissions_tonnes], type: real, role: number, min: 0, max: 20000}
+
+      - key: outages
+        names: [outages, outage_events]
+        id: [outage_id, event_id]
+        columns:
+          - {role: fk, ref: power_plants, type: integer}
+          - {names: [start_date, outage_start], type: date, role: date, min: "2020-01-01", max: "2025-12-31"}
+          - {names: [outage_type, cause], type: text, role: category, values: [planned maintenance, forced outage, curtailment, fuel shortage]}
+          - {names: [duration_hours, hours_offline], type: real, role: number, min: 1, max: 2000}
+          - {names: [lost_mwh, energy_lost_mwh], type: real, role: number, min: 0, max: 500000}
+
+      - key: substations
+        names: [substations]
+        id: [substation_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: substation}
+          - {names: [voltage_kv], type: integer, role: number, min: 69, max: 765}
+          - {names: [grid_region, balancing_authority], type: text, role: category, values: [ERCOT, CAISO, PJM, MISO, NYISO, ISO-NE, SPP]}
+
+      - key: transmission_lines
+        names: [transmission_lines, interconnections]
+        id: [line_id, interconnection_id]
+        columns:
+          - {role: fk, ref: power_plants, type: integer}
+          - {role: fk, ref: substations, type: integer}
+          - {names: [length_km, line_length_km], type: real, role: number, min: 1, max: 400}
+          - {names: [capacity_mw, thermal_limit_mw], type: real, role: number, min: 50, max: 3000}
+          - {names: [energized_date, in_service_date], type: date, role: date, min: "1965-01-01", max: "2025-12-31"}
+
+      - key: purchase_agreements
+        names: [power_purchase_agreements, offtake_contracts]
+        id: [ppa_id, contract_id]
+        columns:
+          - {role: fk, ref: power_plants, type: integer}
+          - {names: [buyer_type, offtaker_type], type: text, role: category, values: [utility, data center operator, manufacturer, university, municipality]}
+          - {names: [price_per_mwh, contract_price_mwh], type: real, role: number, min: 18, max: 120}
+          - {names: [start_date, effective_date], type: date, role: date, min: "2010-01-01", max: "2025-12-31"}
+          - {names: [term_years, contract_years], type: integer, role: number, min: 5, max: 25}
+
+  oil and gas:
+    tables:
+      - key: operators
+        names: [operators, producers]
+        id: [operator_id, producer_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: energy company}
+          - {names: [operator_type, company_type], type: text, role: category, values: [major, independent, national oil company, private equity-backed]}
+          - {names: [hq_country, home_country], type: text, role: category, values: [USA, UK, Norway, Brazil, Saudi Arabia, Canada, Nigeria]}
+
+      - key: basins
+        names: [basins, fields]
+        id: [basin_id, field_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, values: [Permian, Bakken, Eagle Ford, Marcellus, North Sea, Gulf of Mexico, Santos, Niger Delta]}
+          - {names: [terrain, setting], type: text, role: category, values: [onshore, shallow offshore, deepwater]}
+          - {names: [discovered_year, discovery_year], type: integer, role: number, min: 1900, max: 2015}
+
+      - key: leases
+        names: [leases, licenses]
+        id: [lease_id, license_id]
+        columns:
+          - {role: fk, ref: basins, type: integer}
+          - {role: fk, ref: operators, type: integer}
+          - {names: [acreage, acres], type: integer, role: number, min: 40, max: 120000}
+          - {names: [royalty_rate_pct, royalty_pct], type: real, role: number, min: 10, max: 25}
+          - {names: [signed_date, award_date], type: date, role: date, min: "1990-01-01", max: "2025-12-31"}
+
+      - key: wells
+        names: [wells]
+        id: [well_id]
+        columns:
+          - {role: fk, ref: leases, type: integer}
+          - {names: [well_type, product_type], type: text, role: category, values: [oil, gas, oil and gas, injection, disposal]}
+          - {names: [drilling_method, trajectory], type: text, role: category, values: [vertical, directional, horizontal]}
+          - {names: [spud_date, drilled_date], type: date, role: date, min: "2000-01-01", max: "2025-12-31"}
+          - {names: [total_depth_m, measured_depth_m], type: integer, role: number, min: 800, max: 9000}
+          - {names: [status, well_status], type: text, role: category, values: [producing, shut in, plugged, drilling]}
+
+      - key: production
+        names: [production, monthly_production]
+        id: [production_id, record_id]
+        columns:
+          - {role: fk, ref: wells, type: integer}
+          - {names: [production_month, period_month], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+          - {names: [oil_bbl, oil_barrels], type: real, role: number, min: 0, max: 90000}
+          - {names: [gas_mcf, gas_volume_mcf], type: real, role: number, min: 0, max: 600000}
+          - {names: [water_bbl, water_barrels], type: real, role: number, min: 0, max: 200000, optional: true}
+
+      - key: pipelines
+        names: [pipelines]
+        id: [pipeline_id]
+        columns:
+          - {role: fk, ref: basins, type: integer}
+          - {names: [name, pipeline_name], type: text, role: entity_name, kind: pipeline}
+          - {names: [product, commodity], type: text, role: category, values: [crude oil, natural gas, NGLs, refined products]}
+          - {names: [length_km], type: real, role: number, min: 10, max: 3000}
+          - {names: [capacity_bpd, throughput_capacity], type: integer, role: number, min: 5000, max: 1200000}
+          - {names: [in_service_date, commissioned_date], type: date, role: date, min: "1950-01-01", max: "2025-12-31"}
+
+      - key: spills
+        names: [spills, release_incidents]
+        id: [spill_id, incident_id]
+        columns:
+          - {role: fk, ref: wells, type: integer}
+          - {names: [spill_date, incident_date], type: date, role: date, min: "2005-01-01", max: "2025-12-31"}
+          - {names: [substance, material_released], type: text, role: category, values: [crude oil, produced water, drilling mud, condensate]}
+          - {names: [volume_bbl, barrels_released], type: real, role: number, min: 1, max: 5000}
+          - {names: [recovered_bbl, barrels_recovered], type: real, role: number, min: 0, max: 4000}
+          - {names: [fine_amount, penalty_usd], type: real, role: number, min: 0, max: 2000000, optional: true}
+
+      - key: rigs
+        names: [rigs, drilling_rigs]
+        id: [rig_id, rig_id]
+        columns:
+          - {names: [name, rig_name], type: text, role: entity_name, kind: drilling rig}
+          - {names: [rig_type], type: text, role: category, values: [land, jackup, semisubmersible, drillship]}
+          - {names: [day_rate, day_rate_usd], type: real, role: number, min: 15000, max: 450000}
+          - {names: [built_year, year_built], type: integer, role: number, min: 1980, max: 2024}
+
+      - key: drilling_jobs
+        names: [drilling_jobs, rig_contracts]
+        id: [job_id, contract_id]
+        columns:
+          - {role: fk, ref: wells, type: integer}
+          - {role: fk, ref: rigs, type: integer}
+          - {names: [start_date, mobilized_date], type: date, role: date, min: "2000-01-01", max: "2025-12-31"}
+          - {names: [days_on_well, drilling_days], type: integer, role: number, min: 5, max: 120}
+          - {names: [cost, total_cost], type: real, role: number, min: 500000, max: 90000000}
+
+  mining operations:
+    tables:
+      - key: companies
+        names: [mining_companies, companies]
+        id: [company_id, company_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: mining company}
+          - {names: [hq_country, home_country], type: text, role: category, values: [Australia, Canada, UK, Brazil, Chile, South Africa, Switzerland]}
+          - {names: [listed_exchange, exchange], type: text, role: category, values: [NYSE, ASX, TSX, LSE, JSE, unlisted]}
+
+      - key: mines
+        names: [mines, mine_sites]
+        id: [mine_id, site_id]
+        columns:
+          - {role: fk, ref: companies, type: integer}
+          - {names: [name, mine_name], type: text, role: entity_name, kind: mine}
+          - {names: [commodity, primary_commodity], type: text, role: category, values: [copper, gold, iron ore, lithium, nickel, coal, zinc]}
+          - {names: [mine_type, mining_method], type: text, role: category, values: [open pit, underground, placer, in-situ leach]}
+          - {names: [country], type: text, role: category, values: [Chile, Australia, Peru, Canada, DR Congo, South Africa, Indonesia, USA]}
+          - {names: [opened_date, production_start], type: date, role: date, min: "1950-01-01", max: "2024-12-31"}
+
+      - key: extraction
+        names: [extraction, monthly_output]
+        id: [extraction_id, output_id]
+        columns:
+          - {role: fk, ref: mines, type: integer}
+          - {names: [period_month, production_month], type: date, role: date, min: "2019-01-01", max: "2025-12-31"}
+          - {names: [ore_tonnes, ore_mined_tonnes], type: real, role: number, min: 1000, max: 9000000}
+          - {names: [grade_pct, head_grade_pct], type: real, role: number, min: 0.01, max: 65}
+          - {names: [recovered_tonnes, metal_recovered_tonnes], type: real, role: number, min: 10, max: 6000000}
+
+      - key: workers
+        names: [workers, employees]
+        id: [worker_id, employee_id]
+        columns:
+          - {role: fk, ref: mines, type: integer}
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [job_role, position], type: text, role: category, values: [haul truck operator, geologist, blaster, metallurgist, maintenance technician, shift supervisor]}
+          - {names: [hire_date], type: date, role: date, min: "1995-01-01", max: "2025-12-31"}
+          - {names: [hourly_wage, pay_rate], type: real, role: number, min: 12, max: 95}
+
+      - key: safety_incidents
+        names: [safety_incidents, incidents]
+        id: [incident_id, incident_id]
+        columns:
+          - {role: fk, ref: mines, type: integer}
+          - {names: [incident_date, occurred_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [incident_type, hazard_type], type: text, role: category, values: [rockfall, equipment collision, gas exposure, fall from height, electrical, heat stress]}
+          - {names: [severity, severity_level], type: text, role: category, values: [first aid, lost time, serious, fatal]}
+          - {names: [lost_days, days_lost], type: integer, role: number, min: 0, max: 200}
+
+      - key: equipment
+        names: [equipment, fleet_units]
+        id: [equipment_id, unit_id]
+        columns:
+          - {role: fk, ref: mines, type: integer}
+          - {names: [equipment_type, unit_type], type: text, role: category, values: [haul truck, excavator, drill rig, loader, crusher, conveyor]}
+          - {names: [manufacturer, make], type: text, role: category, values: [Caterpillar, Komatsu, Liebherr, Sandvik, Epiroc, Hitachi]}
+          - {names: [purchase_date, commissioned_date], type: date, role: date, min: "2000-01-01", max: "2025-12-31"}
+          - {names: [operating_hours, engine_hours], type: integer, role: number, min: 0, max: 90000}
+
+      - key: environmental_readings
+        names: [environmental_readings, monitoring_results]
+        id: [reading_id, result_id]
+        columns:
+          - {role: fk, ref: mines, type: integer}
+          - {names: [reading_date, sampled_date], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+          - {names: [metric, parameter], type: text, role: category, values: [dust PM10, water pH, noise dB, arsenic in water, sulfate]}
+          - {names: [reading_value, measured_value], type: real, role: number, min: 0, max: 500}
+          - {names: [exceeds_limit, over_limit], type: integer, role: flag}
+
+      - key: permits
+        names: [permits]
+        id: [permit_id]
+        columns:
+          - {role: fk, ref: mines, type: integer}
+          - {names: [permit_type, permit_category], type: text, role: category, values: [mining lease, water use, air emissions, tailings storage, land disturbance]}
+          - {names: [issued_date, granted_date], type: date, role: date, min: "1990-01-01", max: "2025-12-31"}
+          - {names: [expiry_year, expires_year], type: integer, role: number, min: 2026, max: 2060}
+          - {names: [status, permit_status], type: text, role: category, values: [active, under review, suspended, expired]}
+
+      - key: tailings_facilities
+        names: [tailings_facilities, tailings_dams]
+        id: [facility_id, dam_id]
+        columns:
+          - {role: fk, ref: mines, type: integer}
+          - {names: [capacity_m3, storage_capacity_m3], type: real, role: number, min: 100000, max: 900000000}
+          - {names: [construction_method, raise_method], type: text, role: category, values: [upstream, downstream, centerline, dry stack]}
+          - {names: [last_inspection, last_inspected_date], type: date, role: date, min: "2020-01-01", max: "2025-12-31"}
+          - {names: [risk_rating, consequence_class], type: text, role: category, values: [low, significant, high, very high]}
+
+      - key: ore_shipments
+        names: [ore_shipments, shipments]
+        id: [shipment_id, shipment_id]
+        columns:
+          - {role: fk, ref: mines, type: integer}
+          - {names: [ship_date, loaded_date], type: date, role: date, min: "2019-01-01", max: "2025-12-31"}
+          - {names: [buyer_country, destination_country], type: text, role: category, values: [China, Japan, India, South Korea, Germany]}
+          - {names: [tonnes, quantity_tonnes], type: real, role: number, min: 500, max: 250000}
+          - {names: [price_per_tonne, unit_price_usd], type: real, role: number, min: 40, max: 90000}
+
+  water resources:
+    tables:
+      - key: utilities
+        names: [water_utilities, utilities]
+        id: [utility_id, utility_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: water utility}
+          - {names: [ownership, governance], type: text, role: category, values: [municipal, private, regional authority, cooperative]}
+          - {names: [customers_served, connections], type: integer, role: number, min: 1000, max: 4000000}
+
+      - key: sources
+        names: [water_sources, sources]
+        id: [source_id, source_id]
+        columns:
+          - {role: fk, ref: utilities, type: integer}
+          - {names: [name, source_name], type: text, role: entity_name, kind: water source}
+          - {names: [source_type, supply_type], type: text, role: category, values: [river, reservoir, groundwater, desalination, recycled water]}
+          - {names: [capacity_ml_per_day, yield_ml_per_day], type: real, role: number, min: 1, max: 2000}
+
+      - key: treatment_plants
+        names: [treatment_plants, plants]
+        id: [plant_id, plant_id]
+        columns:
+          - {role: fk, ref: utilities, type: integer}
+          - {names: [name, plant_name], type: text, role: entity_name, kind: treatment plant}
+          - {names: [plant_type, treatment_type], type: text, role: category, values: [drinking water, wastewater, desalination, water reclamation]}
+          - {names: [capacity_ml_per_day, design_capacity_ml_per_day], type: real, role: number, min: 2, max: 3000}
+          - {names: [commissioned_date, online_date], type: date, role: date, min: "1950-01-01", max: "2025-06-30"}
+
+      - key: quality_tests
+        names: [water_quality_tests, quality_samples]
+        id: [test_id, sample_id]
+        columns:
+          - {role: fk, ref: treatment_plants, type: integer}
+          - {names: [sample_date, collected_date], type: date, role: date, min: "2020-01-01", max: "2025-12-31"}
+          - {names: [parameter, analyte], type: text, role: category, values: [lead, nitrate, E. coli, turbidity, chlorine residual, PFAS]}
+          - {names: [measured_value, result_value], type: real, role: number, min: 0, max: 100}
+          - {names: [exceeds_standard, violation], type: integer, role: flag}
+
+      - key: service_areas
+        names: [service_areas, districts]
+        id: [area_id, district_id]
+        columns:
+          - {role: fk, ref: utilities, type: integer}
+          - {names: [name, area_name], type: text, role: entity_name, kind: district}
+          - {names: [population, residents], type: integer, role: number, min: 2000, max: 900000}
+          - {names: [liters_per_person_day, per_capita_use_liters], type: real, role: number, min: 80, max: 600}
+
+      - key: consumption
+        names: [consumption, monthly_usage]
+        id: [usage_id, usage_id]
+        columns:
+          - {role: fk, ref: service_areas, type: integer}
+          - {names: [period_month, billing_month], type: date, role: date, min: "2019-01-01", max: "2025-12-31"}
+          - {names: [sector, customer_class], type: text, role: category, values: [residential, commercial, industrial, agricultural, municipal]}
+          - {names: [volume_ml, megaliters_used], type: real, role: number, min: 1, max: 90000}
+          - {names: [revenue, billed_amount], type: real, role: number, min: 1000, max: 40000000, optional: true}
+
+      - key: droughts
+        names: [drought_declarations, drought_events]
+        id: [drought_id, event_id]
+        columns:
+          - {role: fk, ref: service_areas, type: integer}
+          - {names: [declared_date, start_date], type: date, role: date, min: "2010-01-01", max: "2025-12-31"}
+          - {names: [drought_level, stage], type: text, role: category, values: [watch, warning, emergency, exceptional]}
+          - {names: [restriction, restriction_type], type: text, role: category, values: [voluntary conservation, outdoor watering ban, mandatory 20 percent cut, rationing]}
+          - {names: [days_in_effect, duration_days], type: integer, role: number, min: 7, max: 700}
+
+      - key: pipe_segments
+        names: [pipe_segments, water_mains]
+        id: [segment_id, main_id]
+        columns:
+          - {role: fk, ref: service_areas, type: integer}
+          - {names: [material, pipe_material], type: text, role: category, values: [ductile iron, PVC, cast iron, asbestos cement, steel]}
+          - {names: [diameter_mm], type: integer, role: number, min: 50, max: 2400}
+          - {names: [install_year, year_installed], type: integer, role: number, min: 1900, max: 2025}
+          - {names: [length_km, segment_length_km], type: real, role: number, min: 0.1, max: 25}
+
+      - key: main_breaks
+        names: [main_breaks, pipe_failures]
+        id: [break_id, failure_id]
+        columns:
+          - {role: fk, ref: pipe_segments, type: integer}
+          - {names: [break_date, failure_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [repair_cost, repair_cost_usd], type: real, role: number, min: 2000, max: 900000}
+          - {names: [water_lost_ml, megaliters_lost], type: real, role: number, min: 0.1, max: 400}
+
+  forestry:
+    tables:
+      - key: forests
+        names: [forests, forest_tracts]
+        id: [forest_id, tract_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: forest}
+          - {names: [ownership, owner_type], type: text, role: category, values: [federal, state, private industrial, private family, tribal]}
+          - {names: [region], type: text, role: category, values: [Pacific Northwest, Southeast, Northeast, Lake States, Rocky Mountains, California]}
+          - {names: [area_hectares, total_hectares], type: real, role: number, min: 100, max: 900000}
+
+      - key: stands
+        names: [stands, forest_stands]
+        id: [stand_id, stand_id]
+        columns:
+          - {role: fk, ref: forests, type: integer}
+          - {names: [dominant_species, main_species], type: text, role: category, values: [Douglas fir, loblolly pine, ponderosa pine, sugar maple, red oak, aspen, western hemlock]}
+          - {names: [stand_age_years, age_years], type: integer, role: number, min: 5, max: 300}
+          - {names: [area_hectares, stand_hectares], type: real, role: number, min: 2, max: 5000}
+          - {names: [site_index], type: integer, role: number, min: 40, max: 140, optional: true}
+
+      - key: mills
+        names: [mills, timber_buyers]
+        id: [mill_id, buyer_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: sawmill}
+          - {names: [mill_type, facility_type], type: text, role: category, values: [sawmill, pulp mill, plywood mill, pellet plant, biomass plant]}
+          - {names: [state], type: text, role: category, values: [OR, WA, GA, AL, ME, WI, MT, CA]}
+          - {names: [capacity_m3_per_year, annual_capacity_m3], type: real, role: number, min: 50000, max: 3000000}
+
+      - key: timber_sales
+        names: [timber_sales, harvest_contracts]
+        id: [sale_id, contract_id]
+        columns:
+          - {role: fk, ref: stands, type: integer}
+          - {role: fk, ref: mills, type: integer}
+          - {names: [sale_date, contract_date], type: date, role: date, min: "2012-01-01", max: "2025-12-31"}
+          - {names: [volume_m3, harvested_m3], type: real, role: number, min: 100, max: 90000}
+          - {names: [price_per_m3, stumpage_price_m3], type: real, role: number, min: 15, max: 250}
+          - {names: [harvest_method, silvicultural_system], type: text, role: category, values: [clearcut, selection cut, shelterwood, thinning]}
+
+      - key: plantings
+        names: [replanting, planting_projects]
+        id: [planting_id, project_id]
+        columns:
+          - {role: fk, ref: stands, type: integer}
+          - {names: [planting_date, planted_date], type: date, role: date, min: "2005-01-01", max: "2025-12-31"}
+          - {names: [seedlings_planted, seedlings], type: integer, role: number, min: 500, max: 600000}
+          - {names: [species, planted_species], type: text, role: category, values: [Douglas fir, loblolly pine, ponderosa pine, sugar maple, red oak, aspen, western hemlock]}
+          - {names: [survival_rate_pct, survival_pct], type: real, role: number, min: 40, max: 98, optional: true}
+
+      - key: wildfires
+        names: [wildfires, fire_events]
+        id: [fire_id, event_id]
+        columns:
+          - {role: fk, ref: forests, type: integer}
+          - {names: [ignition_date, start_date], type: date, role: date, min: "2005-01-01", max: "2025-12-31"}
+          - {names: [cause, ignition_cause], type: text, role: category, values: [lightning, debris burning, campfire, equipment, arson, power line]}
+          - {names: [hectares_burned, burned_area_ha], type: real, role: number, min: 1, max: 300000}
+          - {names: [suppression_cost, suppression_cost_usd], type: real, role: number, min: 5000, max: 90000000}
+
+      - key: inventory_plots
+        names: [inventory_plots, survey_plots]
+        id: [plot_id, plot_id]
+        columns:
+          - {role: fk, ref: stands, type: integer}
+          - {names: [survey_date, measured_date], type: date, role: date, min: "2010-01-01", max: "2025-12-31"}
+          - {names: [trees_per_hectare, stem_density], type: integer, role: number, min: 50, max: 3000}
+          - {names: [avg_dbh_cm, mean_diameter_cm], type: real, role: number, min: 5, max: 120}
+          - {names: [carbon_tonnes_per_ha, carbon_stock_t_ha], type: real, role: number, min: 10, max: 900}
+
+      - key: pest_outbreaks
+        names: [pest_outbreaks, insect_outbreaks]
+        id: [outbreak_id, outbreak_id]
+        columns:
+          - {role: fk, ref: stands, type: integer}
+          - {names: [detected_date, first_observed], type: date, role: date, min: "2005-01-01", max: "2025-12-31"}
+          - {names: [pest, pest_species], type: text, role: category, values: [mountain pine beetle, spruce budworm, emerald ash borer, spongy moth, southern pine beetle]}
+          - {names: [hectares_affected, affected_area_ha], type: real, role: number, min: 1, max: 50000}
+          - {names: [treated, was_treated], type: integer, role: flag}
+
+      - key: crews
+        names: [crews, field_crews]
+        id: [crew_id, crew_id]
+        columns:
+          - {role: fk, ref: forests, type: integer}
+          - {names: [crew_type, specialty], type: text, role: category, values: [planting, thinning, firefighting, survey, road maintenance]}
+          - {names: [members, crew_size], type: integer, role: number, min: 3, max: 40}
+          - {names: [daily_rate, day_rate_usd], type: real, role: number, min: 800, max: 20000}
+          - {names: [contract_start, start_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31", optional: true}
+
+      - key: carbon_credits
+        names: [carbon_credits, offset_credits]
+        id: [credit_id, credit_id]
+        columns:
+          - {role: fk, ref: forests, type: integer}
+          - {names: [registry, standard], type: text, role: category, values: [Verra, Gold Standard, Climate Action Reserve, American Carbon Registry]}
+          - {names: [vintage_year], type: integer, role: number, min: 2012, max: 2025}
+          - {names: [credits_issued, tonnes_issued], type: integer, role: number, min: 1000, max: 2000000}
+          - {names: [price_per_credit, price_usd], type: real, role: number, min: 2, max: 40}
+          - {names: [issued_date, issuance_date], type: date, role: date, min: "2013-01-01", max: "2025-12-31"}

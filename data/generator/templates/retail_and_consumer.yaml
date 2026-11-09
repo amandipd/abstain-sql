@@ -1,0 +1,483 @@
+# Schema templates for the retail and consumer family (plan step 1.2).
+#
+# One template per topic in families.yaml. Each lists a pool of tables; the
+# generator samples 3-8 linked tables per schema and picks among the synonyms.
+# The format is documented in data/generator/schemas.py.
+
+topics:
+
+  retail:
+    tables:
+      - key: stores
+        names: [stores, locations]
+        id: [store_id, location_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: store}
+          - {names: [city], type: text, role: category, values: [Columbus, San Antonio, Jacksonville, Fort Worth, Indianapolis, Albuquerque, Fresno, Mesa]}
+          - {names: [store_format, format], type: text, role: category, values: [supercenter, neighborhood, express, outlet]}
+          - {names: [square_feet, floor_area_sqft], type: integer, role: number, min: 8000, max: 200000}
+          - {names: [opened_date], type: date, role: date, min: "1985-01-01", max: "2024-12-31"}
+
+      - key: suppliers
+        names: [suppliers, vendors]
+        id: [supplier_id, vendor_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: company}
+          - {names: [country, origin_country], type: text, role: category, values: [USA, China, Mexico, Vietnam, Germany, India, Canada]}
+          - {names: [lead_time_days, avg_lead_time_days], type: integer, role: number, min: 2, max: 90}
+
+      - key: departments
+        names: [departments, product_categories]
+        id: [department_id, category_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, values: [grocery, household, electronics, apparel, toys, health and beauty, garden, pet supplies]}
+          - {names: [target_margin_pct, margin_target], type: real, role: number, min: 5, max: 60}
+
+      - key: products
+        names: [products, items]
+        id: [product_id, item_id]
+        columns:
+          - {role: fk, ref: departments, type: integer}
+          - {role: fk, ref: suppliers, type: integer}
+          - {names: [name, product_name], type: text, role: entity_name, kind: product}
+          - {names: [unit_price, retail_price], type: real, role: number, min: 0.5, max: 1500}
+          - {names: [unit_cost, wholesale_cost], type: real, role: number, min: 0.2, max: 1000}
+          - {names: [launch_date, introduced_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31", optional: true}
+
+      - key: customers
+        names: [customers, members]
+        id: [customer_id, member_id]
+        columns:
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [city, home_city], type: text, role: category, values: [Columbus, San Antonio, Jacksonville, Fort Worth, Indianapolis, Albuquerque, Fresno, Mesa]}
+          - {names: [loyalty_tier, membership_level], type: text, role: category, values: [basic, silver, gold, platinum]}
+          - {names: [joined_date, signup_date], type: date, role: date, min: "2012-01-01", max: "2025-12-31"}
+
+      - key: sales
+        names: [sales, transactions]
+        id: [sale_id, transaction_id]
+        columns:
+          - {role: fk, ref: stores, type: integer}
+          - {role: fk, ref: customers, type: integer}
+          - {names: [sale_date, transaction_date], type: date, role: date, min: "2023-01-01", max: "2025-12-31"}
+          - {names: [payment_method, tender_type], type: text, role: category, values: [credit card, debit card, cash, mobile wallet, gift card]}
+          - {names: [total_amount, basket_total], type: real, role: number, min: 1, max: 2500}
+
+      - key: sale_items
+        names: [sale_items, line_items]
+        id: [sale_item_id, line_item_id]
+        columns:
+          - {role: fk, ref: sales, type: integer}
+          - {role: fk, ref: products, type: integer}
+          - {names: [quantity, units], type: integer, role: number, min: 1, max: 24}
+          - {names: [discount_pct, discount_percent], type: real, role: number, min: 0, max: 50}
+
+      - key: inventory
+        names: [inventory, stock_levels]
+        id: [inventory_id, stock_id]
+        columns:
+          - {role: fk, ref: stores, type: integer}
+          - {role: fk, ref: products, type: integer}
+          - {names: [quantity_on_hand, units_on_hand], type: integer, role: number, min: 0, max: 2000}
+          - {names: [last_restocked, restock_date], type: date, role: date, min: "2025-01-01", max: "2025-12-31"}
+
+      - key: purchase_orders
+        names: [purchase_orders, replenishment_orders]
+        id: [po_id, replenishment_id]
+        columns:
+          - {role: fk, ref: suppliers, type: integer}
+          - {role: fk, ref: stores, type: integer}
+          - {names: [order_date, placed_date], type: date, role: date, min: "2023-01-01", max: "2025-12-31"}
+          - {names: [total_cost, order_value], type: real, role: number, min: 500, max: 400000}
+          - {names: [status, po_status], type: text, role: category, values: [submitted, shipped, received, cancelled]}
+
+      - key: employees
+        names: [employees, associates]
+        id: [employee_id, associate_id]
+        columns:
+          - {role: fk, ref: stores, type: integer}
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [job_role, position], type: text, role: category, values: [cashier, stock associate, department lead, store manager, pharmacist]}
+          - {names: [hire_date], type: date, role: date, min: "2000-01-01", max: "2025-12-31"}
+          - {names: [hourly_wage, pay_rate], type: real, role: number, min: 12, max: 45}
+
+  fashion retail:
+    tables:
+      - key: brands
+        names: [brands, labels]
+        id: [brand_id, label_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: fashion brand}
+          - {names: [origin_country, home_country], type: text, role: category, values: [Italy, France, USA, Spain, Sweden, Japan, UK]}
+          - {names: [price_tier, positioning], type: text, role: category, values: [budget, mid-market, premium, luxury]}
+
+      - key: collections
+        names: [collections, product_lines]
+        id: [collection_id, line_id]
+        columns:
+          - {role: fk, ref: brands, type: integer}
+          - {names: [season, season_name], type: text, role: category, values: [Spring/Summer, Fall/Winter, Resort, Holiday, Capsule]}
+          - {names: [launch_date, release_date], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+          - {names: [is_sustainable, sustainable_line], type: integer, role: flag, optional: true}
+
+      - key: garments
+        names: [garments, styles]
+        id: [garment_id, style_id]
+        columns:
+          - {role: fk, ref: collections, type: integer}
+          - {names: [name, style_name], type: text, role: entity_name, kind: garment}
+          - {names: [garment_type, category], type: text, role: category, values: [dress, jeans, t-shirt, jacket, sweater, skirt, sneakers, coat]}
+          - {names: [material, main_fabric], type: text, role: category, values: [cotton, polyester, wool, denim, linen, recycled polyester, leather]}
+          - {names: [retail_price, list_price], type: real, role: number, min: 9, max: 1800}
+
+      - key: skus
+        names: [skus, variants]
+        id: [sku_id, variant_id]
+        columns:
+          - {role: fk, ref: garments, type: integer}
+          - {names: [size, size_label], type: text, role: category, values: [XS, S, M, L, XL, XXL]}
+          - {names: [color, colorway], type: text, role: category, values: [black, white, navy, beige, red, olive, light blue]}
+          - {names: [stock_quantity, units_in_stock], type: integer, role: number, min: 0, max: 500}
+
+      - key: customers
+        names: [customers, shoppers]
+        id: [customer_id, shopper_id]
+        columns:
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [birth_date, date_of_birth], type: date, role: date, min: "1950-01-01", max: "2009-12-31"}
+          - {names: [city], type: text, role: category, values: [New York, Los Angeles, London, Paris, Milan, Tokyo, Toronto, Sydney]}
+          - {names: [preferred_size, usual_size], type: text, role: category, values: [XS, S, M, L, XL, XXL], optional: true}
+          - {names: [joined_date, signup_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+
+      - key: orders
+        names: [orders, purchases]
+        id: [order_id, purchase_id]
+        columns:
+          - {role: fk, ref: customers, type: integer}
+          - {names: [order_date, purchase_date], type: date, role: date, min: "2022-01-01", max: "2025-12-31"}
+          - {names: [channel, sales_channel], type: text, role: category, values: [online, app, flagship store, outlet, marketplace]}
+          - {names: [total_amount, order_total], type: real, role: number, min: 10, max: 4000}
+
+      - key: order_lines
+        names: [order_lines, order_items]
+        id: [order_line_id, order_item_id]
+        columns:
+          - {role: fk, ref: orders, type: integer}
+          - {role: fk, ref: skus, type: integer}
+          - {names: [quantity], type: integer, role: number, min: 1, max: 5}
+          - {names: [unit_price, price_paid], type: real, role: number, min: 5, max: 1800}
+
+      - key: returns
+        names: [returns]
+        id: [return_id]
+        columns:
+          - {role: fk, ref: order_lines, type: integer}
+          - {names: [return_date, received_date], type: date, role: date, min: "2022-01-01", max: "2025-12-31"}
+          - {names: [reason, return_reason], type: text, role: category, values: [wrong size, changed mind, defective, not as pictured, late delivery]}
+          - {names: [refund_amount, refunded], type: real, role: number, min: 5, max: 1800}
+
+      - key: factories
+        names: [factories, manufacturers]
+        id: [factory_id, manufacturer_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: garment factory}
+          - {names: [country], type: text, role: category, values: [Bangladesh, Vietnam, China, Turkey, Portugal, Italy, India]}
+          - {names: [workers, headcount], type: integer, role: number, min: 50, max: 8000}
+          - {names: [audit_score, compliance_score], type: real, role: number, min: 40, max: 100}
+
+      - key: production_orders
+        names: [production_orders, manufacturing_orders]
+        id: [production_order_id, manufacturing_order_id]
+        columns:
+          - {role: fk, ref: garments, type: integer}
+          - {role: fk, ref: factories, type: integer}
+          - {names: [placed_date, order_date], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+          - {names: [units_ordered, quantity], type: integer, role: number, min: 100, max: 50000}
+          - {names: [unit_cost, cost_per_unit], type: real, role: number, min: 1.5, max: 300}
+
+  beauty industry:
+    tables:
+      - key: brands
+        names: [brands]
+        id: [brand_id]
+        columns:
+          - {names: [name, brand_name], type: text, role: entity_name, kind: beauty brand}
+          - {names: [positioning, market_tier], type: text, role: category, values: [mass, prestige, indie, clean beauty, dermatological]}
+          - {names: [founded_year], type: integer, role: number, min: 1900, max: 2022}
+          - {names: [is_cruelty_free, cruelty_free], type: integer, role: flag}
+
+      - key: products
+        names: [products, skus]
+        id: [product_id, sku_id]
+        columns:
+          - {role: fk, ref: brands, type: integer}
+          - {names: [name, product_name], type: text, role: entity_name, kind: beauty product}
+          - {names: [product_type, category], type: text, role: category, values: [lipstick, foundation, serum, moisturizer, shampoo, sunscreen, mascara, fragrance]}
+          - {names: [price, retail_price], type: real, role: number, min: 4, max: 350}
+          - {names: [launch_date, release_date], type: date, role: date, min: "2010-01-01", max: "2025-12-31"}
+          - {names: [size_ml, volume_ml], type: real, role: number, min: 5, max: 500, optional: true}
+
+      - key: ingredients
+        names: [ingredients]
+        id: [ingredient_id]
+        columns:
+          - {names: [name, inci_name], type: text, role: entity_name, values: [niacinamide, hyaluronic acid, retinol, salicylic acid, vitamin C, zinc oxide, glycerin, shea butter, parabens, titanium dioxide]}
+          - {names: [ingredient_class, function], type: text, role: category, values: [active, humectant, emollient, preservative, UV filter, fragrance]}
+          - {names: [restricted_in_eu, eu_restricted], type: integer, role: flag}
+
+      - key: formulations
+        names: [product_ingredients, formulations]
+        id: [formulation_id, formulation_id]
+        columns:
+          - {role: fk, ref: products, type: integer}
+          - {role: fk, ref: ingredients, type: integer}
+          - {names: [concentration_pct, percent], type: real, role: number, min: 0.01, max: 25}
+
+      - key: retailers
+        names: [retailers, stockists]
+        id: [retailer_id, stockist_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, values: [Sephora, Ulta Beauty, Boots, Target, Amazon, brand website, Walgreens]}
+          - {names: [channel, retail_channel], type: text, role: category, values: [specialty, drugstore, mass, online, direct]}
+
+      - key: product_sales
+        names: [product_sales, sales]
+        id: [sale_id, sale_id]
+        columns:
+          - {role: fk, ref: products, type: integer}
+          - {role: fk, ref: retailers, type: integer}
+          - {names: [sale_month, period_month], type: date, role: date, min: "2021-01-01", max: "2025-12-31"}
+          - {names: [units_sold, units], type: integer, role: number, min: 10, max: 90000}
+          - {names: [revenue, net_revenue], type: real, role: number, min: 50, max: 4000000}
+
+      - key: customers
+        names: [customers, consumers]
+        id: [customer_id, consumer_id]
+        columns:
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [birth_date, date_of_birth], type: date, role: date, min: "1950-01-01", max: "2010-12-31"}
+          - {names: [skin_type], type: text, role: category, values: [dry, oily, combination, sensitive, normal]}
+          - {names: [city], type: text, role: category, values: [Los Angeles, Chicago, Houston, Miami, Seattle, Atlanta, Denver, Boston]}
+
+      - key: reviews
+        names: [reviews, product_reviews]
+        id: [review_id, review_id]
+        columns:
+          - {role: fk, ref: products, type: integer}
+          - {role: fk, ref: customers, type: integer}
+          - {names: [review_date, posted_date], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+          - {names: [rating, star_rating], type: integer, role: number, min: 1, max: 5}
+          - {names: [helpful_votes, helpful_count], type: integer, role: number, min: 0, max: 400}
+          - {names: [is_verified_purchase, verified_purchase], type: integer, role: flag, optional: true}
+
+      - key: safety_tests
+        names: [safety_tests, product_tests]
+        id: [test_id, test_id]
+        columns:
+          - {role: fk, ref: products, type: integer}
+          - {names: [test_type, assessment_type], type: text, role: category, values: [patch test, stability test, SPF test, microbial challenge, in vitro eye irritation]}
+          - {names: [test_date, completed_date], type: date, role: date, min: "2010-01-01", max: "2025-12-31"}
+          - {names: [result, outcome], type: text, role: category, values: [pass, fail, retest]}
+          - {names: [lab_cost, test_cost], type: real, role: number, min: 300, max: 25000}
+
+  restaurant operations:
+    tables:
+      - key: restaurants
+        names: [restaurants, locations]
+        id: [restaurant_id, location_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: restaurant}
+          - {names: [city], type: text, role: category, values: [Chicago, Austin, Nashville, Portland, Philadelphia, San Diego, Minneapolis, New Orleans]}
+          - {names: [cuisine, cuisine_type], type: text, role: category, values: [Italian, Mexican, Japanese, American, Indian, Thai, Mediterranean]}
+          - {names: [seats, seating_capacity], type: integer, role: number, min: 20, max: 300}
+          - {names: [opened_date], type: date, role: date, min: "1990-01-01", max: "2025-06-30"}
+
+      - key: menu_items
+        names: [menu_items, dishes]
+        id: [menu_item_id, dish_id]
+        columns:
+          - {role: fk, ref: restaurants, type: integer}
+          - {names: [name, item_name], type: text, role: entity_name, kind: dish}
+          - {names: [course, menu_section], type: text, role: category, values: [appetizer, main, dessert, drink, side]}
+          - {names: [price, menu_price], type: real, role: number, min: 3, max: 85}
+          - {names: [food_cost, plate_cost], type: real, role: number, min: 0.5, max: 30}
+          - {names: [is_vegetarian, vegetarian], type: integer, role: flag, optional: true}
+
+      - key: suppliers
+        names: [suppliers, vendors]
+        id: [supplier_id, vendor_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: food supplier}
+          - {names: [supply_category, category], type: text, role: category, values: [produce, meat, seafood, dairy, dry goods, beverages]}
+          - {names: [is_local, local_supplier], type: integer, role: flag}
+
+      - key: deliveries
+        names: [deliveries, supply_deliveries]
+        id: [delivery_id, delivery_id]
+        columns:
+          - {role: fk, ref: suppliers, type: integer}
+          - {role: fk, ref: restaurants, type: integer}
+          - {names: [delivery_date, received_date], type: date, role: date, min: "2023-01-01", max: "2025-12-31"}
+          - {names: [invoice_amount, invoice_total], type: real, role: number, min: 50, max: 12000}
+          - {names: [on_time, arrived_on_time], type: integer, role: flag}
+
+      - key: orders
+        names: [orders, guest_orders]
+        id: [order_id, order_id]
+        columns:
+          - {role: fk, ref: restaurants, type: integer}
+          - {names: [order_date, business_date], type: date, role: date, min: "2023-01-01", max: "2025-12-31"}
+          - {names: [order_type, service_type], type: text, role: category, values: [dine-in, takeout, delivery, catering]}
+          - {names: [party_size, guests], type: integer, role: number, min: 1, max: 12}
+          - {names: [total_amount, bill_total], type: real, role: number, min: 4, max: 1500}
+          - {names: [tip_amount, tip], type: real, role: number, min: 0, max: 300, optional: true}
+
+      - key: order_items
+        names: [order_items]
+        id: [order_item_id]
+        columns:
+          - {role: fk, ref: orders, type: integer}
+          - {role: fk, ref: menu_items, type: integer}
+          - {names: [quantity], type: integer, role: number, min: 1, max: 8}
+
+      - key: staff
+        names: [staff, employees]
+        id: [staff_id, employee_id]
+        columns:
+          - {role: fk, ref: restaurants, type: integer}
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [position, job_role], type: text, role: category, values: [server, line cook, host, bartender, dishwasher, general manager, sous chef]}
+          - {names: [hire_date], type: date, role: date, min: "2010-01-01", max: "2025-12-31"}
+          - {names: [hourly_wage, pay_rate], type: real, role: number, min: 7, max: 40}
+
+      - key: shifts
+        names: [shifts]
+        id: [shift_id]
+        columns:
+          - {role: fk, ref: staff, type: integer}
+          - {names: [shift_date, work_date], type: date, role: date, min: "2024-01-01", max: "2025-12-31"}
+          - {names: [hours_worked, hours], type: real, role: number, min: 2, max: 12}
+          - {names: [tips_earned, tips], type: real, role: number, min: 0, max: 400, optional: true}
+
+      - key: inspections
+        names: [health_inspections, inspections]
+        id: [inspection_id, inspection_id]
+        columns:
+          - {role: fk, ref: restaurants, type: integer}
+          - {names: [inspection_date, visit_date], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+          - {names: [score, inspection_score], type: integer, role: number, min: 60, max: 100}
+          - {names: [violations, violation_count], type: integer, role: number, min: 0, max: 15}
+          - {names: [grade, letter_grade], type: text, role: category, values: [A, B, C]}
+
+      - key: reservations
+        names: [reservations, bookings]
+        id: [reservation_id, booking_id]
+        columns:
+          - {role: fk, ref: restaurants, type: integer}
+          - {names: [reservation_date, booked_for_date], type: date, role: date, min: "2023-01-01", max: "2025-12-31"}
+          - {names: [party_size, guests], type: integer, role: number, min: 1, max: 14}
+          - {names: [status, reservation_status], type: text, role: category, values: [seated, cancelled, no-show]}
+          - {names: [source, booking_source], type: text, role: category, values: [phone, website, OpenTable, walk-in waitlist]}
+
+  hospitality:
+    tables:
+      - key: hotels
+        names: [hotels, properties]
+        id: [hotel_id, property_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: hotel}
+          - {names: [city], type: text, role: category, values: [Lisbon, Barcelona, Kyoto, Cancun, Nashville, Cape Town, Vancouver, Bali]}
+          - {names: [star_rating, stars], type: integer, role: number, min: 2, max: 5}
+          - {names: [opened_date], type: date, role: date, min: "1960-01-01", max: "2024-12-31"}
+
+      - key: room_types
+        names: [room_types, room_categories]
+        id: [room_type_id, room_category_id]
+        columns:
+          - {role: fk, ref: hotels, type: integer}
+          - {names: [name, type_name], type: text, role: entity_name, values: [standard king, double queen, junior suite, ocean view, family room, penthouse]}
+          - {names: [max_occupancy, max_guests], type: integer, role: number, min: 1, max: 8}
+          - {names: [nightly_rate, base_rate], type: real, role: number, min: 60, max: 1800}
+
+      - key: rooms
+        names: [rooms]
+        id: [room_id]
+        columns:
+          - {role: fk, ref: room_types, type: integer}
+          - {names: [room_number], type: integer, role: number, min: 100, max: 2400}
+          - {names: [floor, floor_number], type: integer, role: number, min: 1, max: 40}
+          - {names: [is_accessible, accessible], type: integer, role: flag}
+
+      - key: guests
+        names: [guests]
+        id: [guest_id]
+        columns:
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [country, home_country], type: text, role: category, values: [USA, UK, Germany, Japan, Brazil, Australia, Canada, France]}
+          - {names: [loyalty_level, loyalty_tier], type: text, role: category, values: [none, silver, gold, platinum]}
+          - {names: [birth_date, date_of_birth], type: date, role: date, min: "1940-01-01", max: "2006-12-31", optional: true}
+
+      - key: bookings
+        names: [bookings, reservations]
+        id: [booking_id, reservation_id]
+        columns:
+          - {role: fk, ref: guests, type: integer}
+          - {role: fk, ref: rooms, type: integer}
+          - {names: [check_in_date, arrival_date], type: date, role: date, min: "2023-01-01", max: "2025-12-31"}
+          - {names: [nights, length_of_stay], type: integer, role: number, min: 1, max: 21}
+          - {names: [total_price, booking_total], type: real, role: number, min: 60, max: 30000}
+          - {names: [channel, booking_channel], type: text, role: category, values: [direct website, Booking.com, Expedia, travel agent, phone, corporate portal]}
+          - {names: [status, booking_status], type: text, role: category, values: [completed, cancelled, no-show, upcoming]}
+
+      - key: payments
+        names: [payments]
+        id: [payment_id]
+        columns:
+          - {role: fk, ref: bookings, type: integer}
+          - {names: [payment_date, paid_date], type: date, role: date, min: "2022-10-01", max: "2025-12-31"}
+          - {names: [amount, amount_paid], type: real, role: number, min: 20, max: 30000}
+          - {names: [method, payment_method], type: text, role: category, values: [credit card, debit card, bank transfer, cash, voucher]}
+
+      - key: reviews
+        names: [reviews, guest_reviews]
+        id: [review_id, review_id]
+        columns:
+          - {role: fk, ref: bookings, type: integer}
+          - {names: [review_date, posted_date], type: date, role: date, min: "2023-01-01", max: "2025-12-31"}
+          - {names: [overall_score, score], type: real, role: number, min: 1, max: 10}
+          - {names: [cleanliness_score, cleanliness], type: integer, role: number, min: 1, max: 10}
+          - {names: [would_return, would_stay_again], type: integer, role: flag, optional: true}
+
+      - key: staff
+        names: [staff, employees]
+        id: [staff_id, employee_id]
+        columns:
+          - {role: fk, ref: hotels, type: integer}
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [department], type: text, role: category, values: [front desk, housekeeping, food and beverage, maintenance, sales, management]}
+          - {names: [hire_date], type: date, role: date, min: "2005-01-01", max: "2025-12-31"}
+          - {names: [hourly_wage, pay_rate], type: real, role: number, min: 9, max: 60}
+
+      - key: services
+        names: [services, amenities]
+        id: [service_id, amenity_id]
+        columns:
+          - {role: fk, ref: hotels, type: integer}
+          - {names: [name, service_name], type: text, role: entity_name, values: [spa, airport shuttle, room service, parking, laundry, minibar, guided tour]}
+          - {names: [price, unit_price], type: real, role: number, min: 5, max: 400}
+
+      - key: service_charges
+        names: [service_charges, folio_charges]
+        id: [charge_id, charge_id]
+        columns:
+          - {role: fk, ref: bookings, type: integer}
+          - {role: fk, ref: services, type: integer}
+          - {names: [charge_date, posted_date], type: date, role: date, min: "2023-01-01", max: "2025-12-31"}
+          - {names: [amount, charge_amount], type: real, role: number, min: 5, max: 1200}
