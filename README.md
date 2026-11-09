@@ -44,7 +44,8 @@ abstain-sql/
     notes/                   # 7 raw research notes behind the report
   data/
     download_external.py     # fetches BIRD dev and TrustSQL, checks pinned fingerprints
-    generator/               # stub: synthetic schemas, data, questions, declines (Phase 1)
+    generator/               # synthetic schemas, data, questions, declines (Phase 1)
+      families.yaml          # 5 schema families of 5 topics each (step 1.1)
     splits/                  # empty: train / dev / calibration / test manifests (Phase 3)
     external/                # gitignored: BIRD dev and TrustSQL, rebuilt by the script above
     instances/               # gitignored: SQLite instances from the generator (Phase 1)
@@ -68,6 +69,7 @@ abstain-sql/
     local_gguf.py            # stub: laptop latency harness (step 11.3)
   tests/
     test_imports.py          # every CPU-side module imports
+    test_families.py         # families.yaml keeps 5 families of 5 distinct topics
   results/
     models.md                # the 3 models: architecture, vocabulary, license, thinking switch
     external_data.md         # BIRD and TrustSQL breakdown, gold-query runs, checker rules

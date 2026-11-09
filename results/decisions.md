@@ -73,10 +73,19 @@ These were settled during Phase 0 and sit outside the plan's table.
 - **Choice:** open only a Modal account in Phase 0, with a $30 monthly Workspace budget. Open RunPod when the training runs need it.
 - **Why:** Modal's $30 monthly credit may pay for the early GPU work outright, and a second account adds nothing until the 8-run matrix. RunPod stays the backup, and the cheaper option if the RTX 4090 fits the model.
 
-### Modal's Starter credit covers GPU compute (2026-11-08)
+### Modal's Starter credit very likely covers GPU compute (2026-11-08)
 
-- **Finding:** confirmed directly on Modal's dashboard (Usage & Billing → Credits), not inferred: "Startups and academic researchers can get free compute credits on Modal. These credits can be used towards GPU compute and accessing in-demand GPU types." The $30.00 credit and the $30 workspace usage limit draw from the same pool, both showing $0.00 used.
-- **Why it matters:** this closes the UNVERIFIED flag from step 0.5. The smoke test (Phase 5) and early runs can likely run at $0 out of pocket, up to $30 of credit per month.
+- **Finding:** the dashboard's Overview page says "Starter plan with $30.00 included compute credits per month", and the $30.00 credit and the $30 workspace usage limit draw from the same pool, both at $0.00 used. GPU time is compute, so the credit very likely covers it, but no page states that for the Starter credit.
+- **Status:** UNVERIFIED until the first GPU job's bill shows $0 in charges.
+- **Correction:** an earlier version of this entry cited the Credits tab's sentence "These credits can be used towards GPU compute" as direct confirmation. That sentence describes a separate program, free credits that startups and academics apply for, not the Starter credit.
+- **Why it matters:** if it holds, the smoke test (Phase 5) and early runs cost $0 out of pocket, up to $30 of credit per month.
+
+### Schema families and topics (2026-11-08)
+
+- **Choice:** 5 families of 5 topics each, 25 topics in all, saved in `data/generator/families.yaml`: healthcare; finance; logistics and transport; retail and consumer; energy and natural resources. Topic names come from Gretel's 100-topic list ([gretelai/synthetic_text_to_sql](https://huggingface.co/datasets/gretelai/synthetic_text_to_sql), Apache 2.0), used as a variety checklist only.
+- **Why 5 × 5:** 5 families give the Phase 9 shift experiment 20 ordered calibrate-on-A, test-on-B pairs, and leave 3 or 4 families to train on if 1 or 2 are held out. 5 topics per family give each family variety inside it, while capping step 1.2 at about 25 hand-built templates.
+- **Why these families:** each differs from the others in vocabulary and table shapes, has at least 5 Gretel topics, supports every query shape in step 1.4, and supports the decline categories in step 1.5. Energy and natural resources resembles no external test database, which makes it the natural candidate to hold out. Media and entertainment, and public sector and education, were the runners-up.
+- **Why these topics:** each family's topics cover different sub-areas. 18 topics were dropped as near-duplicates or as straddling 2 families; the file lists each with its reason.
 
 ### Keep TrustSQL's hospital-records portion (2026-11-04)
 

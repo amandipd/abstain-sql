@@ -1,0 +1,115 @@
+# Schema families and topics for the synthetic data generator (plan step 1.1).
+#
+# 5 families of 5 topics each. Families must differ from each other in vocabulary
+# and table shapes, because the Phase 9 shift experiment calibrates on one family
+# and tests on another. Topics within a family are spread across sub-areas, and
+# topics that straddle 2 families were dropped so the boundaries stay clean.
+#
+# Topic names come from Gretel's synthetic_text_to_sql dataset (Apache 2.0), used
+# only as a checklist for variety; none of its questions or databases are used:
+# https://huggingface.co/datasets/gretelai/synthetic_text_to_sql
+#
+# Which families are held out of training is decided in step 3.1.
+
+source:
+  dataset: gretelai/synthetic_text_to_sql
+  license: apache-2.0
+  topics_available: 100
+  chosen: 2026-11-08
+
+families:
+  healthcare:
+    description: Patients, providers, visits, diagnoses, prescriptions, and trials.
+    closest_external: TrustSQL EHRSQL (mimic_iv); BIRD thrombosis_prediction
+    topics:
+      - gretel_domain: healthcare
+        focus: hospitals and clinics, with patients, providers, and visits
+      - gretel_domain: public health
+        focus: disease cases, vaccinations, and health access by region
+      - gretel_domain: mental health
+        focus: conditions, treatments, and patient outcomes
+      - gretel_domain: pharmaceuticals
+        focus: drugs, clinical trials, approvals, and sales
+      - gretel_domain: biotechnology
+        focus: research projects, lab samples, and genetic studies
+
+  finance:
+    description: Accounts, loans, transactions, policies, and investments.
+    closest_external: BIRD financial; BIRD debit_card_specializing
+    topics:
+      - gretel_domain: financial services
+        focus: banking, with customers, accounts, and transactions
+      - gretel_domain: finance
+        focus: lending, with borrowers, loans, and repayments
+      - gretel_domain: insurance
+        focus: general policies and claims (auto, home, life), not health insurance
+      - gretel_domain: venture capital
+        focus: startups, funding rounds, investors, and exits
+      - gretel_domain: blockchain
+        focus: wallets, smart contracts, digital assets, and transfers
+
+  logistics_and_transport:
+    description: Shipments, routes, vehicles, ports, and flights.
+    closest_external: TrustSQL ATIS (flights)
+    topics:
+      - gretel_domain: logistics
+        focus: freight, warehouses, and delivery routes
+      - gretel_domain: ocean shipping
+        focus: vessels, cargo, and port calls
+      - gretel_domain: public transportation
+        focus: routes, stops, fares, and vehicle maintenance
+      - gretel_domain: aerospace
+        focus: aircraft, flights, and safety records
+      - gretel_domain: automotive
+        focus: vehicle models, safety tests, and sales
+
+  retail_and_consumer:
+    description: Products, orders, stores, inventory, and bookings.
+    closest_external: BIRD debit_card_specializing (gas-station purchases)
+    topics:
+      - gretel_domain: retail
+        focus: stores, products, suppliers, and sales
+      - gretel_domain: fashion retail
+        focus: garments, sizes, collections, and orders
+      - gretel_domain: beauty industry
+        focus: cosmetics products, ingredients, and customer reviews
+      - gretel_domain: restaurant operations
+        focus: menus, orders, revenue, and inspections
+      - gretel_domain: hospitality
+        focus: hotels, rooms, guests, and bookings
+
+  energy_and_natural_resources:
+    description: Sites, production readings, emissions, and permits.
+    closest_external: none; the family farthest from every external test set
+    topics:
+      - gretel_domain: energy
+        focus: power plants, generation, and storage, renewables included
+      - gretel_domain: oil and gas
+        focus: wells, production volumes, and pipelines
+      - gretel_domain: mining operations
+        focus: mines, extraction, workforce, and environmental impact
+      - gretel_domain: water resources
+        focus: water usage, droughts, and treatment plants
+      - gretel_domain: forestry
+        focus: forests, timber harvests, and replanting
+
+# Gretel topics considered for a family and left out, with the reason.
+dropped:
+  rural health: repeats public health
+  disability services: straddles healthcare and education
+  fitness industry: straddles healthcare and consumer
+  startups: same description as venture capital
+  social impact investing: repeats the investing side of venture capital
+  maritime: repeats ocean shipping
+  transportation: overlaps public transportation and automotive
+  space exploration: science rather than moving goods or people
+  fashion: repeats fashion retail
+  ethical fashion: repeats fashion retail
+  cosmetics: repeats beauty industry
+  food services: repeats restaurant operations
+  food industry: straddles retail and logistics
+  sustainable energy: repeats energy
+  mining industry: repeats mining operations
+  rare earth elements: repeats mining operations
+  waste management: closer to a city service than a natural resource
+  climate change: cuts across every family
