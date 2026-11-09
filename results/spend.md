@@ -24,4 +24,9 @@ These are the plan's planning estimates, not measurements. Step 5.4 replaces the
 | Frontier-model baselines through an API | Phase 10, week 3 | a few dollars |
 | All of it | Weeks 2–3 | about $16–36, plus a few dollars of API calls |
 
-Modal's $30 Starter credit may cover a large share of this. Whether that credit covers GPU compute is unverified until the Modal dashboard confirms it (step 0.5).
+Modal's $30 Starter credit covers GPU compute, confirmed 2026-11-08 directly on Modal's Credits dashboard page: "credits can be used towards GPU compute and accessing in-demand GPU types." So the smoke test and early runs may cost $0 out of pocket, up to the $30 monthly credit.
+
+## Caps
+
+- **Modal (opened 2026-11-08):** $30 monthly Workspace budget. It caps total usage before credits, so Modal stops all jobs at $30 of usage per month. Checked on the dashboard the same day: $0.00 spent this billing cycle (Nov 1–30, 2026), $30.00 of credits remaining, $30.00 of workspace usage remaining — the credits and the usage limit draw from the same $30 pool. No separate spend limit (a cap on out-of-pocket charges after credits) is set yet.
+- **RunPod:** not opened yet.

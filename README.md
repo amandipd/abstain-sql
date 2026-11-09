@@ -12,7 +12,7 @@ Research phase complete; verdict: go. As of 2026-11-04, no published work combin
 
 What to do next lives in [plan.md](plan.md): 14 phases with checkboxes, 5 gates that must pass before money moves, the reward table, open decisions with defaults, and the proposed repo structure. Why each step is there lives in [research/REPORT.md](research/REPORT.md), in 3 parts: the flags that changed the plan and the go/no-go verdict (Part 1), the novelty table with one row per paper (Part 2), and the cost model, where the full 8-run matrix is estimated at $16–36 against a $30–50 budget (Part 3). The raw research notes behind it sit in [research/notes/](research/notes/).
 
-Phase 0 is under way. The repo follows the layout in plan.md, every dependency is pinned, all 3 candidate models load under those pins, and the external evaluation data downloads and runs (steps 0.1 to 0.4). The code folders hold stubs that name the plan step each file implements. Training has not started, and no money has been spent.
+Phase 0 is complete. The repo follows the layout in plan.md, every dependency is pinned, all 3 candidate models load under those pins, the external evaluation data downloads and runs, a Modal account is open with a $30 monthly cap, and the spend and decision logs have started (steps 0.1 to 0.6). The code folders hold stubs that name the plan step each file implements. Training has not started, and no money has been spent.
 
 ## Setup
 
@@ -28,3 +28,50 @@ uv run python data/download_external.py   # BIRD dev and TrustSQL, about 470 MB
 The external data is not in git. The download script fetches it from the official sources and stops if any file's fingerprint differs from the one pinned in the script, since a changed upstream file would make results incomparable.
 
 The GPU image needs glibc 2.31 or newer, the system C library that Ubuntu 20.04 and later ship. llguidance, which vLLM uses to constrain output to a format, publishes no Linux build for older systems.
+
+## Codebase map
+
+Files marked *stub* hold only a docstring naming the plan step that fills them in. Everything else runs today.
+
+```
+abstain-sql/
+  README.md                  # this file
+  plan.md                    # 14 phases with checkboxes, gates, reward table, open decisions
+  pyproject.toml             # pinned dependencies; the "train" extra adds the GPU stack
+  uv.lock                    # exact versions of all 214 packages, laptop and GPU alike
+  research/
+    REPORT.md                # findings, novelty table, cost model
+    notes/                   # 7 raw research notes behind the report
+  data/
+    download_external.py     # fetches BIRD dev and TrustSQL, checks pinned fingerprints
+    generator/               # stub: synthetic schemas, data, questions, declines (Phase 1)
+    splits/                  # empty: train / dev / calibration / test manifests (Phase 3)
+    external/                # gitignored: BIRD dev and TrustSQL, rebuilt by the script above
+    instances/               # gitignored: SQLite instances from the generator (Phase 1)
+  checker/
+    execute.py               # stub: read-only sandboxed SQL execution (step 2.1)
+    testsuite.py             # stub: multi-instance correctness oracle (steps 2.2-2.4)
+  train/
+    inspect_models.py        # checks the 3 candidate models; writes results/models.md
+    reward.py                # stub: the abstention reward (step 4.1)
+    grpo_train.py            # stub: GRPO training with vLLM and LoRA (step 4.3)
+    configs/                 # empty: one YAML per training run (step 4.3)
+  infra/                     # empty: Modal runner (step 4.6)
+  calib/
+    signals.py               # stub: confidence signals (step 8.1)
+    ltt.py                   # stub: Learn-then-Test certification (steps 8.2-8.3)
+  eval/
+    generate.py              # stub: one pass of model outputs per checkpoint (step 7.4)
+    metrics.py               # stub: accuracy, coverage, selective risk, AURC, RS(c) (step 11.1)
+    baselines.py             # stub: prompted, self-consistency, frontier baselines (Phase 10)
+    bootstrap.py             # stub: resampling for confidence intervals (step 12.1)
+    local_gguf.py            # stub: laptop latency harness (step 11.3)
+  tests/
+    test_imports.py          # every CPU-side module imports
+  results/
+    models.md                # the 3 models: architecture, vocabulary, license, thinking switch
+    external_data.md         # BIRD and TrustSQL breakdown, gold-query runs, checker rules
+    spend.md                 # every dollar against the $30-50 budget; caps
+    decisions.md             # open decisions D1-D8, plus choices already settled
+  runs/                      # gitignored: checkpoints and logs (Phase 5 on)
+```

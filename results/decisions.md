@@ -68,6 +68,16 @@ These were settled during Phase 0 and sit outside the plan's table.
 - **Choice:** every model's thinking mode is set on purpose, the same way in training and evaluation, never left at its default.
 - **Why:** the defaults disagree. SmolLM3-3B thinks by default; Qwen3.5-2B and Gemma 4 E2B do not (`results/models.md`).
 
+### Modal only for now; RunPod later (2026-11-08)
+
+- **Choice:** open only a Modal account in Phase 0, with a $30 monthly Workspace budget. Open RunPod when the training runs need it.
+- **Why:** Modal's $30 monthly credit may pay for the early GPU work outright, and a second account adds nothing until the 8-run matrix. RunPod stays the backup, and the cheaper option if the RTX 4090 fits the model.
+
+### Modal's Starter credit covers GPU compute (2026-11-08)
+
+- **Finding:** confirmed directly on Modal's dashboard (Usage & Billing → Credits), not inferred: "Startups and academic researchers can get free compute credits on Modal. These credits can be used towards GPU compute and accessing in-demand GPU types." The $30.00 credit and the $30 workspace usage limit draw from the same pool, both showing $0.00 used.
+- **Why it matters:** this closes the UNVERIFIED flag from step 0.5. The smoke test (Phase 5) and early runs can likely run at $0 out of pocket, up to $30 of credit per month.
+
 ### Keep TrustSQL's hospital-records portion (2026-11-04)
 
 - **Choice:** evaluate on all 4 TrustSQL sources, EHRSQL included.
