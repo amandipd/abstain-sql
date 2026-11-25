@@ -111,6 +111,19 @@ A small but real one: Gretel supplied the topics, not the data. Its role was 3 t
 
 None of its questions, databases, or SQL were used, for the reasons in the Gretel entry above. The project could have run without it; the topic choice would just have been harder to justify.
 
+### How many plan steps can be batched together? (2026-11-24)
+
+Everything up to gate G1 can run as one batch, because none of it spends money or needs a decision only the user can make: 12 steps (1.3–1.7, 2.1–2.6, 3.1). Some are chained and some are independent, so the batch runs as parallel tracks:
+
+- **Data, chained:** fill the tables (1.3), then write answerable questions from the filled data (1.4), then derive the questions to decline (1.5), then set the 70/30 mix (1.6).
+- **Checker, independent of the data:** sandboxed execution (2.1), result comparison (2.2), and the multi-copy correctness check (2.3), with tests that try to fool it (2.5), built against tiny test databases.
+- **Small independent pieces:** the prompt format (1.7) and assigning whole topics to train, dev, calibration, and test (3.1).
+- **Joined at the end:** dropping questions whose gold answer is empty (2.4), measuring checker speed (2.6), then gate G1.
+
+4 more steps from later phases are pure statistics code that needs no data and can join as a fourth track: Learn-then-Test and its tests (8.2, 8.6), the metrics (11.1), and the bootstrap (12.1).
+
+What cannot be batched: the trial run on the untrained model (3.2) needs a cloud go-ahead; the training code (Phase 4) depends on decisions D1 and D2, which the trial run informs; and the smoke test (Phase 5) is the first real spending. The batch must also fix the shared formats first (how filled copies are stored, the question file, the checker's interface), so the parallel tracks fit together.
+
 ### What is the maximum we can scale to?
 
 No number has a hard cap; each hits a practical ceiling.
