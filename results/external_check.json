@@ -1,0 +1,398 @@
+{
+  "checked": "2026-11-24",
+  "sqlite_version": "3.49.1",
+  "timeout_seconds": 10,
+  "bird": {
+    "databases": {
+      "california_schools": {
+        "tables": 3,
+        "columns": 89,
+        "rows": 29941,
+        "mb": 11.1,
+        "questions_original": 89,
+        "questions_cleaned": 89
+      },
+      "card_games": {
+        "tables": 6,
+        "columns": 115,
+        "rows": 803445,
+        "mb": 261.8,
+        "questions_original": 191,
+        "questions_cleaned": 191
+      },
+      "codebase_community": {
+        "tables": 8,
+        "columns": 71,
+        "rows": 740646,
+        "mb": 481.4,
+        "questions_original": 186,
+        "questions_cleaned": 186
+      },
+      "debit_card_specializing": {
+        "tables": 5,
+        "columns": 21,
+        "rows": 423050,
+        "mb": 34.6,
+        "questions_original": 64,
+        "questions_cleaned": 64
+      },
+      "european_football_2": {
+        "tables": 7,
+        "columns": 199,
+        "rows": 222796,
+        "mb": 597.8,
+        "questions_original": 129,
+        "questions_cleaned": 129
+      },
+      "financial": {
+        "tables": 8,
+        "columns": 55,
+        "rows": 1079680,
+        "mb": 71.3,
+        "questions_original": 106,
+        "questions_cleaned": 106
+      },
+      "formula_1": {
+        "tables": 13,
+        "columns": 94,
+        "rows": 514287,
+        "mb": 22.4,
+        "questions_original": 174,
+        "questions_cleaned": 174
+      },
+      "student_club": {
+        "tables": 8,
+        "columns": 48,
+        "rows": 42511,
+        "mb": 2.6,
+        "questions_original": 158,
+        "questions_cleaned": 158
+      },
+      "superhero": {
+        "tables": 10,
+        "columns": 31,
+        "rows": 10614,
+        "mb": 0.2,
+        "questions_original": 129,
+        "questions_cleaned": 129
+      },
+      "thrombosis_prediction": {
+        "tables": 3,
+        "columns": 64,
+        "rows": 15952,
+        "mb": 7.3,
+        "questions_original": 163,
+        "questions_cleaned": 163
+      },
+      "toxicology": {
+        "tables": 4,
+        "columns": 11,
+        "rows": 49813,
+        "mb": 2.7,
+        "questions_original": 145,
+        "questions_cleaned": 145
+      }
+    },
+    "totals": {
+      "tables": 75,
+      "columns": 798,
+      "rows": 3932735,
+      "mb": 1493.2
+    },
+    "questions": {
+      "original": 1534,
+      "cleaned": 1534
+    },
+    "difficulty": {
+      "original": {
+        "simple": 925,
+        "moderate": 464,
+        "challenging": 145
+      },
+      "cleaned": {
+        "challenging": 231,
+        "moderate": 443,
+        "simple": 860
+      }
+    },
+    "with_hint": {
+      "original": 1386,
+      "cleaned": 1377
+    },
+    "cleaned_vs_original": {
+      "same_question_ids": true,
+      "same_database_every_question": true,
+      "question_text_changed": 182,
+      "hint_changed": 381,
+      "gold_sql_changed": 451,
+      "difficulty_relabeled": {
+        "simple -> challenging": 65,
+        "moderate -> challenging": 21
+      }
+    }
+  },
+  "trustsql": {
+    "atis": {
+      "databases_shipped": 1,
+      "splits": {
+        "train": {
+          "total": 1114,
+          "answerable": 1114,
+          "decline": 0,
+          "databases_used": 1
+        },
+        "valid": {
+          "total": 489,
+          "answerable": 489,
+          "decline": 0,
+          "databases_used": 1
+        },
+        "test": {
+          "total": 952,
+          "answerable": 476,
+          "decline": 476,
+          "databases_used": 1
+        }
+      },
+      "test_databases": {
+        "count": 1,
+        "tables": 25,
+        "tables_min_max": [
+          25,
+          25
+        ],
+        "rows": 162241,
+        "mb": 4.4,
+        "also_in_train": 1
+      },
+      "answerable_difficulty": {
+        "hard": 131,
+        "medium": 306,
+        "easy": 39
+      },
+      "answerable_seen_or_unseen": {
+        "seen-sql": 363,
+        "unseen-sql": 113
+      },
+      "decline_kinds": {
+        "column-unrelated": 94,
+        "column-related": 98,
+        "ext-know": 92,
+        "non-sql": 99,
+        "column-surface": 93
+      },
+      "answerable_mentioning_current_time": 0
+    },
+    "advising": {
+      "databases_shipped": 1,
+      "splits": {
+        "train": {
+          "total": 1170,
+          "answerable": 1170,
+          "decline": 0,
+          "databases_used": 1
+        },
+        "valid": {
+          "total": 533,
+          "answerable": 533,
+          "decline": 0,
+          "databases_used": 1
+        },
+        "test": {
+          "total": 1066,
+          "answerable": 533,
+          "decline": 533,
+          "databases_used": 1
+        }
+      },
+      "test_databases": {
+        "count": 1,
+        "tables": 12,
+        "tables_min_max": [
+          12,
+          12
+        ],
+        "rows": 332596,
+        "mb": 27.3,
+        "also_in_train": 1
+      },
+      "answerable_difficulty": {
+        "medium": 364,
+        "easy": 86,
+        "hard": 83
+      },
+      "answerable_seen_or_unseen": {
+        "seen-sql": 391,
+        "unseen-sql": 142
+      },
+      "decline_kinds": {
+        "column-surface": 102,
+        "column-unrelated": 110,
+        "non-sql": 110,
+        "ext-know": 104,
+        "column-related": 107
+      },
+      "answerable_mentioning_current_time": 0
+    },
+    "ehrsql": {
+      "databases_shipped": 1,
+      "splits": {
+        "train": {
+          "total": 4674,
+          "answerable": 4674,
+          "decline": 0,
+          "databases_used": 1
+        },
+        "valid": {
+          "total": 931,
+          "answerable": 931,
+          "decline": 0,
+          "databases_used": 1
+        },
+        "test": {
+          "total": 1868,
+          "answerable": 934,
+          "decline": 934,
+          "databases_used": 1
+        }
+      },
+      "test_databases": {
+        "count": 1,
+        "tables": 17,
+        "tables_min_max": [
+          17,
+          17
+        ],
+        "rows": 308942,
+        "mb": 34.3,
+        "also_in_train": 1
+      },
+      "answerable_difficulty": {
+        "hard": 812,
+        "easy": 122
+      },
+      "answerable_seen_or_unseen": {
+        "seen-sql": 696,
+        "unseen-sql": 238
+      },
+      "decline_kinds": {
+        "column-unrelated": 187,
+        "column-surface": 185,
+        "column-related": 189,
+        "ext-know": 182,
+        "non-sql": 191
+      },
+      "answerable_mentioning_current_time": 292,
+      "patients": 94
+    },
+    "spider": {
+      "databases_shipped": 166,
+      "splits": {
+        "train": {
+          "total": 7000,
+          "answerable": 7000,
+          "decline": 0,
+          "databases_used": 140
+        },
+        "valid": {
+          "total": 507,
+          "answerable": 507,
+          "decline": 0,
+          "databases_used": 10
+        },
+        "test": {
+          "total": 1054,
+          "answerable": 527,
+          "decline": 527,
+          "databases_used": 10
+        }
+      },
+      "test_databases": {
+        "count": 10,
+        "tables": 44,
+        "tables_min_max": [
+          2,
+          11
+        ],
+        "rows": 6052,
+        "mb": 0.3,
+        "also_in_train": 0
+      },
+      "answerable_difficulty": {
+        "easy": 279,
+        "medium": 158,
+        "hard": 90
+      },
+      "answerable_seen_or_unseen": {
+        "unseen-sql": 527
+      },
+      "decline_kinds": {
+        "non-sql": 100,
+        "ext-know": 127,
+        "column-unrelated": 100,
+        "column-surface": 100,
+        "column-related": 100
+      },
+      "answerable_mentioning_current_time": 0
+    }
+  },
+  "execution": {
+    "bird_original": {
+      "gold_queries": 1534,
+      "ran": 1532,
+      "timed_out": 2,
+      "errors": 0,
+      "empty_results": 0,
+      "top_errors": []
+    },
+    "bird_cleaned": {
+      "gold_queries": 1534,
+      "ran": 1528,
+      "timed_out": 6,
+      "errors": 0,
+      "empty_results": 0,
+      "top_errors": []
+    },
+    "trustsql_atis": {
+      "gold_queries": 476,
+      "ran": 476,
+      "timed_out": 0,
+      "errors": 0,
+      "empty_results": 0,
+      "top_errors": []
+    },
+    "trustsql_advising": {
+      "gold_queries": 533,
+      "ran": 533,
+      "timed_out": 0,
+      "errors": 0,
+      "empty_results": 0,
+      "top_errors": []
+    },
+    "trustsql_ehrsql": {
+      "gold_queries": 934,
+      "ran": 934,
+      "timed_out": 0,
+      "errors": 0,
+      "empty_results": 0,
+      "top_errors": []
+    },
+    "trustsql_spider": {
+      "gold_queries": 527,
+      "ran": 527,
+      "timed_out": 0,
+      "errors": 0,
+      "empty_results": 10,
+      "top_errors": []
+    },
+    "trustsql_ehrsql_without_clock_fix": {
+      "gold_queries": 934,
+      "ran": 934,
+      "timed_out": 0,
+      "errors": 0,
+      "empty_results": 85,
+      "top_errors": []
+    }
+  },
+  "seconds_taken": 98
+}

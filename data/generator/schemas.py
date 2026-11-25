@@ -292,17 +292,21 @@ def build_schema(
             else:
                 out = {"name": rng.choice(_as_list(col["names"])), "type": col["type"], "role": col["role"]}
                 for field in CARRIED_FIELDS:
-                    if field in col:
-                        out[field] = _iso(col[field]) if col["role"] == "date" and field in ("min", "max") else col[field]
+                    if field not in col:
+                        continue
+                    is_date_bound = col["role"] == "date" and field in ("min", "max")
+                    out[field] = _iso(col[field]) if is_date_bound else col[field]
             columns.append(out)
         if len({c["name"] for c in columns}) != len(columns):
             return None  # a synonym collided with another column's name
-        tables.append({
-            "name": table_name[key],
-            "template_key": key,
-            "primary_key": key_name[key],
-            "columns": columns,
-        })
+        tables.append(
+            {
+                "name": table_name[key],
+                "template_key": key,
+                "primary_key": key_name[key],
+                "columns": columns,
+            }
+        )
 
     return {
         "schema_id": schema_id,
@@ -382,12 +386,14 @@ def write(schemas: list[dict], out_dir: Path) -> None:
         folder.mkdir(exist_ok=True)
         (folder / "schema.json").write_text(json.dumps(schema, indent=2) + "\n", encoding="utf-8", newline="\n")
         (folder / "schema.sql").write_text(to_sql(schema), encoding="utf-8", newline="\n")
-        index.append({
-            "schema_id": schema["schema_id"],
-            "family": schema["family"],
-            "topic": schema["topic"],
-            "tables": [t["name"] for t in schema["tables"]],
-        })
+        index.append(
+            {
+                "schema_id": schema["schema_id"],
+                "family": schema["family"],
+                "topic": schema["topic"],
+                "tables": [t["name"] for t in schema["tables"]],
+            }
+        )
     (out_dir / "schemas.json").write_text(json.dumps(index, indent=2) + "\n", encoding="utf-8", newline="\n")
 
 

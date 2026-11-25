@@ -16,16 +16,20 @@ Phase 0 is complete. The repo follows the layout in plan.md, every dependency is
 
 ## Setup
 
-I pinned every dependency in one `pyproject.toml` and one `uv.lock`, so the laptop and the cloud GPU run identical versions of all 214 packages. The training stack is TRL 1.17.1, vLLM 0.32.0, torch 2.13.0, transformers 5.19.0, and PEFT 0.21.2. vLLM 0.32.0 is the newest release TRL 1.17.1 accepts; it fixes torch at 2.13.0 and caps transformers below 5.20, and its own dependencies cap numpy below 2.4.
+I pinned every dependency in one `pyproject.toml` and one `uv.lock`, so the laptop and the cloud GPU run identical versions of all 215 packages. The training stack is TRL 1.17.1, vLLM 0.32.0, torch 2.13.0, transformers 5.19.0, and PEFT 0.21.2. vLLM 0.32.0 is the newest release TRL 1.17.1 accepts; it fixes torch at 2.13.0 and caps transformers below 5.20, and its own dependencies cap numpy below 2.4.
 
 ```bash
 uv sync                          # laptop: data generation, checker, calibration, analysis
 uv sync --frozen --extra train   # cloud GPU: adds TRL, vLLM, torch, transformers, PEFT
 uv run pytest
+uv run ruff check . && uv run ruff format .   # style check, then auto-format
 uv run python data/download_external.py   # BIRD dev and TrustSQL, about 470 MB
+uv run python data/check_external.py      # recount and rerun them; a few minutes
 ```
 
-The external data is not in git. The download script fetches it from the official sources and stops if any file's fingerprint differs from the one pinned in the script, since a changed upstream file would make results incomparable.
+The external data is not in git. The download script fetches it from the official sources and stops if any file's fingerprint differs from the one pinned in the script, since a changed upstream file would make results incomparable. The check script then recomputes every number in `results/external_data.md` and saves them to `results/external_check.json`.
+
+`.gitattributes` stores every text file with Unix line endings, so files written on the Windows laptop and the Linux GPU box stay identical.
 
 The GPU image needs glibc 2.31 or newer, the system C library that Ubuntu 20.04 and later ship. llguidance, which vLLM uses to constrain output to a format, publishes no Linux build for older systems.
 
@@ -73,12 +77,14 @@ abstain-sql/
   README.md                  # this file
   plan.md                    # 14 phases with checkboxes, gates, reward table, open decisions
   pyproject.toml             # pinned dependencies; the "train" extra adds the GPU stack
-  uv.lock                    # exact versions of all 214 packages, laptop and GPU alike
+  uv.lock                    # exact versions of all 215 packages, laptop and GPU alike
+  .gitattributes             # Unix line endings for every text file
   research/
     REPORT.md                # findings, novelty table, cost model
     notes/                   # 7 raw research notes behind the report
   data/
     download_external.py     # fetches BIRD dev and TrustSQL, checks pinned fingerprints
+    check_external.py        # recounts both and reruns every gold query; writes the numbers
     generator/               # synthetic schemas, data, questions, declines (Phase 1)
       families.yaml          # 5 schema families of 5 topics each (step 1.1)
       templates/             # one file per family: a menu of tables for each topic (step 1.2)
@@ -111,6 +117,7 @@ abstain-sql/
   results/
     models.md                # the 3 models: architecture, vocabulary, license, thinking switch
     external_data.md         # BIRD and TrustSQL breakdown, gold-query runs, checker rules
+    external_check.json      # the raw numbers behind external_data.md, from check_external.py
     spend.md                 # every dollar against the $30-50 budget; caps
     decisions.md             # open decisions D1-D8, plus choices already settled
   runs/                      # gitignored: checkpoints and logs (Phase 5 on)

@@ -111,6 +111,18 @@ A small but real one: Gretel supplied the topics, not the data. Its role was 3 t
 
 None of its questions, databases, or SQL were used, for the reasons in the Gretel entry above. The project could have run without it; the topic choice would just have been harder to justify.
 
+### Can this be published at the end?
+
+Yes, and the plan already ends in a release (step 13.4): code on GitHub, the trained adapter on Hugging Face, and a write-up. The publishing routes, from easiest to hardest:
+
+- **arXiv preprint:** free and fast, with no peer review. A first-time submitter may need an endorsement from an existing arXiv author.
+- **A workshop paper:** the realistic peer-reviewed target. ML and NLP conferences run workshops on trustworthy AI, tables and databases, and student research (ACL's Student Research Workshop is built for this). Workshops accept smaller-scale studies than the main conferences.
+- **A main conference (ACL, EMNLP, NeurIPS):** possible but harder. One 2B model, 8 runs, and 2 seeds read as a pilot; reviewers there would want more models, seeds, and baselines.
+
+What makes it publishable: the research found no paper combining RL training, an explicit abstention reward, and risk–coverage evaluation in text-to-SQL, and the guarantee plus the topic-change experiment are new on top of that. Gate G5 re-runs that search before writing, in case someone publishes first. Honest negative results also count; a guarantee that breaks under topic change is itself a finding.
+
+The paperwork is light: every dataset and model used allows research use and publication with attribution. BIRD's share-alike license only matters for redistributing modified BIRD data (decision D7).
+
 ### What are the "other 20 templates"?
 
 Every topic needs its own template (menu of tables), and there are 25 topics: 5 families of 5. The healthcare checkpoint built the first 5. The remaining 20 cover the other 4 families: finance (financial services, finance, insurance, venture capital, blockchain), logistics and transport (logistics, ocean shipping, public transportation, aerospace, automotive), retail and consumer (retail, fashion retail, beauty industry, restaurant operations, hospitality), and energy and natural resources (energy, oil and gas, mining operations, water resources, forestry). Each topic belongs to exactly one family, so that is one menu per topic and 5 per family, stored as one file per family (`data/generator/templates/<family>.yaml`). The program and its checks are already done and work for any family; only the menus are missing. With all 25, the program writes all 50 designs.

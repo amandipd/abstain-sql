@@ -1,6 +1,6 @@
 # External evaluation data (plan step 0.4)
 
-I downloaded BIRD dev and TrustSQL into `data/external/`, ran every gold query against its database, and counted every question. Everything the plan needs is there, and nothing needs a PhysioNet application. Checked 2026-11-04.
+I downloaded BIRD dev and TrustSQL into `data/external/`, ran every gold query against its database, and counted every question. Everything the plan needs is there, and nothing needs a PhysioNet application. Checked 2026-11-04; rechecked 2026-11-24 with `uv run python data/check_external.py`, which recomputes every number below and saves them to [external_check.json](external_check.json).
 
 `uv run python data/download_external.py` rebuilds the folder. It fetches about 470 MB and stops if any file's SHA-256 fingerprint (a code that changes if even one byte changes) differs from the one pinned in the script. The folder is gitignored, so this repo never republishes the data.
 
@@ -111,24 +111,26 @@ Missing-column questions make up 59% of the declines. Each of the 3 variants hol
 
 ## Every gold query runs
 
-I ran all 7,008 gold queries read-only, with a 10-second limit each.
+I ran all 5,538 answerable gold queries read-only, with a 10-second limit each; TrustSQL's queries got the clock fix described below. The numbers come from the 2026-11-24 run.
 
 | Set | Gold queries | Ran | Hit the 10 s limit | Errors |
 |---|---|---|---|---|
-| BIRD original | 1,534 | 1,531 | 3 | 0 |
-| BIRD cleaned | 1,534 | 1,527 | 7 | 0 |
-| TrustSQL ATIS | 476 | 475 | 1 | 0 |
+| BIRD original | 1,534 | 1,532 | 2 | 0 |
+| BIRD cleaned | 1,534 | 1,528 | 6 | 0 |
+| TrustSQL ATIS | 476 | 476 | 0 | 0 |
 | TrustSQL Advising | 533 | 533 | 0 | 0 |
 | TrustSQL EHRSQL | 934 | 934 | 0 | 0 |
 | TrustSQL Spider | 527 | 527 | 0 | 0 |
 
-No query errored. The 11 that hit the limit are slow, not broken.
+No query errored. The ones that hit the limit are slow, not broken, and how many hit it depends on the laptop's load: the first run on 2026-11-04 had 11 (3, 7, and 1 from ATIS), this one 8. An earlier version of this report said 7,008 gold queries; that was an addition error, caught when the check script recomputed every number.
+
+10 of Spider's 527 answerable gold queries are correct yet return no rows. Plan step 2.4 drops such questions from our own training data, because junk SQL that returns nothing would match them; TrustSQL's test set keeps them, so the evaluation should report how often a model gets credit on them.
 
 ## What this changes for later steps
 
 **The checker must fix EHRSQL's clock.** 292 of the 934 answerable EHRSQL gold queries say `current_time`, and TrustSQL's scorer (`scoring_utils.py`) replaces it, along with `'now'`, with the fixed moment `'2100-12-31 23:59:00'` before running anything. Without that swap, SQLite reads the real clock: 85 of the 934 gold queries return no rows, and a junk query that returns nothing would match them. With the swap, 0 return empty. Our checker must apply the same swap to gold and predicted SQL alike.
 
-**External evaluation needs a longer time limit.** TrustSQL's scorer allows 60 seconds per query; plan step 2.1 sets 2 to 5 seconds for the training reward. At 5 seconds, at least 11 correct gold queries would time out on the laptop, and the model would be marked wrong on those questions no matter what it wrote. Evaluation on BIRD and TrustSQL should use 60 seconds.
+**External evaluation needs a longer time limit.** TrustSQL's scorer allows 60 seconds per query; plan step 2.1 sets 2 to 5 seconds for the training reward. At 5 seconds, at least the 8 to 11 correct gold queries that take over 10 seconds would time out on the laptop, and the model would be marked wrong on those questions no matter what it wrote. Evaluation on BIRD and TrustSQL should use 60 seconds.
 
 **BIRD's cleaned version changes a lot.** It rewrites 451 of the 1,534 gold queries (29%), 182 question texts, and 381 hints. The published small-model scores the plan compares against were measured on the original. I recommend reporting both: the original for comparison with those papers, the cleaned version as the more accurate number. That is new decision D8 in the plan. The BIRD team also says it will remove the oracle hints (the "evidence" field) in favor of an interactive track, which bears on decision D4.
 

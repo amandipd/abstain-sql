@@ -58,7 +58,8 @@ def test_sql_creates_every_table_and_link(generated):
             links = {(r[2], r[3], r[4]) for r in con.execute(f"pragma foreign_key_list({t['name']})")}
             expected = {
                 (c["references"]["table"], c["name"], c["references"]["column"])
-                for c in t["columns"] if c["role"] == "fk"
+                for c in t["columns"]
+                if c["role"] == "fk"
             }
             assert links == expected, (s["schema_id"], t["name"])
 
@@ -77,14 +78,18 @@ def test_same_seed_same_schemas_other_seed_different(generated):
 
 
 def _tiny_template():
-    return {"tables": [
-        {"key": "a", "names": ["a"], "id": ["a_id"], "columns": [
-            {"names": ["label"], "type": "text", "role": "category", "values": ["x", "y"]}]},
-        {"key": "b", "names": ["b"], "id": ["b_id"], "columns": [
-            {"role": "fk", "ref": "a", "type": "integer"}]},
-        {"key": "c", "names": ["c"], "id": ["c_id"], "columns": [
-            {"role": "fk", "ref": "b", "type": "integer"}]},
-    ]}
+    return {
+        "tables": [
+            {
+                "key": "a",
+                "names": ["a"],
+                "id": ["a_id"],
+                "columns": [{"names": ["label"], "type": "text", "role": "category", "values": ["x", "y"]}],
+            },
+            {"key": "b", "names": ["b"], "id": ["b_id"], "columns": [{"role": "fk", "ref": "a", "type": "integer"}]},
+            {"key": "c", "names": ["c"], "id": ["c_id"], "columns": [{"role": "fk", "ref": "b", "type": "integer"}]},
+        ]
+    }
 
 
 def test_a_valid_template_passes():

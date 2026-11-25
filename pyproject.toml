@@ -26,7 +26,10 @@ train = [
 ]
 
 [dependency-groups]
-dev = ["pytest==9.2.0"]
+dev = [
+    "pytest==9.2.0",
+    "ruff==0.17.4",  # style checker and formatter: uv run ruff check . && uv run ruff format .
+]
 
 [tool.uv]
 # The repo is run from its root, not installed as a package.
@@ -42,3 +45,13 @@ constraint-dependencies = ["setuptools<81"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+extend-exclude = ["data/external", "data/instances"]
+
+[tool.ruff.lint]
+# Style errors and warnings, undefined or unused names, import order,
+# likely bugs, and outdated syntax.
+select = ["E", "W", "F", "I", "B", "UP"]

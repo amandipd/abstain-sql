@@ -1,0 +1,7 @@
+# Store text files with LF line endings, whatever the machine (Windows laptop, Linux GPU box).
+* text=auto eol=lf
+
+# Never touch binary data.
+*.sqlite binary
+*.zip binary
+*.parquet binary

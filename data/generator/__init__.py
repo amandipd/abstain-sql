@@ -1,1 +1,4 @@
-"""Synthetic data generator: schemas, table filling, question templates, and the injected questions the model should decline. See plan.md Phase 1."""
+"""Synthetic data generator: schemas, filled tables, questions, and questions to decline.
+
+See plan.md Phase 1.
+"""

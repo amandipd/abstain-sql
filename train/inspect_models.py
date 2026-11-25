@@ -16,7 +16,6 @@ import sys
 from pathlib import Path
 
 import transformers
-from huggingface_hub import hf_hub_download
 from transformers import AutoConfig, AutoTokenizer
 
 MODELS = [
@@ -54,9 +53,7 @@ def thinking_probe(tok, repo: str) -> dict[str, str]:
         ("thinking off", {"enable_thinking": False}),
     ]:
         try:
-            out[label] = tok.apply_chat_template(
-                SAMPLE, tokenize=False, add_generation_prompt=True, **kwargs
-            )
+            out[label] = tok.apply_chat_template(SAMPLE, tokenize=False, add_generation_prompt=True, **kwargs)
         except Exception as e:
             out[label] = f"REFUSED: {type(e).__name__}: {e}"
     return out
@@ -117,7 +114,7 @@ def main() -> int:
         lines += block
         print(f"checked {repo}", file=sys.stderr)
 
-    OUT.write_text("\n".join(lines), encoding="utf-8")
+    OUT.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
     print(f"wrote {OUT} ({failures} of {len(MODELS)} failed)", file=sys.stderr)
     return 1 if failures else 0
 
