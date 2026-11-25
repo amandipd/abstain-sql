@@ -59,6 +59,7 @@ from __future__ import annotations
 
 import argparse
 import datetime
+import itertools
 import json
 import random
 import re
@@ -76,8 +77,10 @@ TEMPLATE_DIR = HERE / "templates"
 DEFAULT_OUT = HERE.parent / "instances"
 
 MIN_TABLES, MAX_TABLES = 3, 8
+DEFAULT_PER_TOPIC = 8
+MIN_DESIGNS = 20  # every table list must allow at least this many distinct designs
 OPTIONAL_DROP_RATE = 0.3
-MAX_ATTEMPTS = 200
+MAX_ATTEMPTS = 400
 REQUIRED_TYPES = {"text", "integer", "real", "date"}
 
 SQL_TYPES = {"text": "TEXT", "integer": "INTEGER", "real": "REAL", "date": "DATE"}
@@ -321,7 +324,35 @@ def column_types(schema: dict) -> set[str]:
     return {c["type"] for t in schema["tables"] for c in t["columns"]}
 
 
-def generate(families: list[str] | None = None, per_topic: int = 2, seed: int = 0) -> list[dict]:
+def _connected(chosen: set[str], refs: dict[str, set[str]]) -> bool:
+    """True if the chosen tables form one group when links are followed in either direction."""
+    neighbors = {k: (refs[k] & chosen) | {o for o in chosen if k in refs[o]} for k in chosen}
+    seen, stack = set(), [next(iter(chosen))]
+    while stack:
+        k = stack.pop()
+        if k not in seen:
+            seen.add(k)
+            stack.extend(neighbors[k] - seen)
+    return seen == chosen
+
+
+def count_designs(template: dict) -> int:
+    """Count the distinct table sets a table list allows: 3-8 tables, every link inside the set, connected.
+
+    Past this count, more designs for the topic can only rename tables, not change their structure.
+    """
+    refs = {t["key"]: set(_refs(t)) for t in template["tables"]}
+    keys = list(refs)
+    total = 0
+    for size in range(MIN_TABLES, min(MAX_TABLES, len(keys)) + 1):
+        for combo in itertools.combinations(keys, size):
+            chosen = set(combo)
+            if all(refs[k] <= chosen for k in chosen) and _connected(chosen, refs):
+                total += 1
+    return total
+
+
+def generate(families: list[str] | None = None, per_topic: int = DEFAULT_PER_TOPIC, seed: int = 0) -> list[dict]:
     all_families = load_families()
     families = families or families_with_templates()
     schemas = []
@@ -329,7 +360,7 @@ def generate(families: list[str] | None = None, per_topic: int = 2, seed: int = 
         if family not in all_families:
             raise TemplateError(f"unknown family {family!r}")
         templates = load_templates(family)
-        topics = [t["gretel_domain"] for t in all_families[family]["topics"]]
+        topics = [t["name"] for t in all_families[family]["topics"]]
         if sorted(templates) != sorted(topics):
             raise TemplateError(f"{family}: templates cover {sorted(templates)}, families.yaml lists {sorted(topics)}")
 
@@ -400,7 +431,9 @@ def write(schemas: list[dict], out_dir: Path) -> None:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("--families", nargs="*", help="families to generate (default: every family with a template)")
-    parser.add_argument("--per-topic", type=int, default=2, help="schemas per topic (default: 2)")
+    parser.add_argument(
+        "--per-topic", type=int, default=DEFAULT_PER_TOPIC, help=f"schemas per topic (default: {DEFAULT_PER_TOPIC})"
+    )
     parser.add_argument("--seed", type=int, default=0, help="global seed (default: 0)")
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT, help="output folder (default: data/instances)")
     args = parser.parse_args(argv)

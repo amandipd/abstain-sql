@@ -96,6 +96,27 @@ topics:
           - {names: [hire_date], type: date, role: date, min: "1995-01-01", max: "2025-12-31"}
           - {names: [annual_salary, salary], type: real, role: number, min: 32000, max: 240000, optional: true}
 
+      - key: atms
+        names: [atms, cash_machines]
+        id: [atm_id, machine_id]
+        columns:
+          - {role: fk, ref: branches, type: integer}
+          - {names: [location_type, site_type], type: text, role: category, values: [branch lobby, drive-through, grocery store, airport, gas station, campus]}
+          - {names: [installed_date, install_date], type: date, role: date, min: "2005-01-01", max: "2025-12-31"}
+          - {names: [cash_capacity, max_cash_load], type: real, role: number, min: 50000, max: 400000}
+          - {names: [accepts_deposits, is_deposit_enabled], type: integer, role: flag, optional: true}
+
+      - key: service_requests
+        names: [service_requests, support_tickets]
+        id: [request_id, ticket_id]
+        columns:
+          - {role: fk, ref: customers, type: integer}
+          - {names: [opened_date, submitted_date], type: date, role: date, min: "2020-01-01", max: "2025-12-31"}
+          - {names: [request_type, issue_type], type: text, role: category, values: [address change, card replacement, transaction dispute, fee reversal, loan inquiry, account closure]}
+          - {names: [contact_channel, channel], type: text, role: category, values: [phone, branch, chat, email]}
+          - {names: [days_to_resolve, resolution_days], type: integer, role: number, min: 0, max: 30}
+          - {names: [credit_issued, goodwill_credit], type: real, role: number, min: 0, max: 500, optional: true}
+
   finance:
     tables:
       - key: borrowers
@@ -185,6 +206,25 @@ topics:
           - {names: [amount_owed, balance_owed], type: real, role: number, min: 100, max: 250000}
           - {names: [agency, collector], type: text, role: category, values: [in-house, Apex Recovery, Summit Collections, Liberty Credit Services]}
           - {names: [outcome, resolution], type: text, role: category, values: [recovered, partially recovered, written off, open]}
+
+      - key: income_verifications
+        names: [income_verifications, income_documents]
+        id: [verification_id, document_id]
+        columns:
+          - {role: fk, ref: borrowers, type: integer}
+          - {names: [verified_date, received_date], type: date, role: date, min: "2019-01-01", max: "2025-12-31"}
+          - {names: [document_type, source_type], type: text, role: category, values: [pay stubs, W-2, tax return, bank statements, offer letter]}
+          - {names: [monthly_income, verified_monthly_income], type: real, role: number, min: 1000, max: 40000}
+          - {names: [has_discrepancy, is_discrepant], type: integer, role: flag, optional: true}
+
+      - key: rate_changes
+        names: [rate_changes, rate_history]
+        id: [rate_change_id, rate_change_id]
+        columns:
+          - {role: fk, ref: loan_products, type: integer}
+          - {names: [effective_date, changed_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [new_rate, new_apr], type: real, role: number, min: 2.5, max: 14}
+          - {names: [reason, change_reason], type: text, role: category, values: [Fed rate change, competitive adjustment, risk repricing, promotion]}
 
   insurance:
     tables:
@@ -286,6 +326,17 @@ topics:
           - {names: [amount, amount_due], type: real, role: number, min: 20, max: 2000}
           - {names: [status, payment_status], type: text, role: category, values: [paid, late, missed]}
 
+      - key: quotes
+        names: [quotes, premium_quotes]
+        id: [quote_id, quote_id]
+        columns:
+          - {role: fk, ref: policyholders, type: integer}
+          - {role: fk, ref: products, type: integer}
+          - {names: [quoted_date, quote_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [quoted_premium, quoted_amount], type: real, role: number, min: 150, max: 12000}
+          - {names: [outcome, quote_status], type: text, role: category, values: [accepted, declined, expired, open]}
+          - {names: [sales_channel, channel], type: text, role: category, values: [online, agent, phone, comparison site], optional: true}
+
   venture capital:
     tables:
       - key: firms
@@ -382,6 +433,25 @@ topics:
           - {role: fk, ref: funds, type: integer}
           - {names: [committed_millions, commitment_millions], type: real, role: number, min: 1, max: 500}
           - {names: [commitment_date, signed_date], type: date, role: date, min: "2005-01-01", max: "2025-12-31"}
+
+      - key: startup_financials
+        names: [financial_reports, annual_reports]
+        id: [report_id, report_id]
+        columns:
+          - {role: fk, ref: startups, type: integer}
+          - {names: [reported_date, filed_date], type: date, role: date, min: "2012-01-01", max: "2025-12-31"}
+          - {names: [revenue_millions, annual_revenue_millions], type: real, role: number, min: 0, max: 3000}
+          - {names: [net_burn_millions, burn_millions], type: real, role: number, min: 0, max: 400, optional: true}
+          - {names: [gross_margin_pct, gross_margin_percent], type: real, role: number, min: -40, max: 90}
+
+      - key: distributions
+        names: [distributions, fund_distributions]
+        id: [distribution_id, distribution_id]
+        columns:
+          - {role: fk, ref: funds, type: integer}
+          - {names: [distribution_date, paid_date], type: date, role: date, min: "2010-01-01", max: "2025-12-31"}
+          - {names: [amount_millions, distributed_millions], type: real, role: number, min: 0.5, max: 900}
+          - {names: [distribution_type, payout_form], type: text, role: category, values: [cash, in-kind stock]}
 
   blockchain:
     tables:
@@ -482,3 +552,606 @@ topics:
           - {names: [votes_for, yes_votes], type: integer, role: number, min: 0, max: 5000000}
           - {names: [votes_against, no_votes], type: integer, role: number, min: 0, max: 5000000}
           - {names: [outcome, result], type: text, role: category, values: [passed, failed, pending]}
+
+  real estate:
+    tables:
+      - key: brokerages
+        names: [brokerages, agencies]
+        id: [brokerage_id, agency_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: real estate brokerage}
+          - {names: [affiliation, franchise], type: text, role: category, values: [independent, Keller Williams, RE/MAX, Coldwell Banker, Century 21, Berkshire Hathaway HomeServices]}
+          - {names: [founded_year], type: integer, role: number, min: 1950, max: 2022}
+          - {names: [office_count, offices], type: integer, role: number, min: 1, max: 40, optional: true}
+
+      - key: agents
+        names: [agents, realtors]
+        id: [agent_id, realtor_id]
+        columns:
+          - {role: fk, ref: brokerages, type: integer}
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [licensed_date, license_date], type: date, role: date, min: "1990-01-01", max: "2025-12-31"}
+          - {names: [commission_split_pct, split_pct], type: real, role: number, min: 50, max: 90}
+          - {names: [designation, certification], type: text, role: category, values: [none, ABR, CRS, GRI, SRES], optional: true}
+
+      - key: properties
+        names: [properties, homes]
+        id: [property_id, home_id]
+        columns:
+          - {names: [dwelling_type, building_type], type: text, role: category, values: [single-family, condo, townhouse, duplex, multi-family]}
+          - {names: [city], type: text, role: category, values: [Atlanta, Nashville, Charlotte, Phoenix, Dallas, Orlando, Columbus, Salt Lake City]}
+          - {names: [bedrooms, bedroom_count], type: integer, role: number, min: 1, max: 6}
+          - {names: [bathrooms, bathroom_count], type: real, role: number, min: 1, max: 5}
+          - {names: [square_feet, living_area_sqft], type: integer, role: number, min: 500, max: 6000}
+          - {names: [year_built], type: integer, role: number, min: 1900, max: 2025}
+          - {names: [lot_size_acres, lot_acres], type: real, role: number, min: 0.02, max: 5, optional: true}
+
+      - key: listings
+        names: [listings]
+        id: [listing_id]
+        columns:
+          - {role: fk, ref: properties, type: integer}
+          - {role: fk, ref: agents, type: integer}
+          - {names: [list_date, listed_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [list_price, asking_price], type: real, role: number, min: 90000, max: 3500000}
+          - {names: [status, listing_status], type: text, role: category, values: [active, pending, sold, expired, withdrawn]}
+          - {names: [days_on_market], type: integer, role: number, min: 0, max: 365}
+
+      - key: buyers
+        names: [buyers, home_buyers]
+        id: [buyer_id, buyer_id]
+        columns:
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [is_first_time, first_time_buyer], type: integer, role: flag}
+          - {names: [household_size], type: integer, role: number, min: 1, max: 6}
+          - {names: [preapproval_amount, preapproved_amount], type: real, role: number, min: 100000, max: 3000000, optional: true}
+
+      - key: sales
+        names: [sales, home_sales]
+        id: [sale_id, sale_id]
+        columns:
+          - {role: fk, ref: listings, type: integer}
+          - {role: fk, ref: buyers, type: integer}
+          - {names: [closing_date, closed_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [sale_price, final_price], type: real, role: number, min: 85000, max: 3600000}
+          - {names: [financing_type, loan_type], type: text, role: category, values: [conventional, FHA, VA, cash, jumbo]}
+          - {names: [seller_concessions, concessions], type: real, role: number, min: 0, max: 25000, optional: true}
+
+      - key: showings
+        names: [showings, viewings]
+        id: [showing_id, viewing_id]
+        columns:
+          - {role: fk, ref: listings, type: integer}
+          - {names: [scheduled_date, visit_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [party_size, attendees], type: integer, role: number, min: 1, max: 6}
+          - {names: [feedback, buyer_interest], type: text, role: category, values: [very interested, interested, neutral, not interested]}
+          - {names: [duration_minutes], type: integer, role: number, min: 10, max: 90, optional: true}
+
+      - key: tenants
+        names: [tenants, renters]
+        id: [tenant_id, renter_id]
+        columns:
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [monthly_income], type: real, role: number, min: 1500, max: 30000}
+          - {names: [credit_score], type: integer, role: number, min: 450, max: 850}
+          - {names: [has_pets], type: integer, role: flag, optional: true}
+
+      - key: leases
+        names: [leases, rental_agreements]
+        id: [lease_id, agreement_id]
+        columns:
+          - {role: fk, ref: properties, type: integer}
+          - {role: fk, ref: tenants, type: integer}
+          - {names: [start_date, move_in_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [term_months], type: integer, role: number, min: 6, max: 36}
+          - {names: [monthly_rent, rent], type: real, role: number, min: 700, max: 9000}
+          - {names: [security_deposit, deposit], type: real, role: number, min: 0, max: 15000, optional: true}
+          - {names: [status, lease_status], type: text, role: category, values: [active, ended, terminated early, renewed]}
+
+      - key: rent_payments
+        names: [rent_payments, rent_receipts]
+        id: [rent_payment_id, receipt_id]
+        columns:
+          - {role: fk, ref: leases, type: integer}
+          - {names: [due_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [amount_paid, paid_amount], type: real, role: number, min: 700, max: 9000}
+          - {names: [days_late], type: integer, role: number, min: 0, max: 60}
+          - {names: [method, payment_method], type: text, role: category, values: [ACH, check, online portal, money order]}
+
+      - key: inspections
+        names: [inspections, home_inspections]
+        id: [inspection_id, inspection_id]
+        columns:
+          - {role: fk, ref: properties, type: integer}
+          - {names: [inspection_date, inspected_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [inspection_type, scope], type: text, role: category, values: [general, termite, radon, roof, sewer scope, foundation]}
+          - {names: [issues_found, defects_found], type: integer, role: number, min: 0, max: 40}
+          - {names: [repair_estimate, estimated_repair_cost], type: real, role: number, min: 0, max: 60000}
+
+      - key: tax_assessments
+        names: [tax_assessments, assessments]
+        id: [assessment_id, assessment_id]
+        columns:
+          - {role: fk, ref: properties, type: integer}
+          - {names: [assessment_date, assessed_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [assessed_value], type: real, role: number, min: 50000, max: 4000000}
+          - {names: [annual_tax, tax_amount], type: real, role: number, min: 500, max: 60000}
+          - {names: [homestead_exemption, has_homestead_exemption], type: integer, role: flag, optional: true}
+
+  brokerage:
+    tables:
+      - key: advisors
+        names: [advisors, financial_advisors]
+        id: [advisor_id, advisor_id]
+        columns:
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [credential, designation], type: text, role: category, values: [CFP, CFA, ChFC, Series 7 only]}
+          - {names: [hire_date, start_date], type: date, role: date, min: "1995-01-01", max: "2025-12-31"}
+          - {names: [office_city, city], type: text, role: category, values: [New York, Chicago, Boston, Denver, Seattle, Atlanta, Houston, San Diego], optional: true}
+
+      - key: clients
+        names: [clients, investors]
+        id: [client_id, investor_id]
+        columns:
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [birth_date, date_of_birth], type: date, role: date, min: "1940-01-01", max: "2005-12-31"}
+          - {names: [risk_tolerance, risk_profile], type: text, role: category, values: [conservative, moderate, growth, aggressive]}
+          - {names: [net_worth, estimated_net_worth], type: real, role: number, min: 5000, max: 50000000, optional: true}
+
+      - key: accounts
+        names: [accounts, brokerage_accounts]
+        id: [account_id, account_id]
+        columns:
+          - {role: fk, ref: clients, type: integer}
+          - {role: fk, ref: advisors, type: integer}
+          - {names: [account_type, registration_type], type: text, role: category, values: [individual taxable, joint taxable, traditional IRA, Roth IRA, trust, custodial]}
+          - {names: [opened_date, open_date], type: date, role: date, min: "2000-01-01", max: "2025-12-31"}
+          - {names: [cash_balance, cash_available], type: real, role: number, min: 0, max: 2000000}
+          - {names: [margin_enabled, is_margin], type: integer, role: flag, optional: true}
+
+      - key: securities
+        names: [securities, instruments]
+        id: [security_id, instrument_id]
+        columns:
+          - {names: [issuer, issuer_name], type: text, role: entity_name, kind: company}
+          - {names: [asset_class, instrument_class], type: text, role: category, values: [common stock, preferred stock, corporate bond, convertible bond]}
+          - {names: [sector, industry], type: text, role: category, values: [technology, healthcare, financials, energy, consumer staples, industrials, utilities, real estate]}
+          - {names: [listed_date, issue_date], type: date, role: date, min: "1980-01-01", max: "2025-06-30", optional: true}
+
+      - key: trades
+        names: [trades, executions]
+        id: [trade_id, execution_id]
+        columns:
+          - {role: fk, ref: accounts, type: integer}
+          - {role: fk, ref: securities, type: integer}
+          - {names: [executed_date, filled_date], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+          - {names: [side, buy_or_sell], type: text, role: category, values: [buy, sell]}
+          - {names: [quantity, shares], type: integer, role: number, min: 1, max: 5000}
+          - {names: [price, fill_price], type: real, role: number, min: 1, max: 900}
+          - {names: [commission, commission_usd], type: real, role: number, min: 0, max: 50, optional: true}
+
+      - key: holdings
+        names: [holdings, positions]
+        id: [holding_id, position_id]
+        columns:
+          - {role: fk, ref: accounts, type: integer}
+          - {role: fk, ref: securities, type: integer}
+          - {names: [as_of_date, snapshot_date], type: date, role: date, min: "2020-01-01", max: "2025-12-31"}
+          - {names: [quantity, shares_held], type: real, role: number, min: 1, max: 10000}
+          - {names: [average_cost, cost_per_share], type: real, role: number, min: 1, max: 900}
+
+      - key: daily_prices
+        names: [daily_prices, price_history]
+        id: [price_id, price_id]
+        columns:
+          - {role: fk, ref: securities, type: integer}
+          - {names: [price_date, trading_day], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+          - {names: [close_price, closing_price], type: real, role: number, min: 1, max: 900}
+          - {names: [volume, shares_traded], type: integer, role: number, min: 1000, max: 90000000}
+
+      - key: dividends
+        names: [dividends, income_payments]
+        id: [dividend_id, income_payment_id]
+        columns:
+          - {role: fk, ref: securities, type: integer}
+          - {names: [pay_date, payment_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [amount_per_share, per_share_amount], type: real, role: number, min: 0.01, max: 5}
+          - {names: [payment_type, payout_type], type: text, role: category, values: [regular, special, return of capital]}
+
+      - key: cash_transfers
+        names: [cash_transfers, money_movements]
+        id: [transfer_id, movement_id]
+        columns:
+          - {role: fk, ref: accounts, type: integer}
+          - {names: [initiated_date, requested_date], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+          - {names: [direction, flow], type: text, role: category, values: [deposit, withdrawal]}
+          - {names: [amount, amount_usd], type: real, role: number, min: 10, max: 500000}
+          - {names: [method, transfer_method], type: text, role: category, values: [ACH, wire, check, internal transfer]}
+
+      - key: account_fees
+        names: [account_fees, fees]
+        id: [fee_id, fee_id]
+        columns:
+          - {role: fk, ref: accounts, type: integer}
+          - {names: [charged_date, assessed_date], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+          - {names: [fee_type, charge_type], type: text, role: category, values: [advisory fee, margin interest, wire fee, account maintenance, transfer out fee]}
+          - {names: [amount, amount_usd], type: real, role: number, min: 1, max: 5000}
+
+      - key: analyst_ratings
+        names: [analyst_ratings, research_ratings]
+        id: [rating_id, rating_id]
+        columns:
+          - {role: fk, ref: securities, type: integer}
+          - {names: [rating_date, published_date], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+          - {names: [rating, recommendation], type: text, role: category, values: [strong buy, buy, hold, sell, strong sell]}
+          - {names: [price_target, target_price], type: real, role: number, min: 1, max: 1000}
+          - {names: [research_firm, analyst_firm], type: text, role: category, values: [in-house, Morningstar, CFRA, Argus, Zacks], optional: true}
+
+  corporate accounting:
+    tables:
+      - key: departments
+        names: [departments, cost_centers]
+        id: [department_id, cost_center_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, values: [Finance, Marketing, Sales, Engineering, Operations, Human Resources, Legal, Customer Support]}
+          - {names: [region, business_region], type: text, role: category, values: [North America, EMEA, APAC, Latin America]}
+          - {names: [headcount, employee_count], type: integer, role: number, min: 3, max: 900, optional: true}
+
+      - key: ledger_accounts
+        names: [ledger_accounts, gl_accounts]
+        id: [ledger_account_id, gl_account_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, values: [Cash, Accounts Receivable, Inventory, Prepaid Expenses, Accounts Payable, Accrued Liabilities, Sales Revenue, Cost of Goods Sold, Salaries Expense, Rent Expense, Software Expense, Travel Expense]}
+          - {names: [account_number, gl_code], type: integer, role: number, min: 1000, max: 9999}
+          - {names: [created_date, added_date], type: date, role: date, min: "2005-01-01", max: "2024-12-31"}
+          - {names: [is_active, active], type: integer, role: flag, optional: true}
+
+      - key: vendors
+        names: [vendors, suppliers]
+        id: [vendor_id, supplier_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: company}
+          - {names: [spend_category, service_category], type: text, role: category, values: [software, office supplies, logistics, professional services, utilities, facilities, raw materials]}
+          - {names: [payment_terms, terms], type: text, role: category, values: [net 15, net 30, net 45, net 60]}
+          - {names: [onboarded_date, since_date], type: date, role: date, min: "2010-01-01", max: "2025-12-31", optional: true}
+
+      - key: customers
+        names: [customers, clients]
+        id: [customer_id, client_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: company}
+          - {names: [industry, sector], type: text, role: category, values: [retail, manufacturing, healthcare, technology, education, government, hospitality]}
+          - {names: [credit_limit], type: real, role: number, min: 5000, max: 2000000}
+          - {names: [customer_since, relationship_start], type: date, role: date, min: "2008-01-01", max: "2025-12-31", optional: true}
+
+      - key: employees
+        names: [employees, staff]
+        id: [employee_id, staff_id]
+        columns:
+          - {role: fk, ref: departments, type: integer}
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [job_title, position], type: text, role: category, values: [staff accountant, senior accountant, AP clerk, AR specialist, controller, financial analyst, manager]}
+          - {names: [hire_date, start_date], type: date, role: date, min: "2000-01-01", max: "2025-12-31"}
+
+      - key: journal_entries
+        names: [journal_entries, journals]
+        id: [entry_id, journal_id]
+        columns:
+          - {role: fk, ref: employees, type: integer}
+          - {names: [posting_date, posted_date], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+          - {names: [journal_type, source_type], type: text, role: category, values: [standard, adjusting, accrual, reversing, closing]}
+          - {names: [total_amount, amount_total], type: real, role: number, min: 10, max: 5000000}
+          - {names: [is_posted, posted], type: integer, role: flag, optional: true}
+
+      - key: journal_lines
+        names: [journal_lines, line_items]
+        id: [line_id, line_item_id]
+        columns:
+          - {role: fk, ref: journal_entries, type: integer}
+          - {role: fk, ref: ledger_accounts, type: integer}
+          - {role: fk, ref: departments, type: integer}
+          - {names: [side, debit_or_credit], type: text, role: category, values: [debit, credit]}
+          - {names: [amount, line_amount], type: real, role: number, min: 1, max: 2500000}
+
+      - key: invoices
+        names: [invoices, sales_invoices]
+        id: [invoice_id, invoice_id]
+        columns:
+          - {role: fk, ref: customers, type: integer}
+          - {names: [invoice_date, issued_date], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+          - {names: [amount, invoice_amount], type: real, role: number, min: 100, max: 900000}
+          - {names: [terms_days, payment_terms_days], type: integer, role: number, min: 15, max: 90}
+          - {names: [status, invoice_status], type: text, role: category, values: [paid, open, overdue, written off]}
+
+      - key: customer_payments
+        names: [customer_payments, receipts]
+        id: [payment_id, receipt_id]
+        columns:
+          - {role: fk, ref: invoices, type: integer}
+          - {names: [received_date, deposit_date], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+          - {names: [amount, amount_received], type: real, role: number, min: 100, max: 900000}
+          - {names: [method, payment_method], type: text, role: category, values: [ACH, wire, check, credit card]}
+
+      - key: bills
+        names: [vendor_bills, bills]
+        id: [bill_id, bill_id]
+        columns:
+          - {role: fk, ref: vendors, type: integer}
+          - {role: fk, ref: ledger_accounts, type: integer}
+          - {names: [bill_date, received_date], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+          - {names: [amount, bill_amount], type: real, role: number, min: 50, max: 500000}
+          - {names: [status, bill_status], type: text, role: category, values: [paid, unpaid, overdue, disputed]}
+
+      - key: budgets
+        names: [budgets, budget_lines]
+        id: [budget_id, budget_line_id]
+        columns:
+          - {role: fk, ref: departments, type: integer}
+          - {role: fk, ref: ledger_accounts, type: integer}
+          - {names: [fiscal_year], type: integer, role: number, min: 2018, max: 2026}
+          - {names: [fiscal_quarter], type: integer, role: number, min: 1, max: 4}
+          - {names: [budgeted_amount, planned_amount], type: real, role: number, min: 1000, max: 5000000}
+          - {names: [is_approved, approved], type: integer, role: flag, optional: true}
+
+      - key: expense_reports
+        names: [expense_reports, expense_claims]
+        id: [report_id, claim_id]
+        columns:
+          - {role: fk, ref: employees, type: integer}
+          - {names: [submitted_date, filed_date], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+          - {names: [expense_category, spend_type], type: text, role: category, values: [travel, meals, software, training, supplies, client entertainment]}
+          - {names: [amount, claimed_amount], type: real, role: number, min: 5, max: 15000}
+          - {names: [status, approval_status], type: text, role: category, values: [approved, rejected, pending, reimbursed]}
+
+  crowdfunding:
+    tables:
+      - key: creators
+        names: [creators, project_owners]
+        id: [creator_id, owner_id]
+        columns:
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [country], type: text, role: category, values: [USA, UK, Canada, Germany, Australia, Japan, France, Netherlands]}
+          - {names: [joined_date, signup_date], type: date, role: date, min: "2012-01-01", max: "2025-06-30"}
+          - {names: [is_verified, verified], type: integer, role: flag}
+          - {names: [followers, follower_count], type: integer, role: number, min: 0, max: 500000, optional: true}
+
+      - key: campaigns
+        names: [campaigns, projects]
+        id: [campaign_id, project_id]
+        columns:
+          - {role: fk, ref: creators, type: integer}
+          - {names: [title, name], type: text, role: entity_name, kind: project}
+          - {names: [category, genre], type: text, role: category, values: [technology, games, design, film, music, publishing, food, art]}
+          - {names: [launch_date, launched_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [goal_amount, funding_goal], type: real, role: number, min: 1000, max: 2000000}
+          - {names: [duration_days], type: integer, role: number, min: 15, max: 60}
+          - {names: [status, outcome], type: text, role: category, values: [successful, failed, canceled, live]}
+          - {names: [is_staff_pick, featured], type: integer, role: flag, optional: true}
+
+      - key: reward_tiers
+        names: [reward_tiers, rewards]
+        id: [tier_id, reward_id]
+        columns:
+          - {role: fk, ref: campaigns, type: integer}
+          - {names: [name, tier_name], type: text, role: entity_name, values: [Early Bird, Standard Edition, Deluxe Edition, Collector Edition, Digital Copy, Thank You Card, Signed Print]}
+          - {names: [minimum_pledge, min_amount], type: real, role: number, min: 1, max: 5000}
+          - {names: [quantity_limit, units_available], type: integer, role: number, min: 10, max: 5000, optional: true}
+          - {names: [estimated_delivery, ships_by], type: date, role: date, min: "2015-06-01", max: "2026-12-31"}
+
+      - key: backers
+        names: [backers, supporters]
+        id: [backer_id, supporter_id]
+        columns:
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [country], type: text, role: category, values: [USA, UK, Canada, Germany, Australia, Japan, France, Netherlands]}
+          - {names: [signup_date, joined_date], type: date, role: date, min: "2012-01-01", max: "2025-12-31"}
+
+      - key: pledges
+        names: [pledges]
+        id: [pledge_id]
+        columns:
+          - {role: fk, ref: campaigns, type: integer}
+          - {role: fk, ref: backers, type: integer}
+          - {names: [pledge_date, pledged_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [amount, pledge_amount], type: real, role: number, min: 1, max: 10000}
+          - {names: [payment_status, status], type: text, role: category, values: [collected, payment failed, canceled]}
+          - {names: [is_anonymous, anonymous], type: integer, role: flag, optional: true}
+
+      - key: refunds
+        names: [refunds]
+        id: [refund_id]
+        columns:
+          - {role: fk, ref: pledges, type: integer}
+          - {names: [refund_date, refunded_date], type: date, role: date, min: "2015-02-01", max: "2025-12-31"}
+          - {names: [amount, refund_amount], type: real, role: number, min: 1, max: 10000}
+          - {names: [reason, refund_reason], type: text, role: category, values: [campaign canceled, backer request, undelivered reward, duplicate charge]}
+
+      - key: fulfillments
+        names: [fulfillments, shipments]
+        id: [fulfillment_id, shipment_id]
+        columns:
+          - {role: fk, ref: pledges, type: integer}
+          - {names: [shipped_date, dispatch_date], type: date, role: date, min: "2015-06-01", max: "2025-12-31"}
+          - {names: [carrier], type: text, role: category, values: [USPS, UPS, FedEx, DHL, Royal Mail]}
+          - {names: [shipping_cost, postage], type: real, role: number, min: 2, max: 120}
+          - {names: [was_delivered, delivered], type: integer, role: flag}
+
+      - key: campaign_posts
+        names: [campaign_posts, announcements]
+        id: [post_id, announcement_id]
+        columns:
+          - {role: fk, ref: campaigns, type: integer}
+          - {names: [posted_date, published_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [post_type, topic], type: text, role: category, values: [progress report, shipping news, stretch goal, delay notice, thank you]}
+          - {names: [likes, like_count], type: integer, role: number, min: 0, max: 5000}
+          - {names: [reply_count, replies], type: integer, role: number, min: 0, max: 800, optional: true}
+
+      - key: comments
+        names: [comments, backer_comments]
+        id: [comment_id, comment_id]
+        columns:
+          - {role: fk, ref: campaigns, type: integer}
+          - {role: fk, ref: backers, type: integer}
+          - {names: [posted_date, written_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [likes, like_count], type: integer, role: number, min: 0, max: 900}
+          - {names: [sentiment, tone], type: text, role: category, values: [positive, neutral, negative, question]}
+          - {names: [is_flagged, flagged], type: integer, role: flag, optional: true}
+
+      - key: payouts
+        names: [payouts, disbursements]
+        id: [payout_id, disbursement_id]
+        columns:
+          - {role: fk, ref: campaigns, type: integer}
+          - {names: [paid_date, transferred_date], type: date, role: date, min: "2015-02-01", max: "2025-12-31"}
+          - {names: [net_amount, amount_paid], type: real, role: number, min: 500, max: 2000000}
+          - {names: [fee_pct, platform_fee_pct], type: real, role: number, min: 5, max: 10}
+
+      - key: traffic_stats
+        names: [traffic_stats, page_traffic]
+        id: [stat_id, traffic_id]
+        columns:
+          - {role: fk, ref: campaigns, type: integer}
+          - {names: [recorded_date, stat_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [referral_source, source], type: text, role: category, values: [direct, social media, email, search engine, press, platform search]}
+          - {names: [visits, page_views], type: integer, role: number, min: 0, max: 200000}
+          - {names: [conversion_pct, conversion_rate_pct], type: real, role: number, min: 0, max: 15}
+
+      - key: stretch_goals
+        names: [stretch_goals]
+        id: [stretch_goal_id]
+        columns:
+          - {role: fk, ref: campaigns, type: integer}
+          - {names: [target_amount, unlock_amount], type: real, role: number, min: 2000, max: 5000000}
+          - {names: [announced_date, added_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [is_unlocked, unlocked], type: integer, role: flag}
+
+  retirement plans:
+    tables:
+      - key: employers
+        names: [employers, plan_sponsors]
+        id: [employer_id, sponsor_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: company}
+          - {names: [industry, sector], type: text, role: category, values: [manufacturing, healthcare, technology, retail, education, government, financial services]}
+          - {names: [employee_count, headcount], type: integer, role: number, min: 20, max: 50000}
+          - {names: [headquarters_state, hq_state], type: text, role: category, values: [CA, TX, NY, IL, PA, OH, NC, MA], optional: true}
+
+      - key: retirement_plans
+        names: [retirement_plans, employer_plans]
+        id: [plan_id, plan_id]
+        columns:
+          - {role: fk, ref: employers, type: integer}
+          - {names: [plan_type, plan_kind], type: text, role: category, values: ["401(k)", "403(b)", "457(b)", SIMPLE IRA, profit sharing]}
+          - {names: [effective_date, established_date], type: date, role: date, min: "1985-01-01", max: "2024-12-31"}
+          - {names: [employer_match_pct, match_pct], type: real, role: number, min: 0, max: 6}
+          - {names: [vesting_years, vesting_period_years], type: integer, role: number, min: 0, max: 6}
+          - {names: [auto_enroll, has_auto_enrollment], type: integer, role: flag, optional: true}
+
+      - key: participants
+        names: [participants, plan_members]
+        id: [participant_id, member_id]
+        columns:
+          - {role: fk, ref: retirement_plans, type: integer}
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [birth_date, date_of_birth], type: date, role: date, min: "1955-01-01", max: "1998-12-31"}
+          - {names: [enrolled_date, enrollment_date], type: date, role: date, min: "2016-01-01", max: "2025-12-31"}
+          - {names: [annual_salary, salary], type: real, role: number, min: 25000, max: 400000}
+          - {names: [deferral_pct, contribution_rate_pct], type: real, role: number, min: 0, max: 25}
+          - {names: [employment_status, status], type: text, role: category, values: [active, terminated, retired, on leave]}
+
+      - key: fund_managers
+        names: [fund_managers, fund_families]
+        id: [manager_id, family_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: asset manager}
+          - {names: [ownership, ownership_structure], type: text, role: category, values: [public company, private partnership, client-owned]}
+          - {names: [aum_billions, assets_under_management_billions], type: real, role: number, min: 5, max: 9000, optional: true}
+
+      - key: funds
+        names: [funds, investment_options]
+        id: [fund_id, option_id]
+        columns:
+          - {role: fk, ref: fund_managers, type: integer}
+          - {names: [name, fund_name], type: text, role: entity_name, kind: fund}
+          - {names: [asset_class, fund_category], type: text, role: category, values: [US large cap equity, US small cap equity, international equity, bond, target date, stable value, money market, balanced]}
+          - {names: [expense_ratio, expense_ratio_pct], type: real, role: number, min: 0.02, max: 1.2}
+          - {names: [inception_date, launch_date], type: date, role: date, min: "1975-01-01", max: "2023-12-31"}
+
+      - key: plan_fund_options
+        names: [plan_fund_options, plan_lineups]
+        id: [plan_option_id, lineup_id]
+        columns:
+          - {role: fk, ref: retirement_plans, type: integer}
+          - {role: fk, ref: funds, type: integer}
+          - {names: [added_date, offered_since], type: date, role: date, min: "2005-01-01", max: "2025-12-31"}
+          - {names: [is_default_option, is_qdia], type: integer, role: flag}
+          - {names: [revenue_share_pct, revenue_sharing_pct], type: real, role: number, min: 0, max: 0.5, optional: true}
+
+      - key: contributions
+        names: [contributions, payroll_contributions]
+        id: [contribution_id, contribution_id]
+        columns:
+          - {role: fk, ref: participants, type: integer}
+          - {names: [pay_date, deposit_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [source, money_source], type: text, role: category, values: [employee pre-tax, employee Roth, employer match, profit sharing]}
+          - {names: [amount, amount_usd], type: real, role: number, min: 10, max: 2500}
+
+      - key: fund_elections
+        names: [fund_elections, investment_elections]
+        id: [election_id, election_id]
+        columns:
+          - {role: fk, ref: participants, type: integer}
+          - {role: fk, ref: funds, type: integer}
+          - {names: [election_date, elected_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [allocation_pct, allocation_percent], type: real, role: number, min: 1, max: 100}
+
+      - key: fund_returns
+        names: [fund_returns, fund_performance]
+        id: [return_id, performance_id]
+        columns:
+          - {role: fk, ref: funds, type: integer}
+          - {names: [as_of_date, period_end_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [one_year_return_pct, trailing_return_pct], type: real, role: number, min: -35, max: 45}
+          - {names: [nav, net_asset_value], type: real, role: number, min: 5, max: 500}
+
+      - key: plan_loans
+        names: [plan_loans, participant_loans]
+        id: [loan_id, loan_id]
+        columns:
+          - {role: fk, ref: participants, type: integer}
+          - {names: [issued_date, loan_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [principal, loan_amount], type: real, role: number, min: 1000, max: 50000}
+          - {names: [interest_rate, rate_pct], type: real, role: number, min: 4, max: 10}
+          - {names: [term_months], type: integer, role: number, min: 12, max: 60}
+          - {names: [status, loan_status], type: text, role: category, values: [repaying, paid off, defaulted]}
+
+      - key: distributions
+        names: [distributions, withdrawals]
+        id: [distribution_id, withdrawal_id]
+        columns:
+          - {role: fk, ref: participants, type: integer}
+          - {names: [paid_date, processed_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [reason, payout_reason], type: text, role: category, values: [retirement, hardship, rollover, required minimum distribution, separation from service]}
+          - {names: [amount, gross_amount], type: real, role: number, min: 500, max: 900000}
+          - {names: [withholding_pct, tax_withheld_pct], type: real, role: number, min: 0, max: 20, optional: true}
+
+      - key: beneficiaries
+        names: [beneficiaries]
+        id: [beneficiary_id]
+        columns:
+          - {role: fk, ref: participants, type: integer}
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [relationship, relation], type: text, role: category, values: [spouse, child, parent, sibling, domestic partner]}
+          - {names: [share_pct, benefit_share_pct], type: real, role: number, min: 10, max: 100}
+          - {names: [is_primary, primary_beneficiary], type: integer, role: flag}
+          - {names: [designated_date, named_date], type: date, role: date, min: "2005-01-01", max: "2025-12-31", optional: true}

@@ -1,103 +1,125 @@
 # Schema families and topics for the synthetic data generator (plan step 1.1).
 #
-# 5 families of 5 topics each. Families must differ from each other in vocabulary
+# 6 families of 10 topics each. Families must differ from each other in vocabulary
 # and table shapes, because the Phase 9 shift experiment calibrates on one family
 # and tests on another. Topics within a family are spread across sub-areas, and
 # topics that straddle 2 families were dropped so the boundaries stay clean.
 #
-# Topic names come from Gretel's synthetic_text_to_sql dataset (Apache 2.0), used
-# only as a checklist for variety; none of its questions or databases are used:
-# https://huggingface.co/datasets/gretelai/synthetic_text_to_sql
+# The first 25 topics (5 families of 5) were chosen on 2026-11-08. On 2026-11-24
+# the set grew to 60 topics, because test splits by topic make the number of
+# topics the real sample size: each family gained 5 topics, and a sixth family,
+# media and entertainment (the earlier runner-up), joined with 10.
 #
-# Which families are held out of training is decided in step 3.1.
+# `source: gretel` marks a topic named in Gretel's synthetic_text_to_sql dataset
+# (Apache 2.0), used only as a checklist for variety; none of its questions or
+# databases are used: https://huggingface.co/datasets/gretelai/synthetic_text_to_sql
+# `source: added` marks a topic added beyond Gretel's list.
+#
+# Which families and topics are held out of training is decided in step 3.1.
 
 source:
   dataset: gretelai/synthetic_text_to_sql
   license: apache-2.0
   topics_available: 100
   chosen: 2026-11-08
+  expanded: 2026-11-24
 
 families:
   healthcare:
     description: Patients, providers, visits, diagnoses, prescriptions, and trials.
     closest_external: TrustSQL EHRSQL (mimic_iv); BIRD thrombosis_prediction
     topics:
-      - gretel_domain: healthcare
-        focus: hospitals and clinics, with patients, providers, and visits
-      - gretel_domain: public health
-        focus: disease cases, vaccinations, and health access by region
-      - gretel_domain: mental health
-        focus: conditions, treatments, and patient outcomes
-      - gretel_domain: pharmaceuticals
-        focus: drugs, clinical trials, approvals, and sales
-      - gretel_domain: biotechnology
-        focus: research projects, lab samples, and genetic studies
+      - {name: healthcare, source: gretel, focus: "hospitals and clinics, with patients, providers, and visits"}
+      - {name: public health, source: gretel, focus: "disease cases, vaccinations, and health access by region"}
+      - {name: mental health, source: gretel, focus: "conditions, treatments, and patient outcomes"}
+      - {name: pharmaceuticals, source: gretel, focus: "drugs, clinical trials, approvals, and sales"}
+      - {name: biotechnology, source: gretel, focus: "research projects, lab samples, and genetic studies"}
+      - {name: dental care, source: added, focus: "dental clinics, dentists, patients, and procedures"}
+      - {name: veterinary care, source: added, focus: "animal hospitals, pets, owners, visits, and vaccinations"}
+      - {name: long-term care, source: added, focus: "nursing homes, residents, staff, and care plans"}
+      - {name: emergency medical services, source: added, focus: "ambulance stations, crews, dispatch calls, and responses"}
+      - {name: medical devices, source: added, focus: "device makers, products, clearances, recalls, and implant records"}
 
   finance:
     description: Accounts, loans, transactions, policies, and investments.
     closest_external: BIRD financial; BIRD debit_card_specializing
     topics:
-      - gretel_domain: financial services
-        focus: banking, with customers, accounts, and transactions
-      - gretel_domain: finance
-        focus: lending, with borrowers, loans, and repayments
-      - gretel_domain: insurance
-        focus: general policies and claims (auto, home, life), not health insurance
-      - gretel_domain: venture capital
-        focus: startups, funding rounds, investors, and exits
-      - gretel_domain: blockchain
-        focus: wallets, smart contracts, digital assets, and transfers
+      - {name: financial services, source: gretel, focus: "banking, with customers, accounts, and transactions"}
+      - {name: finance, source: gretel, focus: "lending, with borrowers, loans, and repayments"}
+      - {name: insurance, source: gretel, focus: "general policies and claims (auto, home, life), not health insurance"}
+      - {name: venture capital, source: gretel, focus: "startups, funding rounds, investors, and exits"}
+      - {name: blockchain, source: gretel, focus: "wallets, smart contracts, digital assets, and transfers"}
+      - {name: real estate, source: gretel, focus: "properties, listings, agents, sales, and leases"}
+      - {name: brokerage, source: added, focus: "client accounts, securities, trades, and holdings"}
+      - {name: corporate accounting, source: added, focus: "ledger accounts, journal entries, invoices, and budgets"}
+      - {name: crowdfunding, source: added, focus: "campaigns, creators, backers, and pledges"}
+      - {name: retirement plans, source: added, focus: "employer plans, participants, contributions, and fund choices"}
 
   logistics_and_transport:
     description: Shipments, routes, vehicles, ports, and flights.
     closest_external: TrustSQL ATIS (flights)
     topics:
-      - gretel_domain: logistics
-        focus: freight, warehouses, and delivery routes
-      - gretel_domain: ocean shipping
-        focus: vessels, cargo, and port calls
-      - gretel_domain: public transportation
-        focus: routes, stops, fares, and vehicle maintenance
-      - gretel_domain: aerospace
-        focus: aircraft, flights, and safety records
-      - gretel_domain: automotive
-        focus: vehicle models, safety tests, and sales
+      - {name: logistics, source: gretel, focus: "freight, warehouses, and delivery routes"}
+      - {name: ocean shipping, source: gretel, focus: "vessels, cargo, and port calls"}
+      - {name: public transportation, source: gretel, focus: "routes, stops, fares, and vehicle maintenance"}
+      - {name: aerospace, source: gretel, focus: "aircraft, flights, and safety records"}
+      - {name: automotive, source: gretel, focus: "vehicle models, safety tests, and sales"}
+      - {name: rail freight, source: added, focus: "railroads, locomotives, railcars, yards, and train movements"}
+      - {name: ride-hailing, source: added, focus: "drivers, riders, trips, fares, and ratings"}
+      - {name: parcel delivery, source: added, focus: "couriers, packages, tracking scans, depots, and delivery attempts"}
+      - {name: bike sharing, source: added, focus: "docking stations, bikes, members, rides, and repairs"}
+      - {name: car rental, source: added, focus: "rental branches, cars, customers, rentals, and damage reports"}
 
   retail_and_consumer:
     description: Products, orders, stores, inventory, and bookings.
     closest_external: BIRD debit_card_specializing (gas-station purchases)
     topics:
-      - gretel_domain: retail
-        focus: stores, products, suppliers, and sales
-      - gretel_domain: fashion retail
-        focus: garments, sizes, collections, and orders
-      - gretel_domain: beauty industry
-        focus: cosmetics products, ingredients, and customer reviews
-      - gretel_domain: restaurant operations
-        focus: menus, orders, revenue, and inspections
-      - gretel_domain: hospitality
-        focus: hotels, rooms, guests, and bookings
+      - {name: retail, source: gretel, focus: "stores, products, suppliers, and sales"}
+      - {name: fashion retail, source: gretel, focus: "garments, sizes, collections, and orders"}
+      - {name: beauty industry, source: gretel, focus: "cosmetics products, ingredients, and customer reviews"}
+      - {name: restaurant operations, source: gretel, focus: "menus, orders, revenue, and inspections"}
+      - {name: hospitality, source: gretel, focus: "hotels, rooms, guests, and bookings"}
+      - {name: tourism, source: gretel, focus: "tour operators, tours, guides, travelers, and bookings"}
+      - {name: e-commerce marketplace, source: added, focus: "sellers, listings, buyers, orders, and reviews"}
+      - {name: pet care, source: added, focus: "pet shops, grooming, boarding, pets, and appointments"}
+      - {name: home services, source: added, focus: "service providers, technicians, jobs, quotes, and reviews"}
+      - {name: fitness clubs, source: added, focus: "gyms, members, classes, check-ins, and trainers, run as a membership business"}
 
   energy_and_natural_resources:
     description: Sites, production readings, emissions, and permits.
     closest_external: none; the family farthest from every external test set
     topics:
-      - gretel_domain: energy
-        focus: power plants, generation, and storage, renewables included
-      - gretel_domain: oil and gas
-        focus: wells, production volumes, and pipelines
-      - gretel_domain: mining operations
-        focus: mines, extraction, workforce, and environmental impact
-      - gretel_domain: water resources
-        focus: water usage, droughts, and treatment plants
-      - gretel_domain: forestry
-        focus: forests, timber harvests, and replanting
+      - {name: energy, source: gretel, focus: "power plants, generation, and storage, renewables included"}
+      - {name: oil and gas, source: gretel, focus: "wells, production volumes, and pipelines"}
+      - {name: mining operations, source: gretel, focus: "mines, extraction, workforce, and environmental impact"}
+      - {name: water resources, source: gretel, focus: "water usage, droughts, and treatment plants"}
+      - {name: forestry, source: gretel, focus: "forests, timber harvests, and replanting"}
+      - {name: agriculture, source: gretel, focus: "farms, fields, crops, plantings, and harvests"}
+      - {name: aquaculture, source: gretel, focus: "fish farms, pens, fish stocks, feedings, and harvests"}
+      - {name: wildlife conservation, source: gretel, focus: "reserves, species, population surveys, sightings, and rangers"}
+      - {name: weather monitoring, source: added, focus: "weather stations, sensors, daily readings, and storm events"}
+      - {name: national parks, source: added, focus: "parks, trails, campgrounds, visitors, and permits"}
+
+  media_and_entertainment:
+    description: Artists, titles, audiences, events, and engagement.
+    closest_external: BIRD card_games, european_football_2, formula_1, superhero, codebase_community
+    topics:
+      - {name: music industry, source: gretel, focus: "artists, albums, tracks, streams, and royalties"}
+      - {name: concerts and festivals, source: added, focus: "venues, events, performers, tickets, and attendance"}
+      - {name: entertainment industry, source: gretel, focus: "film and TV productions, studios, cast, releases, and box office"}
+      - {name: gaming industry, source: gretel, focus: "video games, players, play sessions, and in-game purchases"}
+      - {name: esports, source: added, focus: "teams, players, tournaments, matches, and prize money"}
+      - {name: sports, source: gretel, focus: "leagues, teams, players, games, and player statistics"}
+      - {name: social media, source: gretel, focus: "users, posts, follows, likes, and ad campaigns"}
+      - {name: journalism, source: gretel, focus: "news outlets, reporters, articles, sources, and page views"}
+      - {name: museums, source: gretel, focus: "museums, collections, exhibitions, visitors, and loans"}
+      - {name: book publishing, source: added, focus: "publishers, authors, books, editions, and sales"}
 
 # Gretel topics considered for a family and left out, with the reason.
 dropped:
   rural health: repeats public health
   disability services: straddles healthcare and education
-  fitness industry: straddles healthcare and consumer
+  fitness industry: straddles healthcare and consumer (gyms run as membership businesses joined as "fitness clubs")
   startups: same description as venture capital
   social impact investing: repeats the investing side of venture capital
   maritime: repeats ocean shipping
@@ -113,3 +135,8 @@ dropped:
   rare earth elements: repeats mining operations
   waste management: closer to a city service than a natural resource
   climate change: cuts across every family
+  music: repeats music industry
+  gaming technology: repeats gaming industry
+  sports entertainment: repeats sports
+  media: too broad next to journalism and social media
+  hospitality technology: repeats hospitality

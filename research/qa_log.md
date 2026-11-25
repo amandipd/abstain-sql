@@ -111,6 +111,28 @@ A small but real one: Gretel supplied the topics, not the data. Its role was 3 t
 
 None of its questions, databases, or SQL were used, for the reasons in the Gretel entry above. The project could have run without it; the topic choice would just have been harder to justify.
 
+### What is the maximum we can scale to?
+
+No number has a hard cap; each hits a practical ceiling.
+
+- **Designs per topic:** capped by each table list. Counting every valid set of 3–8 linked tables, the 25 lists allow 1,288 distinct designs: a median of 34 per topic, but only 6 for fashion retail, 12 for aerospace, and 14 for beauty, whose tables chain too deeply. Past that, only names change. Adding tables to the shallow lists raises their ceilings.
+- **Topics:** by hand, about 10 per family (50) is realistic, partly beyond Gretel's list. Beyond that means version 1 of the plan: an AI model, not from the Qwen family, designs the schemas, which scales to hundreds of topics for some API cost and review time.
+- **Families:** the plan allows up to 6; the runner-up, media and entertainment, would make 6 and give Phase 9 30 pairs.
+- **Questions:** a 300-step training run only draws 2,400 (4,000 at 500 steps), so a bigger training pool is partly unused. Calibration and test sets are capped by GPU time to run the trained models on them; a rough estimate is a few minutes per 1,000 questions per model, so even 10,000 across 8 models costs a few dollars. The smoke test measures the real speed.
+- **Filled copies:** no cap, but each extra copy adds checking time to every answer during training.
+
+The real limit on credibility is the number of independent topics, not the number of rows or questions.
+
+### Can we raise these numbers to test on more samples and make the experiment more convincing?
+
+Yes, and most of it is free. More data does not raise training cost: a run takes 300 steps of 8 questions whatever the pool size. Evaluation cost rises a little with more test questions, small next to training. But not every number adds real samples:
+
+- **Filled copies** add none: they check the same questions on more data, making the checker stricter. Keep 5.
+- **Designs per topic** are free to raise with one setting, adding databases and questions.
+- **Topics** cost hand-written table lists (time, not money).
+
+The catch: designs from one topic share its table list, so they are near-relatives. If a test design shares a topic with training designs, the test is easier than it looks. The honest split keeps whole topics out of training (step 3.1), which makes the number of topics the real sample size; 25 topics split 4 ways leave only about 5 for testing. So the biggest gain in credibility comes from more topics, then more designs. Proposed on 2026-11-24: 8 topics per family (40 topics, 15 new table lists, some from beyond Gretel's list), 6 designs per topic (240 designs), 5 copies kept, calibration and test sets raised toward 2,000 questions each, and splitting by topic in step 3.1. On the follow-up question of the maximum, the choice became the larger option: 60 topics and 8 designs per topic (480 designs), see the decision log.
+
 ### Why these numbers: 5 families, 5 topics, 2 designs, and so on?
 
 Some come from the plan, some are judgment calls; each says which.

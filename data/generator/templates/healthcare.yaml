@@ -483,3 +483,636 @@ topics:
           - {names: [journal, venue], type: text, role: category, values: [Nature Biotechnology, Cell, Science, PLOS ONE, Nucleic Acids Research, Genome Research]}
           - {names: [published_date, publication_date], type: date, role: date, min: "2013-01-01", max: "2025-12-31"}
           - {names: [citation_count, citations], type: integer, role: number, min: 0, max: 2500}
+
+  dental care:
+    tables:
+      - key: clinics
+        names: [clinics, practices]
+        id: [clinic_id, practice_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: clinic}
+          - {names: [city], type: text, role: category, values: [Austin, Denver, Columbus, Raleigh, Portland, Tucson, Omaha, Boise]}
+          - {names: [chair_count, operatories], type: integer, role: number, min: 2, max: 24}
+          - {names: [opened_date, opening_date], type: date, role: date, min: "1985-01-01", max: "2024-12-31", optional: true}
+          - {names: [monthly_rent, lease_cost], type: real, role: number, min: 3000, max: 45000, optional: true}
+
+      - key: dentists
+        names: [dentists, providers]
+        id: [dentist_id, provider_id]
+        columns:
+          - {role: fk, ref: clinics, type: integer}
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [specialty], type: text, role: category, values: [general dentistry, orthodontics, endodontics, periodontics, oral surgery, pediatric dentistry, prosthodontics]}
+          - {names: [license_date, licensed_since], type: date, role: date, min: "1980-01-01", max: "2024-12-31"}
+          - {names: [annual_salary, salary], type: real, role: number, min: 120000, max: 450000, optional: true}
+
+      - key: hygienists
+        names: [hygienists, dental_hygienists]
+        id: [hygienist_id, hygienist_id]
+        columns:
+          - {role: fk, ref: clinics, type: integer}
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [employment_type], type: text, role: category, values: [full-time, part-time, temp agency]}
+          - {names: [hire_date, start_date], type: date, role: date, min: "2000-01-01", max: "2025-12-31"}
+          - {names: [hourly_rate, hourly_wage], type: real, role: number, min: 28, max: 65}
+
+      - key: patients
+        names: [patients]
+        id: [patient_id]
+        columns:
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [birth_date, date_of_birth], type: date, role: date, min: "1940-01-01", max: "2022-12-31"}
+          - {names: [sex], type: text, role: category, values: [F, M]}
+          - {names: [insurance_type, coverage_type], type: text, role: category, values: [PPO, HMO, Medicaid, discount plan, self-pay]}
+
+      - key: procedure_types
+        names: [procedure_types, service_codes]
+        id: [procedure_type_id, service_code_id]
+        columns:
+          - {names: [name, description], type: text, role: entity_name, values: [prophylaxis cleaning, composite filling, root canal, porcelain crown, simple extraction, surgical extraction, dental implant, teeth whitening, sealant, bitewing X-ray, scaling and root planing, orthodontic adjustment]}
+          - {names: [standard_fee, list_fee], type: real, role: number, min: 25, max: 5000}
+          - {names: [typical_minutes, chair_minutes], type: integer, role: number, min: 10, max: 180, optional: true}
+
+      - key: appointments
+        names: [appointments, visits]
+        id: [appointment_id, visit_id]
+        columns:
+          - {role: fk, ref: patients, type: integer}
+          - {role: fk, ref: dentists, type: integer}
+          - {names: [scheduled_date, service_date], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+          - {names: [status, attendance], type: text, role: category, values: [completed, cancelled, no-show, rescheduled]}
+          - {names: [duration_min, minutes], type: integer, role: number, min: 15, max: 180}
+          - {names: [copay, copay_amount], type: real, role: number, min: 0, max: 150}
+          - {names: [is_new_patient, new_patient], type: integer, role: flag, optional: true}
+
+      - key: procedures
+        names: [procedures, treatments]
+        id: [procedure_id, treatment_id]
+        columns:
+          - {role: fk, ref: patients, type: integer}
+          - {role: fk, ref: dentists, type: integer}
+          - {role: fk, ref: procedure_types, type: integer}
+          - {names: [performed_date, service_date], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+          - {names: [tooth_number], type: integer, role: number, min: 1, max: 32}
+          - {names: [fee_charged, charge], type: real, role: number, min: 25, max: 5000}
+          - {names: [anesthesia_used, used_anesthesia], type: integer, role: flag, optional: true}
+
+      - key: cleanings
+        names: [cleanings, hygiene_sessions]
+        id: [cleaning_id, session_id]
+        columns:
+          - {role: fk, ref: patients, type: integer}
+          - {role: fk, ref: hygienists, type: integer}
+          - {names: [service_date, cleaned_on], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+          - {names: [avg_pocket_depth_mm, pocket_depth_mm], type: real, role: number, min: 1.0, max: 7.5}
+          - {names: [plaque_score, plaque_index], type: integer, role: number, min: 0, max: 3}
+          - {names: [fee, charge], type: real, role: number, min: 75, max: 350, optional: true}
+          - {names: [bleeding_on_probing, gums_bled], type: integer, role: flag, optional: true}
+
+      - key: xrays
+        names: [xrays, radiographs]
+        id: [xray_id, radiograph_id]
+        columns:
+          - {role: fk, ref: patients, type: integer}
+          - {role: fk, ref: clinics, type: integer}
+          - {names: [image_type, film_type], type: text, role: category, values: [bitewing, periapical, panoramic, cephalometric, cone beam CT]}
+          - {names: [taken_date, capture_date], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+          - {names: [image_count, films], type: integer, role: number, min: 1, max: 18}
+          - {names: [fee, charge], type: real, role: number, min: 20, max: 450}
+
+      - key: insurance_claims
+        names: [insurance_claims, claims]
+        id: [claim_id, claim_id]
+        columns:
+          - {role: fk, ref: patients, type: integer}
+          - {names: [insurer, carrier], type: text, role: category, values: [Delta Dental, MetLife, Cigna, Aetna, Guardian, United Concordia, Humana]}
+          - {names: [submitted_date, filed_date], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+          - {names: [amount_claimed, billed_amount], type: real, role: number, min: 40, max: 8000}
+          - {names: [status, claim_status], type: text, role: category, values: [paid, denied, pending, partially paid]}
+
+      - key: supply_orders
+        names: [supply_orders, supply_requests]
+        id: [supply_order_id, request_id]
+        columns:
+          - {role: fk, ref: clinics, type: integer}
+          - {names: [item, supply_type], type: text, role: category, values: [nitrile gloves, composite resin, local anesthetic, impression material, implant fixtures, sterilization pouches, prophy paste]}
+          - {names: [placed_date, submitted_date], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+          - {names: [quantity, units], type: integer, role: number, min: 1, max: 500}
+          - {names: [total_cost, cost], type: real, role: number, min: 15, max: 12000}
+
+  veterinary care:
+    tables:
+      - key: hospitals
+        names: [animal_hospitals, vet_clinics]
+        id: [hospital_id, clinic_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: clinic}
+          - {names: [city], type: text, role: category, values: [Austin, Denver, Columbus, Raleigh, Portland, Tucson, Omaha, Boise]}
+          - {names: [exam_rooms, room_count], type: integer, role: number, min: 2, max: 20}
+          - {names: [opened_date, opening_date], type: date, role: date, min: "1975-01-01", max: "2024-12-31", optional: true}
+          - {names: [is_24_hour, open_24_hours], type: integer, role: flag, optional: true}
+
+      - key: veterinarians
+        names: [veterinarians, vets]
+        id: [veterinarian_id, vet_id]
+        columns:
+          - {role: fk, ref: hospitals, type: integer}
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [specialty, focus_area], type: text, role: category, values: [general practice, surgery, dentistry, dermatology, internal medicine, emergency and critical care, exotic animals]}
+          - {names: [license_date, licensed_since], type: date, role: date, min: "1985-01-01", max: "2024-12-31"}
+          - {names: [annual_salary, salary], type: real, role: number, min: 85000, max: 260000, optional: true}
+
+      - key: owners
+        names: [owners, clients]
+        id: [owner_id, client_id]
+        columns:
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [city, home_city], type: text, role: category, values: [Austin, Denver, Columbus, Raleigh, Portland, Tucson, Omaha, Boise]}
+          - {names: [registered_date, joined_date], type: date, role: date, min: "2010-01-01", max: "2025-12-31"}
+          - {names: [has_pet_insurance, insured], type: integer, role: flag, optional: true}
+
+      - key: pets
+        names: [pets, animals]
+        id: [pet_id, animal_id]
+        columns:
+          - {role: fk, ref: owners, type: integer}
+          - {names: [name], type: text, role: entity_name, values: [Bella, Max, Luna, Charlie, Daisy, Milo, Lucy, Cooper, Oliver, Bailey, Nala, Rocky]}
+          - {names: [species], type: text, role: category, values: [dog, cat, rabbit, bird, guinea pig, ferret, reptile]}
+          - {names: [sex], type: text, role: category, values: [F, M]}
+          - {names: [birth_date, date_of_birth], type: date, role: date, min: "2005-01-01", max: "2025-06-30"}
+          - {names: [is_neutered, neutered], type: integer, role: flag, optional: true}
+          - {names: [is_microchipped, microchipped], type: integer, role: flag, optional: true}
+
+      - key: visits
+        names: [visits, exams]
+        id: [visit_id, exam_id]
+        columns:
+          - {role: fk, ref: pets, type: integer}
+          - {role: fk, ref: veterinarians, type: integer}
+          - {names: [service_date, seen_on], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [reason, presenting_reason], type: text, role: category, values: [wellness exam, vaccination, injury, vomiting or diarrhea, skin problem, dental, lameness, follow-up]}
+          - {names: [weight_kg, body_weight_kg], type: real, role: number, min: 0.2, max: 70}
+          - {names: [total_charge, charge], type: real, role: number, min: 45, max: 3500}
+
+      - key: vaccines
+        names: [vaccines]
+        id: [vaccine_id]
+        columns:
+          - {names: [name, vaccine_name], type: text, role: entity_name, values: [rabies, DHPP, bordetella, leptospirosis, canine influenza, Lyme, FVRCP, feline leukemia]}
+          - {names: [manufacturer, maker], type: text, role: category, values: [Zoetis, Merck Animal Health, Boehringer Ingelheim, Elanco]}
+          - {names: [booster_interval_months, months_valid], type: integer, role: number, min: 6, max: 36}
+          - {names: [unit_cost, cost_per_dose], type: real, role: number, min: 4, max: 45}
+
+      - key: vaccinations
+        names: [vaccinations, immunizations]
+        id: [vaccination_id, immunization_id]
+        columns:
+          - {role: fk, ref: pets, type: integer}
+          - {role: fk, ref: vaccines, type: integer}
+          - {names: [administered_date, given_on], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [dose_number], type: integer, role: number, min: 1, max: 4, optional: true}
+          - {names: [price, price_charged], type: real, role: number, min: 15, max: 95}
+
+      - key: medications
+        names: [medications, drugs]
+        id: [medication_id, drug_id]
+        columns:
+          - {names: [name, generic_name], type: text, role: entity_name, values: [carprofen, amoxicillin-clavulanate, oclacitinib, gabapentin, meloxicam, prednisolone, metronidazole, fluralaner, maropitant]}
+          - {names: [supplier, distributor], type: text, role: category, values: [Covetrus, MWI Animal Health, Patterson Veterinary, Midwest Veterinary Supply]}
+          - {names: [unit_price, price_per_unit], type: real, role: number, min: 0.2, max: 25}
+          - {names: [stock_on_hand, units_in_stock], type: integer, role: number, min: 0, max: 2000, optional: true}
+
+      - key: prescriptions
+        names: [prescriptions]
+        id: [prescription_id]
+        columns:
+          - {role: fk, ref: pets, type: integer}
+          - {role: fk, ref: veterinarians, type: integer}
+          - {role: fk, ref: medications, type: integer}
+          - {names: [prescribed_date, issued_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [quantity, units_dispensed], type: integer, role: number, min: 5, max: 120}
+          - {names: [cost, amount_charged], type: real, role: number, min: 8, max: 450}
+          - {names: [refills], type: integer, role: number, min: 0, max: 5, optional: true}
+
+      - key: surgeries
+        names: [surgeries, operations]
+        id: [surgery_id, operation_id]
+        columns:
+          - {role: fk, ref: pets, type: integer}
+          - {role: fk, ref: veterinarians, type: integer}
+          - {names: [procedure_name, procedure_type], type: text, role: category, values: [spay, neuter, dental extraction, mass removal, fracture repair, cruciate ligament repair, foreign body removal, cystotomy]}
+          - {names: [performed_date, performed_on], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [anesthesia_minutes, anesthesia_min], type: integer, role: number, min: 20, max: 300}
+          - {names: [cost, total_cost], type: real, role: number, min: 150, max: 9000}
+          - {names: [had_complications, complications], type: integer, role: flag, optional: true}
+
+      - key: lab_tests
+        names: [lab_tests, diagnostics]
+        id: [test_id, diagnostic_id]
+        columns:
+          - {role: fk, ref: pets, type: integer}
+          - {names: [panel, assay], type: text, role: category, values: [complete blood count, chemistry panel, urinalysis, heartworm antigen, fecal flotation, thyroid T4, FeLV/FIV]}
+          - {names: [collected_date, sample_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [fee, charge], type: real, role: number, min: 25, max: 300}
+          - {names: [is_abnormal, abnormal], type: integer, role: flag}
+
+      - key: invoices
+        names: [invoices, bills]
+        id: [invoice_id, bill_id]
+        columns:
+          - {role: fk, ref: owners, type: integer}
+          - {role: fk, ref: hospitals, type: integer}
+          - {names: [issued_date, billing_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [amount_due, amount], type: real, role: number, min: 30, max: 12000}
+          - {names: [payment_method], type: text, role: category, values: [credit card, debit card, cash, pet insurance, payment plan]}
+          - {names: [status, payment_status], type: text, role: category, values: [paid, pending, overdue, written off], optional: true}
+
+  long-term care:
+    tables:
+      - key: homes
+        names: [nursing_homes, facilities]
+        id: [home_id, facility_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: nursing home}
+          - {names: [city], type: text, role: category, values: [Austin, Denver, Columbus, Raleigh, Portland, Tucson, Omaha, Boise]}
+          - {names: [ownership, ownership_type], type: text, role: category, values: [for-profit, nonprofit, government]}
+          - {names: [licensed_beds, bed_count], type: integer, role: number, min: 30, max: 320}
+          - {names: [star_rating, overall_rating], type: integer, role: number, min: 1, max: 5}
+          - {names: [daily_rate, private_room_rate], type: real, role: number, min: 180, max: 650}
+
+      - key: residents
+        names: [residents]
+        id: [resident_id]
+        columns:
+          - {role: fk, ref: homes, type: integer}
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [birth_date, date_of_birth], type: date, role: date, min: "1920-01-01", max: "1965-12-31"}
+          - {names: [sex], type: text, role: category, values: [F, M]}
+          - {names: [admitted_date, move_in_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [care_level, level_of_care], type: text, role: category, values: [assisted living, skilled nursing, memory care, short-term rehab]}
+          - {names: [primary_payer, payer], type: text, role: category, values: [Medicaid, Medicare, private pay, long-term care insurance, VA benefits], optional: true}
+
+      - key: staff
+        names: [staff, employees]
+        id: [staff_id, employee_id]
+        columns:
+          - {role: fk, ref: homes, type: integer}
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [job_role, position], type: text, role: category, values: [registered nurse, licensed practical nurse, certified nursing assistant, physical therapist, activities coordinator, dietitian, social worker]}
+          - {names: [hire_date, start_date], type: date, role: date, min: "2000-01-01", max: "2025-12-31"}
+          - {names: [hourly_wage, pay_rate], type: real, role: number, min: 15, max: 65}
+          - {names: [is_full_time, full_time], type: integer, role: flag, optional: true}
+
+      - key: care_plans
+        names: [care_plans]
+        id: [care_plan_id]
+        columns:
+          - {role: fk, ref: residents, type: integer}
+          - {role: fk, ref: staff, type: integer}
+          - {names: [start_date, effective_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [primary_goal, goal], type: text, role: category, values: [fall prevention, wound healing, mobility, nutrition, medication management, cognitive support, pain management]}
+          - {names: [therapy_hours_per_week, weekly_therapy_hours], type: real, role: number, min: 0.5, max: 15}
+          - {names: [status, plan_status], type: text, role: category, values: [active, completed, under review]}
+
+      - key: medications
+        names: [medications, drugs]
+        id: [medication_id, drug_id]
+        columns:
+          - {names: [name, generic_name], type: text, role: entity_name, values: [donepezil, memantine, metformin, lisinopril, warfarin, sertraline, furosemide, levothyroxine, acetaminophen]}
+          - {names: [supplier, pharmacy_vendor], type: text, role: category, values: [McKesson, Cardinal Health, Omnicare, PharMerica]}
+          - {names: [unit_cost, cost_per_dose], type: real, role: number, min: 0.03, max: 12}
+
+      - key: med_administrations
+        names: [medication_administrations, med_passes]
+        id: [administration_id, med_pass_id]
+        columns:
+          - {role: fk, ref: residents, type: integer}
+          - {role: fk, ref: medications, type: integer}
+          - {role: fk, ref: staff, type: integer}
+          - {names: [administered_date, given_on], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+          - {names: [time_slot, dose_window], type: text, role: category, values: [morning, midday, evening, bedtime]}
+          - {names: [dose_mg], type: integer, role: number, min: 1, max: 1000}
+          - {names: [was_refused, refused], type: integer, role: flag, optional: true}
+
+      - key: incidents
+        names: [incidents, incident_reports]
+        id: [incident_id, report_id]
+        columns:
+          - {role: fk, ref: residents, type: integer}
+          - {names: [incident_type, category], type: text, role: category, values: [fall, medication error, skin tear, elopement, resident altercation, choking, pressure injury]}
+          - {names: [occurred_date, reported_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [injury_level, severity], type: text, role: category, values: ["none", minor, moderate, major]}
+          - {names: [sent_to_hospital, hospital_transfer], type: integer, role: flag, optional: true}
+
+      - key: assessments
+        names: [assessments, health_assessments]
+        id: [assessment_id, health_assessment_id]
+        columns:
+          - {role: fk, ref: residents, type: integer}
+          - {names: [assessed_date, assessment_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [weight_kg, body_weight_kg], type: real, role: number, min: 38, max: 140}
+          - {names: [systolic_bp, systolic_pressure], type: integer, role: number, min: 90, max: 190}
+          - {names: [adl_score, adl_dependency_score], type: integer, role: number, min: 0, max: 28}
+          - {names: [cognitive_score, bims_score], type: integer, role: number, min: 0, max: 15, optional: true}
+
+      - key: inspections
+        names: [inspections, surveys]
+        id: [inspection_id, survey_id]
+        columns:
+          - {role: fk, ref: homes, type: integer}
+          - {names: [category, scope], type: text, role: category, values: [standard, complaint, follow-up, infection control]}
+          - {names: [completed_date, exit_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [deficiencies, deficiency_count], type: integer, role: number, min: 0, max: 40}
+          - {names: [surveyor_hours, hours_on_site], type: real, role: number, min: 6, max: 90, optional: true}
+
+      - key: shifts
+        names: [shifts, work_shifts]
+        id: [shift_id, work_shift_id]
+        columns:
+          - {role: fk, ref: staff, type: integer}
+          - {names: [shift_date, work_date], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+          - {names: [shift_type, period], type: text, role: category, values: [day, evening, night]}
+          - {names: [hours_worked, hours], type: real, role: number, min: 4, max: 16}
+          - {names: [is_overtime, overtime], type: integer, role: flag, optional: true}
+
+      - key: activities
+        names: [activities, activity_sessions]
+        id: [activity_id, session_id]
+        columns:
+          - {role: fk, ref: homes, type: integer}
+          - {names: [program, activity_type], type: text, role: category, values: [bingo, music therapy, chair exercise, art class, gardening, movie night, pet therapy, religious service]}
+          - {names: [held_date, held_on], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [attendees, attendance], type: integer, role: number, min: 2, max: 60}
+          - {names: [supply_cost, cost], type: real, role: number, min: 0, max: 400}
+
+      - key: statements
+        names: [billing_statements, invoices]
+        id: [statement_id, invoice_id]
+        columns:
+          - {role: fk, ref: residents, type: integer}
+          - {names: [billing_month, period_start], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [days_billed, billed_days], type: integer, role: number, min: 1, max: 31}
+          - {names: [amount_billed, amount], type: real, role: number, min: 2000, max: 16000}
+          - {names: [status, payment_status], type: text, role: category, values: [paid, pending, overdue, written off]}
+
+  emergency medical services:
+    tables:
+      - key: stations
+        names: [stations, ambulance_bases]
+        id: [station_id, base_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: ambulance station}
+          - {names: [district, service_area], type: text, role: category, values: [North, South, East, West, Central, Airport, Harbor]}
+          - {names: [bay_count, garage_bays], type: integer, role: number, min: 1, max: 8}
+          - {names: [opened_date, commissioned_date], type: date, role: date, min: "1970-01-01", max: "2024-12-31", optional: true}
+          - {names: [annual_budget, operating_budget], type: real, role: number, min: 400000, max: 6000000, optional: true}
+
+      - key: ambulances
+        names: [ambulances, units]
+        id: [ambulance_id, unit_id]
+        columns:
+          - {role: fk, ref: stations, type: integer}
+          - {names: [service_level, capability], type: text, role: category, values: [BLS, ALS, critical care]}
+          - {names: [chassis_make, manufacturer], type: text, role: category, values: [Ford, Chevrolet, Ram, Mercedes-Benz, Freightliner, International]}
+          - {names: [model_year], type: integer, role: number, min: 2008, max: 2025}
+          - {names: [odometer_miles, mileage], type: integer, role: number, min: 2000, max: 350000}
+          - {names: [purchase_price, acquisition_cost], type: real, role: number, min: 95000, max: 420000, optional: true}
+
+      - key: crew
+        names: [crew_members, responders, personnel]
+        id: [crew_member_id, responder_id, personnel_id]
+        columns:
+          - {role: fk, ref: stations, type: integer}
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [certification, cert_level], type: text, role: category, values: [EMT, Advanced EMT, Paramedic, Critical Care Paramedic]}
+          - {names: [hire_date, start_date], type: date, role: date, min: "1995-01-01", max: "2025-12-31"}
+          - {names: [hourly_wage, pay_rate], type: real, role: number, min: 16, max: 48}
+
+      - key: calls
+        names: [dispatch_calls, emergency_calls, incidents]
+        id: [call_id, call_id, incident_id]
+        columns:
+          - {names: [received_date, reported_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [nature, complaint_type], type: text, role: category, values: [cardiac arrest, chest pain, breathing problem, fall, traffic collision, stroke, overdose, seizure, unconscious person]}
+          - {names: [caller_type, reported_by], type: text, role: category, values: [bystander, patient, family member, police, care facility staff]}
+          - {names: [district, area], type: text, role: category, values: [North, South, East, West, Central, Airport, Harbor]}
+          - {names: [handling_seconds, processing_seconds], type: integer, role: number, min: 30, max: 900}
+
+      - key: responses
+        names: [responses, dispatches]
+        id: [response_id, dispatch_id]
+        columns:
+          - {role: fk, ref: calls, type: integer}
+          - {role: fk, ref: ambulances, type: integer}
+          - {names: [minutes_to_scene, travel_minutes], type: real, role: number, min: 1.5, max: 45}
+          - {names: [miles_driven, distance_miles], type: real, role: number, min: 0.2, max: 40}
+          - {names: [outcome, disposition], type: text, role: category, values: [transported, treated and released, refused care, cancelled en route, no patient found]}
+          - {names: [lights_and_sirens, emergent_mode], type: integer, role: flag, optional: true}
+
+      - key: hospitals
+        names: [hospitals, receiving_facilities]
+        id: [hospital_id, facility_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: hospital}
+          - {names: [trauma_level, trauma_designation], type: text, role: category, values: [Level I, Level II, Level III, not designated]}
+          - {names: [bed_count, licensed_beds], type: integer, role: number, min: 40, max: 1200}
+          - {names: [is_stroke_center, stroke_center], type: integer, role: flag, optional: true}
+
+      - key: transports
+        names: [transports, patient_transports]
+        id: [transport_id, transport_id]
+        columns:
+          - {role: fk, ref: responses, type: integer}
+          - {role: fk, ref: hospitals, type: integer}
+          - {names: [transport_minutes, minutes_en_route], type: real, role: number, min: 3, max: 90}
+          - {names: [offload_minutes, wall_time_minutes], type: integer, role: number, min: 5, max: 180}
+          - {names: [acuity, patient_acuity], type: text, role: category, values: [critical, emergent, lower acuity]}
+
+      - key: care_reports
+        names: [patient_care_reports, care_reports]
+        id: [report_id, care_report_id]
+        columns:
+          - {role: fk, ref: calls, type: integer}
+          - {role: fk, ref: crew, type: integer}
+          - {names: [patient_age, age_years], type: integer, role: number, min: 0, max: 100}
+          - {names: [patient_sex], type: text, role: category, values: [F, M]}
+          - {names: [gcs_score, glasgow_score], type: integer, role: number, min: 3, max: 15}
+          - {names: [heart_rate, pulse], type: integer, role: number, min: 30, max: 190}
+          - {names: [on_scene_minutes, scene_minutes], type: real, role: number, min: 3, max: 60}
+          - {names: [naloxone_given, received_naloxone], type: integer, role: flag, optional: true}
+
+      - key: shifts
+        names: [shifts, duty_shifts]
+        id: [shift_id, duty_shift_id]
+        columns:
+          - {role: fk, ref: crew, type: integer}
+          - {role: fk, ref: ambulances, type: integer}
+          - {names: [shift_date, duty_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [shift_type, rotation], type: text, role: category, values: [day, night, "24-hour"]}
+          - {names: [overtime_hours, extra_hours], type: real, role: number, min: 0, max: 12}
+
+      - key: maintenance
+        names: [maintenance_records, repairs]
+        id: [record_id, repair_id]
+        columns:
+          - {role: fk, ref: ambulances, type: integer}
+          - {names: [service_date, work_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [work_type, service_category], type: text, role: category, values: [oil change, brake repair, tire replacement, engine repair, power cot repair, annual inspection, electrical repair]}
+          - {names: [cost, invoice_amount], type: real, role: number, min: 60, max: 18000}
+          - {names: [days_out_of_service, downtime_days], type: integer, role: number, min: 0, max: 30}
+
+      - key: training
+        names: [training_records, trainings]
+        id: [training_id, training_id]
+        columns:
+          - {role: fk, ref: crew, type: integer}
+          - {names: [course, course_name], type: text, role: category, values: [ACLS, PALS, PHTLS, CPR instructor, hazmat awareness, emergency vehicle operations]}
+          - {names: [completed_date, completion_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [credit_hours, contact_hours], type: real, role: number, min: 2, max: 40}
+          - {names: [passed, is_passed], type: integer, role: flag}
+
+      - key: claims
+        names: [billing_claims, claims]
+        id: [claim_id, claim_id]
+        columns:
+          - {role: fk, ref: care_reports, type: integer}
+          - {names: [payer, payer_type], type: text, role: category, values: [Medicare, Medicaid, private insurance, self-pay, workers compensation]}
+          - {names: [billed_date, submitted_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [amount_billed, billed_amount], type: real, role: number, min: 300, max: 4500}
+          - {names: [status, claim_status], type: text, role: category, values: [paid, denied, pending, sent to collections]}
+
+  medical devices:
+    tables:
+      - key: makers
+        names: [manufacturers, device_makers]
+        id: [manufacturer_id, maker_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: company}
+          - {names: [country, headquarters_country], type: text, role: category, values: [USA, Ireland, Germany, Switzerland, Japan, Netherlands, Israel, China]}
+          - {names: [founded_year, year_founded], type: integer, role: number, min: 1880, max: 2018}
+          - {names: [annual_revenue_musd, revenue_millions], type: real, role: number, min: 5, max: 35000}
+          - {names: [employee_count, employees], type: integer, role: number, min: 20, max: 100000, optional: true}
+
+      - key: devices
+        names: [devices, products]
+        id: [device_id, product_id]
+        columns:
+          - {role: fk, ref: makers, type: integer}
+          - {names: [name, brand_name], type: text, role: entity_name, kind: medical device}
+          - {names: [risk_class, fda_class], type: text, role: category, values: [Class I, Class II, Class III]}
+          - {names: [specialty, clinical_area], type: text, role: category, values: [cardiovascular, orthopedic, neurology, general surgery, radiology, ophthalmic, diabetes care]}
+          - {names: [list_price, unit_price], type: real, role: number, min: 15, max: 95000}
+          - {names: [launch_date, market_date], type: date, role: date, min: "2000-01-01", max: "2025-12-31", optional: true}
+
+      - key: clearances
+        names: [clearances, regulatory_submissions]
+        id: [clearance_id, submission_id]
+        columns:
+          - {role: fk, ref: devices, type: integer}
+          - {names: [pathway, review_pathway], type: text, role: category, values: ["510(k)", PMA, De Novo, HDE]}
+          - {names: [decision_date, decided_on], type: date, role: date, min: "2005-01-01", max: "2025-12-31"}
+          - {names: [review_days, days_to_decision], type: integer, role: number, min: 30, max: 720}
+          - {names: [user_fee, fee_paid], type: real, role: number, min: 5000, max: 500000}
+          - {names: [outcome, decision], type: text, role: category, values: [granted, denied, withdrawn]}
+
+      - key: recalls
+        names: [recalls, field_actions]
+        id: [recall_id, field_action_id]
+        columns:
+          - {role: fk, ref: devices, type: integer}
+          - {names: [severity_class, hazard_class], type: text, role: category, values: [Class I, Class II, Class III]}
+          - {names: [reason, root_cause], type: text, role: category, values: [software defect, sterility breach, labeling error, component failure, packaging defect, battery failure, manufacturing deviation]}
+          - {names: [initiated_date, announced_date], type: date, role: date, min: "2010-01-01", max: "2025-12-31"}
+          - {names: [units_affected, affected_units], type: integer, role: number, min: 10, max: 500000}
+          - {names: [estimated_cost, remediation_cost], type: real, role: number, min: 10000, max: 80000000, optional: true}
+
+      - key: hospitals
+        names: [hospitals, medical_centers]
+        id: [hospital_id, center_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: hospital}
+          - {names: [state], type: text, role: category, values: [CA, TX, NY, FL, OH, PA, MN, MA]}
+          - {names: [bed_count, licensed_beds], type: integer, role: number, min: 25, max: 1500}
+          - {names: [is_teaching, teaching_hospital], type: integer, role: flag, optional: true}
+
+      - key: surgeons
+        names: [surgeons]
+        id: [surgeon_id]
+        columns:
+          - {role: fk, ref: hospitals, type: integer}
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [specialty], type: text, role: category, values: [orthopedic surgery, cardiac surgery, neurosurgery, vascular surgery, otolaryngology, electrophysiology]}
+          - {names: [years_in_practice, experience_years], type: integer, role: number, min: 1, max: 40}
+
+      - key: patients
+        names: [patients]
+        id: [patient_id]
+        columns:
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [birth_date, date_of_birth], type: date, role: date, min: "1935-01-01", max: "2015-12-31"}
+          - {names: [sex], type: text, role: category, values: [F, M]}
+          - {names: [insurance_type, coverage_type], type: text, role: category, values: [private, Medicare, Medicaid, uninsured], optional: true}
+
+      - key: implants
+        names: [implant_records, implants]
+        id: [implant_record_id, implant_id]
+        columns:
+          - {role: fk, ref: devices, type: integer}
+          - {role: fk, ref: patients, type: integer}
+          - {role: fk, ref: surgeons, type: integer}
+          - {names: [implanted_date, surgery_date], type: date, role: date, min: "2012-01-01", max: "2025-12-31"}
+          - {names: [acquisition_cost, cost], type: real, role: number, min: 200, max: 95000}
+          - {names: [body_side, laterality], type: text, role: category, values: [left, right, bilateral, midline], optional: true}
+          - {names: [was_explanted, explanted], type: integer, role: flag, optional: true}
+
+      - key: adverse_events
+        names: [adverse_events, incident_reports]
+        id: [event_id, report_id]
+        columns:
+          - {role: fk, ref: devices, type: integer}
+          - {names: [harm_category, consequence], type: text, role: category, values: [malfunction, injury, death]}
+          - {names: [received_date, reported_date], type: date, role: date, min: "2010-01-01", max: "2025-12-31"}
+          - {names: [reporter_type, source], type: text, role: category, values: [manufacturer, user facility, physician, patient, distributor]}
+          - {names: [patient_age, age_years], type: integer, role: number, min: 0, max: 95, optional: true}
+
+      - key: purchases
+        names: [purchases, procurements]
+        id: [purchase_id, procurement_id]
+        columns:
+          - {role: fk, ref: devices, type: integer}
+          - {role: fk, ref: hospitals, type: integer}
+          - {names: [received_date, delivery_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [quantity, units], type: integer, role: number, min: 1, max: 500}
+          - {names: [unit_price, contract_price], type: real, role: number, min: 15, max: 90000}
+          - {names: [contract_type, buying_channel], type: text, role: category, values: [GPO contract, direct, consignment, distributor], optional: true}
+
+      - key: inspections
+        names: [inspections, facility_audits]
+        id: [inspection_id, audit_id]
+        columns:
+          - {role: fk, ref: makers, type: integer}
+          - {names: [completed_date, concluded_date], type: date, role: date, min: "2010-01-01", max: "2025-12-31"}
+          - {names: [agency, regulator], type: text, role: category, values: [FDA, TUV SUD, BSI, DEKRA, PMDA]}
+          - {names: [classification, result], type: text, role: category, values: [no action indicated, voluntary action indicated, official action indicated]}
+          - {names: [observations, observation_count], type: integer, role: number, min: 0, max: 25}
+
+      - key: studies
+        names: [clinical_studies, trials]
+        id: [study_id, trial_id]
+        columns:
+          - {role: fk, ref: devices, type: integer}
+          - {names: [phase, stage], type: text, role: category, values: [feasibility, pivotal, post-market]}
+          - {names: [start_date], type: date, role: date, min: "2008-01-01", max: "2025-12-31"}
+          - {names: [enrollment, enrolled_patients], type: integer, role: number, min: 10, max: 3000}
+          - {names: [budget, budget_usd], type: real, role: number, min: 200000, max: 90000000}
+          - {names: [status, study_status], type: text, role: category, values: [recruiting, active, completed, terminated]}

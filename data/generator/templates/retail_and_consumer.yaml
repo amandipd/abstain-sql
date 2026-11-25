@@ -198,6 +198,27 @@ topics:
           - {names: [units_ordered, quantity], type: integer, role: number, min: 100, max: 50000}
           - {names: [unit_cost, cost_per_unit], type: real, role: number, min: 1.5, max: 300}
 
+      - key: reviews
+        names: [reviews, product_reviews]
+        id: [review_id, review_id]
+        columns:
+          - {role: fk, ref: customers, type: integer}
+          - {role: fk, ref: garments, type: integer}
+          - {names: [review_date, posted_date], type: date, role: date, min: "2019-01-01", max: "2025-12-31"}
+          - {names: [rating, star_rating], type: integer, role: number, min: 1, max: 5}
+          - {names: [fit_feedback, fit], type: text, role: category, values: [runs small, true to size, runs large]}
+          - {names: [helpful_votes, helpful_count], type: integer, role: number, min: 0, max: 300, optional: true}
+
+      - key: campaigns
+        names: [campaigns, marketing_campaigns]
+        id: [campaign_id, campaign_id]
+        columns:
+          - {role: fk, ref: brands, type: integer}
+          - {names: [start_date, launch_date], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+          - {names: [channel, media_channel], type: text, role: category, values: [Instagram, TikTok, print magazine, billboard, runway show, email]}
+          - {names: [budget, spend], type: real, role: number, min: 5000, max: 3000000}
+          - {names: [duration_weeks, weeks_running], type: integer, role: number, min: 1, max: 26}
+
   beauty industry:
     tables:
       - key: brands
@@ -283,6 +304,29 @@ topics:
           - {names: [test_date, completed_date], type: date, role: date, min: "2010-01-01", max: "2025-12-31"}
           - {names: [result, outcome], type: text, role: category, values: [pass, fail, retest]}
           - {names: [lab_cost, test_cost], type: real, role: number, min: 300, max: 25000}
+
+      - key: campaigns
+        names: [marketing_campaigns, campaigns]
+        id: [campaign_id, campaign_id]
+        columns:
+          - {role: fk, ref: brands, type: integer}
+          - {names: [start_date, launch_date], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+          - {names: [channel, media_channel], type: text, role: category, values: [Instagram, TikTok, YouTube, television, print magazine, in-store display]}
+          - {names: [budget, spend], type: real, role: number, min: 5000, max: 5000000}
+          - {names: [duration_weeks, weeks_running], type: integer, role: number, min: 1, max: 26}
+          - {names: [uses_influencers, influencer_led], type: integer, role: flag, optional: true}
+
+      - key: adverse_reactions
+        names: [adverse_reactions, reaction_reports]
+        id: [reaction_id, report_id]
+        columns:
+          - {role: fk, ref: products, type: integer}
+          - {role: fk, ref: customers, type: integer}
+          - {names: [reported_date, report_date], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+          - {names: [symptom, reaction_type], type: text, role: category, values: [rash, itching, swelling, eye irritation, burning, hair loss, hives]}
+          - {names: [severity], type: text, role: category, values: [mild, moderate, serious]}
+          - {names: [days_to_onset, onset_days], type: integer, role: number, min: 0, max: 30}
+          - {names: [sought_medical_care, saw_doctor], type: integer, role: flag, optional: true}
 
   restaurant operations:
     tables:
@@ -481,3 +525,594 @@ topics:
           - {role: fk, ref: services, type: integer}
           - {names: [charge_date, posted_date], type: date, role: date, min: "2023-01-01", max: "2025-12-31"}
           - {names: [amount, charge_amount], type: real, role: number, min: 5, max: 1200}
+
+  tourism:
+    tables:
+      - key: operators
+        names: [tour_operators, operators]
+        id: [operator_id, operator_id]
+        columns:
+          - {names: [name, company_name], type: text, role: entity_name, kind: tour operator}
+          - {names: [headquarters_country, home_country], type: text, role: category, values: [USA, UK, Peru, Kenya, Thailand, Italy, Australia, Iceland]}
+          - {names: [founded_year, year_founded], type: integer, role: number, min: 1955, max: 2023}
+          - {names: [avg_rating, average_rating], type: real, role: number, min: 3, max: 5}
+          - {names: [is_accredited, accredited], type: integer, role: flag, optional: true}
+
+      - key: destinations
+        names: [destinations, regions]
+        id: [destination_id, region_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: destination}
+          - {names: [continent], type: text, role: category, values: [Europe, Asia, Africa, North America, South America, Oceania]}
+          - {names: [landscape, setting], type: text, role: category, values: [city, coastline, mountains, countryside, island, lakes]}
+          - {names: [avg_daily_cost, daily_budget], type: real, role: number, min: 30, max: 600}
+
+      - key: tours
+        names: [tours, excursions, trips]
+        id: [tour_id, excursion_id, trip_id]
+        columns:
+          - {role: fk, ref: operators, type: integer}
+          - {role: fk, ref: destinations, type: integer}
+          - {names: [name, title], type: text, role: entity_name, kind: tour}
+          - {names: [theme, style], type: text, role: category, values: [walking, food and wine, adventure, cultural, wildlife, cycling, small-ship cruise]}
+          - {names: [duration_days, length_days], type: integer, role: number, min: 1, max: 21}
+          - {names: [price_per_person, base_price], type: real, role: number, min: 40, max: 9500}
+          - {names: [max_group_size, capacity], type: integer, role: number, min: 4, max: 40}
+          - {names: [difficulty, fitness_level], type: text, role: category, values: [easy, moderate, challenging], optional: true}
+
+      - key: guides
+        names: [guides, tour_guides]
+        id: [guide_id, guide_id]
+        columns:
+          - {role: fk, ref: operators, type: integer}
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [languages_spoken, language_count], type: integer, role: number, min: 1, max: 5}
+          - {names: [hire_date, start_date], type: date, role: date, min: "2008-01-01", max: "2025-12-31"}
+          - {names: [daily_rate, day_rate], type: real, role: number, min: 60, max: 600}
+          - {names: [is_certified, licensed], type: integer, role: flag, optional: true}
+
+      - key: travelers
+        names: [travelers, customers, clients]
+        id: [traveler_id, customer_id, client_id]
+        columns:
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [birth_date, date_of_birth], type: date, role: date, min: "1945-01-01", max: "2007-12-31"}
+          - {names: [home_country, country], type: text, role: category, values: [USA, UK, Germany, Australia, Canada, Japan, France, Brazil]}
+          - {names: [is_loyalty_member, loyalty_member], type: integer, role: flag, optional: true}
+
+      - key: bookings
+        names: [bookings, reservations]
+        id: [booking_id, reservation_id]
+        columns:
+          - {role: fk, ref: travelers, type: integer}
+          - {role: fk, ref: tours, type: integer}
+          - {names: [departure_date, travel_date], type: date, role: date, min: "2016-01-01", max: "2025-12-31"}
+          - {names: [party_size, num_people], type: integer, role: number, min: 1, max: 10}
+          - {names: [total_price, amount_due], type: real, role: number, min: 40, max: 60000}
+          - {names: [channel, sales_channel], type: text, role: category, values: [direct website, travel agent, Viator, GetYourGuide, phone, walk-in]}
+          - {names: [status, outcome], type: text, role: category, values: [completed, cancelled, no-show]}
+
+      - key: payments
+        names: [payments]
+        id: [payment_id]
+        columns:
+          - {role: fk, ref: bookings, type: integer}
+          - {names: [payment_date, paid_date], type: date, role: date, min: "2015-06-01", max: "2025-12-31"}
+          - {names: [amount, amount_paid], type: real, role: number, min: 20, max: 60000}
+          - {names: [method, payment_method], type: text, role: category, values: [credit card, debit card, bank transfer, PayPal, voucher]}
+          - {names: [is_deposit, deposit], type: integer, role: flag, optional: true}
+
+      - key: reviews
+        names: [reviews, feedback]
+        id: [review_id, feedback_id]
+        columns:
+          - {role: fk, ref: tours, type: integer}
+          - {role: fk, ref: travelers, type: integer}
+          - {names: [posted_date, submitted_date], type: date, role: date, min: "2016-01-01", max: "2025-12-31"}
+          - {names: [rating, star_rating], type: integer, role: number, min: 1, max: 5}
+          - {names: [value_score, value_for_money], type: integer, role: number, min: 1, max: 10}
+          - {names: [would_recommend, recommends], type: integer, role: flag, optional: true}
+
+      - key: guide_assignments
+        names: [guide_assignments, assignments]
+        id: [assignment_id, assignment_id]
+        columns:
+          - {role: fk, ref: tours, type: integer}
+          - {role: fk, ref: guides, type: integer}
+          - {names: [assigned_date, work_date], type: date, role: date, min: "2016-01-01", max: "2025-12-31"}
+          - {names: [days_worked], type: integer, role: number, min: 1, max: 21}
+          - {names: [fee_paid, guide_fee], type: real, role: number, min: 60, max: 9000}
+
+      - key: insurance_policies
+        names: [insurance_policies, travel_insurance]
+        id: [policy_id, policy_id]
+        columns:
+          - {role: fk, ref: travelers, type: integer}
+          - {names: [purchased_date, issued_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [coverage_type, cover_level], type: text, role: category, values: [trip cancellation, medical only, comprehensive, adventure sports]}
+          - {names: [premium, premium_paid], type: real, role: number, min: 15, max: 900}
+          - {names: [claim_filed, has_claim], type: integer, role: flag}
+
+  e-commerce marketplace:
+    tables:
+      - key: sellers
+        names: [sellers, merchants, shops]
+        id: [seller_id, merchant_id, shop_id]
+        columns:
+          - {names: [name, display_name], type: text, role: entity_name, kind: store}
+          - {names: [country, base_country], type: text, role: category, values: [USA, China, UK, Germany, India, Canada, Turkey]}
+          - {names: [joined_date, onboarded_date], type: date, role: date, min: "2012-01-01", max: "2025-12-31"}
+          - {names: [fulfillment_model, fulfillment], type: text, role: category, values: [self-fulfilled, marketplace-fulfilled, dropship]}
+          - {names: [is_verified, verified], type: integer, role: flag, optional: true}
+
+      - key: categories
+        names: [categories, departments]
+        id: [category_id, department_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, values: [electronics, home and kitchen, toys and games, books, clothing, beauty, sports and outdoors, pet supplies, automotive]}
+          - {names: [commission_pct, referral_fee_pct], type: real, role: number, min: 5, max: 20}
+
+      - key: listings
+        names: [listings, products, items]
+        id: [listing_id, product_id, item_id]
+        columns:
+          - {role: fk, ref: sellers, type: integer}
+          - {role: fk, ref: categories, type: integer}
+          - {names: [title, name], type: text, role: entity_name, kind: product}
+          - {names: [price, list_price], type: real, role: number, min: 1, max: 3000}
+          - {names: [condition_grade], type: text, role: category, values: [new, renewed, used - like new, used - good, used - acceptable]}
+          - {names: [quantity_available, stock], type: integer, role: number, min: 0, max: 1000}
+          - {names: [listed_date, created_date], type: date, role: date, min: "2016-01-01", max: "2025-12-31"}
+          - {names: [is_active, active], type: integer, role: flag, optional: true}
+
+      - key: buyers
+        names: [buyers, customers, shoppers]
+        id: [buyer_id, customer_id, shopper_id]
+        columns:
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [city, ship_to_city], type: text, role: category, values: [Seattle, Dallas, Atlanta, Phoenix, Detroit, Charlotte, Denver, Boston]}
+          - {names: [signup_date, joined_date], type: date, role: date, min: "2012-01-01", max: "2025-12-31"}
+          - {names: [is_premium_member, has_membership], type: integer, role: flag, optional: true}
+
+      - key: orders
+        names: [orders, purchases]
+        id: [order_id, purchase_id]
+        columns:
+          - {role: fk, ref: buyers, type: integer}
+          - {names: [placed_date, checkout_date], type: date, role: date, min: "2019-01-01", max: "2025-12-31"}
+          - {names: [total_amount, grand_total], type: real, role: number, min: 2, max: 5000}
+          - {names: [payment_method], type: text, role: category, values: [credit card, debit card, PayPal, gift card, buy now pay later]}
+          - {names: [shipping_fee, shipping_charge], type: real, role: number, min: 0, max: 40, optional: true}
+
+      - key: line_items
+        names: [line_items, order_items]
+        id: [line_item_id, order_item_id]
+        columns:
+          - {role: fk, ref: orders, type: integer}
+          - {role: fk, ref: listings, type: integer}
+          - {names: [quantity], type: integer, role: number, min: 1, max: 10}
+          - {names: [unit_price, price_paid], type: real, role: number, min: 1, max: 3000}
+
+      - key: reviews
+        names: [reviews, product_reviews]
+        id: [review_id, review_id]
+        columns:
+          - {role: fk, ref: listings, type: integer}
+          - {role: fk, ref: buyers, type: integer}
+          - {names: [review_date, posted_date], type: date, role: date, min: "2016-01-01", max: "2025-12-31"}
+          - {names: [rating, star_rating], type: integer, role: number, min: 1, max: 5}
+          - {names: [helpful_votes, helpful_count], type: integer, role: number, min: 0, max: 500}
+          - {names: [is_verified_purchase, verified_purchase], type: integer, role: flag, optional: true}
+
+      - key: feedback
+        names: [feedback, ratings]
+        id: [feedback_id, rating_id]
+        columns:
+          - {role: fk, ref: sellers, type: integer}
+          - {role: fk, ref: buyers, type: integer}
+          - {names: [submitted_date, left_date], type: date, role: date, min: "2016-01-01", max: "2025-12-31"}
+          - {names: [sentiment, score], type: text, role: category, values: [positive, neutral, negative]}
+          - {names: [arrived_as_described, accurate_listing], type: integer, role: flag}
+          - {names: [shipped_on_time], type: integer, role: flag, optional: true}
+
+      - key: shipments
+        names: [shipments, deliveries]
+        id: [shipment_id, delivery_id]
+        columns:
+          - {role: fk, ref: orders, type: integer}
+          - {names: [ship_date, dispatched_date], type: date, role: date, min: "2019-01-01", max: "2025-12-31"}
+          - {names: [carrier], type: text, role: category, values: [UPS, FedEx, USPS, DHL, OnTrac]}
+          - {names: [shipping_cost, postage_cost], type: real, role: number, min: 3, max: 80}
+          - {names: [transit_days, days_in_transit], type: integer, role: number, min: 1, max: 14}
+          - {names: [delivered_on_time, on_time], type: integer, role: flag, optional: true}
+
+      - key: payouts
+        names: [payouts, disbursements]
+        id: [payout_id, disbursement_id]
+        columns:
+          - {role: fk, ref: sellers, type: integer}
+          - {names: [paid_date, settlement_date], type: date, role: date, min: "2016-01-01", max: "2025-12-31"}
+          - {names: [amount, net_amount], type: real, role: number, min: 10, max: 250000}
+          - {names: [status], type: text, role: category, values: [paid, on hold, reversed]}
+          - {names: [method, transfer_method], type: text, role: category, values: [bank transfer, PayPal, Payoneer, paper check]}
+
+      - key: returns
+        names: [return_requests, returns]
+        id: [return_id, return_id]
+        columns:
+          - {role: fk, ref: orders, type: integer}
+          - {names: [requested_date, opened_date], type: date, role: date, min: "2019-01-01", max: "2025-12-31"}
+          - {names: [reason, return_reason], type: text, role: category, values: [item not as described, damaged in transit, wrong item sent, no longer needed, arrived late]}
+          - {names: [refund_amount, refunded], type: real, role: number, min: 1, max: 3000}
+          - {names: [label_prepaid, prepaid_label], type: integer, role: flag, optional: true}
+
+      - key: ad_campaigns
+        names: [ad_campaigns, sponsored_ads]
+        id: [campaign_id, ad_id]
+        columns:
+          - {role: fk, ref: sellers, type: integer}
+          - {names: [start_date, launch_date], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+          - {names: [daily_budget, budget_per_day], type: real, role: number, min: 5, max: 2000}
+          - {names: [placement, ad_placement], type: text, role: category, values: [search results, product page, homepage banner, offsite]}
+          - {names: [duration_days, days_running], type: integer, role: number, min: 1, max: 90}
+          - {names: [is_active, active], type: integer, role: flag, optional: true}
+
+  pet care:
+    tables:
+      - key: shops
+        names: [shops, locations, branches]
+        id: [shop_id, location_id, branch_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: pet shop}
+          - {names: [city], type: text, role: category, values: [Denver, Austin, Portland, Raleigh, Minneapolis, Tampa, Sacramento, Pittsburgh]}
+          - {names: [kennel_capacity, boarding_capacity], type: integer, role: number, min: 0, max: 80}
+          - {names: [opened_date], type: date, role: date, min: "1995-01-01", max: "2025-06-30"}
+          - {names: [has_grooming_salon, offers_grooming], type: integer, role: flag, optional: true}
+
+      - key: owners
+        names: [owners, pet_owners, clients]
+        id: [owner_id, owner_id, client_id]
+        columns:
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [city, home_city], type: text, role: category, values: [Denver, Austin, Portland, Raleigh, Minneapolis, Tampa, Sacramento, Pittsburgh]}
+          - {names: [signup_date, first_visit_date], type: date, role: date, min: "2012-01-01", max: "2025-12-31"}
+          - {names: [loyalty_tier, rewards_level], type: text, role: category, values: [none, bronze, silver, gold]}
+
+      - key: pets
+        names: [pets, animals]
+        id: [pet_id, animal_id]
+        columns:
+          - {role: fk, ref: owners, type: integer}
+          - {names: [name], type: text, role: entity_name, values: [Bella, Max, Luna, Charlie, Lucy, Cooper, Daisy, Milo, Bailey, Coco, Rocky, Nala]}
+          - {names: [species], type: text, role: category, values: [dog, cat, rabbit, guinea pig]}
+          - {names: [birth_date, date_of_birth], type: date, role: date, min: "2008-01-01", max: "2025-06-30"}
+          - {names: [is_neutered, spayed_or_neutered], type: integer, role: flag}
+          - {names: [is_microchipped, microchipped], type: integer, role: flag, optional: true}
+
+      - key: staff
+        names: [staff, employees]
+        id: [staff_id, employee_id]
+        columns:
+          - {role: fk, ref: shops, type: integer}
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [job_role, position], type: text, role: category, values: [groomer, bather, kennel attendant, sales associate, store manager]}
+          - {names: [hire_date], type: date, role: date, min: "2008-01-01", max: "2025-12-31"}
+          - {names: [hourly_wage, pay_rate], type: real, role: number, min: 12, max: 38}
+
+      - key: services
+        names: [services, grooming_services]
+        id: [service_id, service_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, values: [full groom, bath and brush, nail trim, teeth brushing, de-shedding treatment, flea bath, puppy intro groom]}
+          - {names: [base_price, list_price], type: real, role: number, min: 10, max: 150}
+          - {names: [duration_minutes], type: integer, role: number, min: 15, max: 180}
+
+      - key: appointments
+        names: [appointments, grooming_appointments]
+        id: [appointment_id, appointment_id]
+        columns:
+          - {role: fk, ref: pets, type: integer}
+          - {role: fk, ref: shops, type: integer}
+          - {role: fk, ref: services, type: integer}
+          - {names: [appointment_date, scheduled_date], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+          - {names: [price_charged, amount_charged], type: real, role: number, min: 10, max: 250}
+          - {names: [tip_amount, tip], type: real, role: number, min: 0, max: 60, optional: true}
+          - {names: [status, outcome], type: text, role: category, values: [completed, cancelled, no-show]}
+
+      - key: boarding_stays
+        names: [boarding_stays, kennel_stays]
+        id: [stay_id, stay_id]
+        columns:
+          - {role: fk, ref: pets, type: integer}
+          - {role: fk, ref: shops, type: integer}
+          - {names: [check_in_date, drop_off_date], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+          - {names: [nights, nights_booked], type: integer, role: number, min: 1, max: 30}
+          - {names: [nightly_rate, rate_per_night], type: real, role: number, min: 25, max: 120}
+          - {names: [suite_type, accommodation], type: text, role: category, values: [standard, deluxe, luxury suite]}
+          - {names: [incident_reported, had_incident], type: integer, role: flag, optional: true}
+
+      - key: products
+        names: [products, items]
+        id: [product_id, item_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: pet product}
+          - {names: [category, aisle], type: text, role: category, values: [dry food, wet food, treats, toys, litter, grooming supplies, beds and crates]}
+          - {names: [unit_price, shelf_price], type: real, role: number, min: 1, max: 250}
+          - {names: [is_store_brand, store_brand], type: integer, role: flag, optional: true}
+
+      - key: sales
+        names: [sales, transactions]
+        id: [sale_id, transaction_id]
+        columns:
+          - {role: fk, ref: owners, type: integer}
+          - {role: fk, ref: shops, type: integer}
+          - {names: [sold_date, purchase_date], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+          - {names: [total_amount, basket_total], type: real, role: number, min: 2, max: 900}
+          - {names: [payment_method, tender_type], type: text, role: category, values: [credit card, debit card, cash, mobile wallet, gift card]}
+
+      - key: sale_items
+        names: [sale_items, line_items]
+        id: [sale_item_id, line_item_id]
+        columns:
+          - {role: fk, ref: sales, type: integer}
+          - {role: fk, ref: products, type: integer}
+          - {names: [quantity, units], type: integer, role: number, min: 1, max: 12}
+          - {names: [unit_price, price_paid], type: real, role: number, min: 1, max: 250}
+          - {names: [discount_pct, discount_percent], type: real, role: number, min: 0, max: 40, optional: true}
+
+      - key: shifts
+        names: [shifts, work_shifts]
+        id: [shift_id, shift_id]
+        columns:
+          - {role: fk, ref: staff, type: integer}
+          - {names: [work_date, shift_date], type: date, role: date, min: "2022-01-01", max: "2025-12-31"}
+          - {names: [hours_worked, hours], type: real, role: number, min: 2, max: 12}
+          - {names: [animals_handled], type: integer, role: number, min: 0, max: 30}
+
+  home services:
+    tables:
+      - key: providers
+        names: [providers, service_providers, contractors]
+        id: [provider_id, provider_id, contractor_id]
+        columns:
+          - {names: [name, business_name], type: text, role: entity_name, kind: contractor}
+          - {names: [trade, primary_trade], type: text, role: category, values: [plumbing, electrical, HVAC, roofing, landscaping, house cleaning, pest control, handyman]}
+          - {names: [founded_year, year_established], type: integer, role: number, min: 1970, max: 2023}
+          - {names: [is_licensed, licensed], type: integer, role: flag}
+          - {names: [service_radius_miles, radius_miles], type: integer, role: number, min: 5, max: 80, optional: true}
+
+      - key: technicians
+        names: [technicians, workers]
+        id: [technician_id, worker_id]
+        columns:
+          - {role: fk, ref: providers, type: integer}
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [skill_level, experience_level], type: text, role: category, values: [helper, apprentice, journeyman, master]}
+          - {names: [hire_date, start_date], type: date, role: date, min: "2005-01-01", max: "2025-12-31"}
+          - {names: [hourly_rate, pay_rate], type: real, role: number, min: 16, max: 75}
+
+      - key: customers
+        names: [customers, homeowners, clients]
+        id: [customer_id, homeowner_id, client_id]
+        columns:
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [city], type: text, role: category, values: [Phoenix, Charlotte, Columbus, Nashville, Kansas City, Tampa, Salt Lake City, Richmond]}
+          - {names: [home_type, dwelling_type], type: text, role: category, values: [single-family, townhouse, condo, duplex]}
+          - {names: [home_age_years, building_age], type: integer, role: number, min: 0, max: 120, optional: true}
+          - {names: [signup_date, first_contact_date], type: date, role: date, min: "2014-01-01", max: "2025-12-31"}
+
+      - key: requests
+        names: [service_requests, leads]
+        id: [request_id, lead_id]
+        columns:
+          - {role: fk, ref: customers, type: integer}
+          - {names: [submitted_date, received_date], type: date, role: date, min: "2016-01-01", max: "2025-12-31"}
+          - {names: [urgency, priority_level], type: text, role: category, values: [routine, within a week, same day, emergency]}
+          - {names: [source, lead_source], type: text, role: category, values: [website, phone, Angi, Thumbtack, Yelp, referral, search ad]}
+          - {names: [stated_budget, budget_estimate], type: real, role: number, min: 50, max: 40000, optional: true}
+
+      - key: quotes
+        names: [quotes, estimates, bids]
+        id: [quote_id, estimate_id, bid_id]
+        columns:
+          - {role: fk, ref: requests, type: integer}
+          - {role: fk, ref: providers, type: integer}
+          - {names: [issued_date, sent_date], type: date, role: date, min: "2016-01-01", max: "2025-12-31"}
+          - {names: [amount, total_amount], type: real, role: number, min: 75, max: 60000}
+          - {names: [valid_days, days_valid], type: integer, role: number, min: 7, max: 90}
+          - {names: [is_accepted, accepted], type: integer, role: flag}
+
+      - key: jobs
+        names: [jobs, work_orders]
+        id: [job_id, work_order_id]
+        columns:
+          - {role: fk, ref: customers, type: integer}
+          - {role: fk, ref: technicians, type: integer}
+          - {names: [scheduled_date, service_date], type: date, role: date, min: "2016-01-01", max: "2025-12-31"}
+          - {names: [work_type, category], type: text, role: category, values: [repair, installation, maintenance, inspection, emergency call-out, replacement]}
+          - {names: [labor_hours, hours_on_site], type: real, role: number, min: 0.5, max: 40}
+          - {names: [total_charge, amount_billed], type: real, role: number, min: 60, max: 45000}
+          - {names: [status, outcome], type: text, role: category, values: [completed, callback needed, cancelled]}
+
+      - key: reviews
+        names: [reviews, ratings]
+        id: [review_id, rating_id]
+        columns:
+          - {role: fk, ref: customers, type: integer}
+          - {role: fk, ref: providers, type: integer}
+          - {names: [posted_date, submitted_date], type: date, role: date, min: "2016-01-01", max: "2025-12-31"}
+          - {names: [stars, score], type: integer, role: number, min: 1, max: 5}
+          - {names: [punctuality_score, on_time_score], type: integer, role: number, min: 1, max: 5, optional: true}
+          - {names: [would_hire_again, would_recommend], type: integer, role: flag}
+
+      - key: invoices
+        names: [invoices, bills]
+        id: [invoice_id, bill_id]
+        columns:
+          - {role: fk, ref: jobs, type: integer}
+          - {names: [issued_date, billed_date], type: date, role: date, min: "2016-01-01", max: "2025-12-31"}
+          - {names: [amount_due, balance], type: real, role: number, min: 60, max: 45000}
+          - {names: [is_paid, paid], type: integer, role: flag}
+          - {names: [payment_method, method], type: text, role: category, values: [credit card, paper check, ACH transfer, cash, financing]}
+
+      - key: parts
+        names: [parts, materials]
+        id: [part_id, material_id]
+        columns:
+          - {names: [name, description], type: text, role: entity_name, values: [water heater, circuit breaker, smart thermostat, PVC pipe, furnace filter, faucet cartridge, sump pump, GFCI outlet, roof shingles, garbage disposal]}
+          - {names: [unit_cost, wholesale_cost], type: real, role: number, min: 1, max: 2500}
+          - {names: [supplier, vendor], type: text, role: category, values: [Home Depot Pro, Ferguson, Grainger, Winsupply, local supply house]}
+
+      - key: job_parts
+        names: [job_parts, materials_used]
+        id: [job_part_id, usage_id]
+        columns:
+          - {role: fk, ref: jobs, type: integer}
+          - {role: fk, ref: parts, type: integer}
+          - {names: [quantity], type: integer, role: number, min: 1, max: 20}
+          - {names: [price_charged, billed_price], type: real, role: number, min: 1, max: 4000}
+
+      - key: certifications
+        names: [certifications, credentials]
+        id: [certification_id, credential_id]
+        columns:
+          - {role: fk, ref: technicians, type: integer}
+          - {names: [name, title], type: text, role: entity_name, values: [EPA 608, NATE, journeyman electrician license, master plumber license, OSHA 10, backflow tester]}
+          - {names: [issued_date, earned_date], type: date, role: date, min: "2005-01-01", max: "2025-12-31"}
+          - {names: [renewal_fee, annual_fee], type: real, role: number, min: 0, max: 600}
+          - {names: [is_current, active], type: integer, role: flag, optional: true}
+
+  fitness clubs:
+    tables:
+      - key: clubs
+        names: [clubs, gyms, locations]
+        id: [club_id, gym_id, location_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: gym}
+          - {names: [city], type: text, role: category, values: [Dallas, Atlanta, Denver, San Diego, Chicago, Boston, Phoenix, Seattle]}
+          - {names: [square_feet, floor_area_sqft], type: integer, role: number, min: 4000, max: 80000}
+          - {names: [opened_date], type: date, role: date, min: "1995-01-01", max: "2025-06-30"}
+          - {names: [has_pool, pool], type: integer, role: flag, optional: true}
+          - {names: [is_open_24_hours, open_24_7], type: integer, role: flag, optional: true}
+
+      - key: plans
+        names: [membership_plans, membership_tiers]
+        id: [plan_id, tier_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, values: [Basic, Off-Peak, Standard, Premium, Student, Family, Corporate]}
+          - {names: [monthly_fee, monthly_price], type: real, role: number, min: 10, max: 250}
+          - {names: [enrollment_fee, joining_fee], type: real, role: number, min: 0, max: 200}
+          - {names: [contract_months, minimum_term_months], type: integer, role: number, min: 0, max: 24}
+          - {names: [includes_classes, classes_included], type: integer, role: flag}
+
+      - key: members
+        names: [members]
+        id: [member_id]
+        columns:
+          - {role: fk, ref: clubs, type: integer}
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [birth_date, date_of_birth], type: date, role: date, min: "1950-01-01", max: "2008-12-31"}
+          - {names: [referral_source, how_heard], type: text, role: category, values: [friend, social media, walk-in, corporate partner, online ad], optional: true}
+
+      - key: memberships
+        names: [memberships, subscriptions, contracts]
+        id: [membership_id, subscription_id, contract_id]
+        columns:
+          - {role: fk, ref: members, type: integer}
+          - {role: fk, ref: plans, type: integer}
+          - {names: [start_date, activated_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [status], type: text, role: category, values: [active, frozen, cancelled, expired]}
+          - {names: [price_paid, monthly_rate], type: real, role: number, min: 10, max: 250}
+          - {names: [auto_renew], type: integer, role: flag, optional: true}
+
+      - key: trainers
+        names: [trainers, coaches, instructors]
+        id: [trainer_id, coach_id, instructor_id]
+        columns:
+          - {role: fk, ref: clubs, type: integer}
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [specialty, focus_area], type: text, role: category, values: [strength, yoga, cycling, HIIT, pilates, boxing, mobility]}
+          - {names: [hire_date, start_date], type: date, role: date, min: "2010-01-01", max: "2025-12-31"}
+          - {names: [hourly_rate, pay_rate], type: real, role: number, min: 18, max: 90}
+          - {names: [is_certified, certified], type: integer, role: flag, optional: true}
+
+      - key: classes
+        names: [classes, class_sessions]
+        id: [class_id, session_id]
+        columns:
+          - {role: fk, ref: clubs, type: integer}
+          - {role: fk, ref: trainers, type: integer}
+          - {names: [name, class_name], type: text, role: entity_name, values: [Spin, Vinyasa Yoga, HIIT Bootcamp, Reformer Pilates, Zumba, Boxing Basics, Barbell Strength]}
+          - {names: [class_date, session_date], type: date, role: date, min: "2019-01-01", max: "2025-12-31"}
+          - {names: [capacity, max_spots], type: integer, role: number, min: 8, max: 40}
+          - {names: [duration_minutes, length_minutes], type: integer, role: number, min: 30, max: 90}
+
+      - key: class_bookings
+        names: [class_bookings, class_attendance]
+        id: [booking_id, attendance_id]
+        columns:
+          - {role: fk, ref: classes, type: integer}
+          - {role: fk, ref: members, type: integer}
+          - {names: [booked_date, reserved_date], type: date, role: date, min: "2019-01-01", max: "2025-12-31"}
+          - {names: [status, attendance_status], type: text, role: category, values: [attended, late cancel, no-show, waitlisted]}
+          - {names: [rating, class_rating], type: integer, role: number, min: 1, max: 5, optional: true}
+
+      - key: check_ins
+        names: [check_ins, visits]
+        id: [check_in_id, visit_id]
+        columns:
+          - {role: fk, ref: members, type: integer}
+          - {role: fk, ref: clubs, type: integer}
+          - {names: [entry_date, scan_date], type: date, role: date, min: "2019-01-01", max: "2025-12-31"}
+          - {names: [entry_hour, arrival_hour], type: integer, role: number, min: 5, max: 23}
+          - {names: [minutes_on_site, duration_minutes], type: integer, role: number, min: 10, max: 240}
+
+      - key: pt_sessions
+        names: [personal_training_sessions, pt_sessions]
+        id: [pt_session_id, pt_session_id]
+        columns:
+          - {role: fk, ref: members, type: integer}
+          - {role: fk, ref: trainers, type: integer}
+          - {names: [session_date, trained_date], type: date, role: date, min: "2019-01-01", max: "2025-12-31"}
+          - {names: [duration_minutes], type: integer, role: number, min: 30, max: 90}
+          - {names: [price, session_fee], type: real, role: number, min: 30, max: 180}
+          - {names: [goal, focus], type: text, role: category, values: [weight loss, strength, mobility, sport-specific, injury rehab], optional: true}
+
+      - key: payments
+        names: [payments, dues_payments]
+        id: [payment_id, payment_id]
+        columns:
+          - {role: fk, ref: memberships, type: integer}
+          - {names: [payment_date, billed_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [amount, amount_paid], type: real, role: number, min: 10, max: 500}
+          - {names: [method, payment_method], type: text, role: category, values: [credit card, debit card, bank draft, cash]}
+          - {names: [status, outcome], type: text, role: category, values: [paid, declined, refunded]}
+
+      - key: equipment
+        names: [equipment, machines]
+        id: [equipment_id, machine_id]
+        columns:
+          - {role: fk, ref: clubs, type: integer}
+          - {names: [name], type: text, role: entity_name, values: [treadmill, rowing machine, squat rack, spin bike, elliptical, cable machine, leg press, stair climber]}
+          - {names: [purchase_date, installed_date], type: date, role: date, min: "2012-01-01", max: "2025-12-31"}
+          - {names: [purchase_cost, price_paid], type: real, role: number, min: 300, max: 15000}
+          - {names: [condition_rating, wear_level], type: text, role: category, values: [good, worn, needs repair, out of service]}
+
+      - key: repairs
+        names: [repairs, maintenance_tickets]
+        id: [repair_id, ticket_id]
+        columns:
+          - {role: fk, ref: equipment, type: integer}
+          - {names: [reported_date, opened_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [fault, issue], type: text, role: category, values: [belt wear, display failure, frayed cable, motor fault, torn upholstery, broken adjuster]}
+          - {names: [cost, total_cost], type: real, role: number, min: 0, max: 4000}
+          - {names: [days_out_of_service, downtime_days], type: integer, role: number, min: 0, max: 45}

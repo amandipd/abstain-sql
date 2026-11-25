@@ -87,6 +87,13 @@ These were settled during Phase 0 and sit outside the plan's table.
 - **Why these families:** each differs from the others in vocabulary and table shapes, has at least 5 Gretel topics, supports every query shape in step 1.4, and supports the decline categories in step 1.5. Energy and natural resources resembles no external test database, which makes it the natural candidate to hold out. Media and entertainment, and public sector and education, were the runners-up.
 - **Why these topics:** each family's topics cover different sub-areas. 18 topics were dropped as near-duplicates or as straddling 2 families; the file lists each with its reason.
 
+### Scale up to 60 topics and 480 designs (2026-11-24)
+
+- **Choice:** 6 families of 10 topics (60 topics, up from 25), with media and entertainment as the sixth family; 8 designs per topic (480, up from 50); every table list must allow at least 20 distinct designs; 5 filled copies per design kept. Calibration and test sets aim for 2,000 to 3,000 questions each.
+- **Why:** designs from one topic share its table list, so they are near-relatives. An honest test keeps whole topics out of training (plan step 3.1 now splits by topic, not by schema), which makes the number of topics, not designs or questions, the real sample size; 25 topics split 4 ways left about 5 for testing. More data adds no training cost (a run draws 2,400 questions whatever the pool), and testing on more questions adds only a few dollars. The 20-design floor matters because a counter found some table lists allowed as few as 6 distinct designs (fashion retail), which would have made 8 designs per topic impossible.
+- **Cost:** time to write 35 new table lists and deepen 8 shallow ones; $0 more in training.
+- **Sources of new topics:** 12 come from Gretel's unused topics; 23 are added beyond Gretel's list where a family had too few distinct topics left, marked `source: added` in `data/generator/families.yaml`. Gyms join retail as "fitness clubs", run as membership businesses, though Gretel's broader "fitness industry" stays dropped for straddling healthcare.
+
 ### Schemas from hand-written templates, version 0 (2026-11-08)
 
 - **Choice:** generate schemas from 25 hand-written templates, one per topic, rather than having an LLM design them (the plan's version 1).

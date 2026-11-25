@@ -406,6 +406,27 @@ topics:
           - {role: fk, ref: pilots, type: integer}
           - {names: [duty_hours, duty_period_hours], type: real, role: number, min: 2, max: 16}
 
+      - key: training_records
+        names: [training_records, checkrides]
+        id: [record_id, checkride_id]
+        columns:
+          - {role: fk, ref: pilots, type: integer}
+          - {names: [session_date, completed_date], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+          - {names: [session_type, program], type: text, role: category, values: [recurrent simulator, type rating, line check, proficiency check, captain upgrade]}
+          - {names: [simulator_hours, sim_hours], type: real, role: number, min: 2, max: 40}
+          - {names: [passed, satisfactory], type: integer, role: flag}
+
+      - key: fuel_purchases
+        names: [fuel_purchases, fuel_uplifts]
+        id: [purchase_id, uplift_id]
+        columns:
+          - {role: fk, ref: airlines, type: integer}
+          - {role: fk, ref: airports, type: integer}
+          - {names: [fuel_date, service_date], type: date, role: date, min: "2021-01-01", max: "2025-12-31"}
+          - {names: [volume_liters, liters], type: real, role: number, min: 2000, max: 150000}
+          - {names: [price_per_liter, unit_price], type: real, role: number, min: 0.5, max: 1.4}
+          - {names: [supplier, fuel_supplier], type: text, role: category, values: [World Fuel Services, Shell Aviation, BP Air, Avfuel, ExxonMobil Aviation]}
+
   automotive:
     tables:
       - key: automakers
@@ -495,3 +516,578 @@ topics:
           - {names: [part, failed_part], type: text, role: category, values: [transmission, infotainment, battery pack, suspension, paint, HVAC]}
           - {names: [repair_cost, claim_amount], type: real, role: number, min: 50, max: 25000}
           - {names: [mileage, odometer_miles], type: integer, role: number, min: 100, max: 100000}
+
+  rail freight:
+    tables:
+      - key: railroads
+        names: [railroads, rail_carriers]
+        id: [railroad_id, carrier_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, values: [BNSF Railway, Union Pacific, CSX, Norfolk Southern, Canadian National, CPKC, Florida East Coast Railway, Ferromex]}
+          - {names: [route_miles, network_miles], type: integer, role: number, min: 300, max: 33000}
+          - {names: [headcount, employee_count], type: integer, role: number, min: 200, max: 45000}
+          - {names: [operating_ratio, operating_ratio_pct], type: real, role: number, min: 55, max: 80, optional: true}
+
+      - key: yards
+        names: [yards]
+        id: [yard_id]
+        columns:
+          - {role: fk, ref: railroads, type: integer}
+          - {names: [name, yard_name], type: text, role: entity_name, kind: rail yard}
+          - {names: [yard_type, yard_role], type: text, role: category, values: [hump classification, flat switching, intermodal terminal, interchange, storage]}
+          - {names: [track_count, classification_tracks], type: integer, role: number, min: 4, max: 120}
+          - {names: [daily_car_capacity, cars_per_day_capacity], type: integer, role: number, min: 200, max: 3500}
+          - {names: [opened_date], type: date, role: date, min: "1890-01-01", max: "2022-12-31", optional: true}
+
+      - key: locomotives
+        names: [locomotives, engines]
+        id: [locomotive_id, engine_id]
+        columns:
+          - {role: fk, ref: railroads, type: integer}
+          - {names: [model, model_designation], type: text, role: category, values: [ES44AC, ET44AC, SD70ACe, SD70MAC, AC4400CW, GP38-2, SD40-2]}
+          - {names: [assignment, service_assignment], type: text, role: category, values: [road freight, local, yard switching, helper]}
+          - {names: [in_service_date, acquired_date], type: date, role: date, min: "1990-01-01", max: "2025-12-31"}
+          - {names: [miles_since_overhaul], type: integer, role: number, min: 0, max: 900000}
+          - {names: [availability_pct, percent_available], type: real, role: number, min: 70, max: 98, optional: true}
+
+      - key: railcars
+        names: [railcars, freight_cars]
+        id: [railcar_id, car_id]
+        columns:
+          - {role: fk, ref: railroads, type: integer}
+          - {names: [car_type, equipment_type], type: text, role: category, values: [boxcar, covered hopper, open hopper, tank car, flatcar, gondola, autorack, intermodal well car]}
+          - {names: [load_limit_tons, capacity_tons], type: real, role: number, min: 60, max: 130}
+          - {names: [built_date, in_service_date], type: date, role: date, min: "1985-01-01", max: "2025-12-31"}
+          - {names: [is_leased, leased], type: integer, role: flag, optional: true}
+
+      - key: shippers
+        names: [shippers, customers]
+        id: [shipper_id, customer_id]
+        columns:
+          - {names: [name, company_name], type: text, role: entity_name, kind: company}
+          - {names: [industry, sector], type: text, role: category, values: [agriculture, chemicals, coal, automotive, forest products, metals, consumer goods, energy]}
+          - {names: [account_since, customer_since], type: date, role: date, min: "1995-01-01", max: "2025-12-31"}
+          - {names: [annual_carloads, carloads_per_year], type: integer, role: number, min: 50, max: 250000, optional: true}
+
+      - key: trains
+        names: [trains, train_movements]
+        id: [train_id, movement_id]
+        columns:
+          - {role: fk, ref: railroads, type: integer}
+          - {role: fk, ref: locomotives, type: integer}
+          - {role: fk, ref: yards, type: integer, names: [origin_yard_id, departure_yard_id]}
+          - {role: fk, ref: yards, type: integer, names: [destination_yard_id, arrival_yard_id]}
+          - {names: [departure_date, depart_date], type: date, role: date, min: "2020-01-01", max: "2025-12-31"}
+          - {names: [service_type, train_service], type: text, role: category, values: [manifest, unit grain, unit coal, intermodal, automotive, local]}
+          - {names: [car_count, cars_in_train], type: integer, role: number, min: 10, max: 200}
+          - {names: [gross_tons, trailing_tons], type: real, role: number, min: 800, max: 22000}
+          - {names: [hours_late, delay_hours], type: real, role: number, min: 0, max: 36}
+
+      - key: waybills
+        names: [waybills, carloads]
+        id: [waybill_id, carload_id]
+        columns:
+          - {role: fk, ref: shippers, type: integer}
+          - {role: fk, ref: railcars, type: integer}
+          - {names: [billed_date, shipped_date], type: date, role: date, min: "2020-01-01", max: "2025-12-31"}
+          - {names: [commodity, commodity_group], type: text, role: category, values: [corn, wheat, coal, plastics, lumber, steel coil, automobiles, ethanol, crushed stone]}
+          - {names: [net_tons, lading_tons], type: real, role: number, min: 5, max: 120}
+          - {names: [freight_charge, revenue], type: real, role: number, min: 800, max: 9000}
+          - {names: [is_hazmat, hazardous], type: integer, role: flag, optional: true}
+
+      - key: car_repairs
+        names: [car_repairs, repair_records]
+        id: [repair_id, record_id]
+        columns:
+          - {role: fk, ref: railcars, type: integer}
+          - {role: fk, ref: yards, type: integer}
+          - {names: [repair_date, completed_date], type: date, role: date, min: "2020-01-01", max: "2025-12-31"}
+          - {names: [defect, defect_type], type: text, role: category, values: [worn wheel, brake rigging, coupler, roller bearing, door, air hose]}
+          - {names: [repair_cost, cost], type: real, role: number, min: 150, max: 25000}
+          - {names: [days_out_of_service, days_bad_ordered], type: integer, role: number, min: 0, max: 45}
+
+      - key: shop_visits
+        names: [shop_visits, servicing_events]
+        id: [visit_id, servicing_id]
+        columns:
+          - {role: fk, ref: locomotives, type: integer}
+          - {names: [shop_date, entered_date], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+          - {names: [work_type, work_performed], type: text, role: category, values: ["92-day inspection", traction motor replacement, wheel truing, engine overhaul, fuel injector repair, cab electronics]}
+          - {names: [cost, cost_usd], type: real, role: number, min: 500, max: 600000}
+          - {names: [days_in_shop, downtime_days], type: integer, role: number, min: 1, max: 60}
+
+      - key: crew_members
+        names: [crew_members, employees]
+        id: [crew_member_id, employee_id]
+        columns:
+          - {role: fk, ref: yards, type: integer, names: [home_yard_id, home_terminal_id]}
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [craft, job_craft], type: text, role: category, values: [engineer, conductor, brakeman, yard foreman]}
+          - {names: [hire_date, seniority_date], type: date, role: date, min: "1985-01-01", max: "2025-12-31"}
+          - {names: [hourly_rate, base_rate], type: real, role: number, min: 28, max: 55, optional: true}
+
+      - key: incidents
+        names: [incidents, accidents]
+        id: [incident_id, accident_id]
+        columns:
+          - {role: fk, ref: trains, type: integer}
+          - {names: [occurred_date, reported_date], type: date, role: date, min: "2020-01-01", max: "2025-12-31"}
+          - {names: [event_type, occurrence_type], type: text, role: category, values: [derailment, collision, grade crossing, hazmat release, signal failure, broken rail]}
+          - {names: [damage_cost, damage_usd], type: real, role: number, min: 1000, max: 30000000}
+          - {names: [cars_involved, cars_derailed], type: integer, role: number, min: 0, max: 60}
+          - {names: [injuries, people_injured], type: integer, role: number, min: 0, max: 10, optional: true}
+
+      - key: dwell_reports
+        names: [dwell_reports, yard_counts]
+        id: [report_id, count_id]
+        columns:
+          - {role: fk, ref: yards, type: integer}
+          - {names: [snapshot_date, as_of_date], type: date, role: date, min: "2022-01-01", max: "2025-12-31"}
+          - {names: [cars_on_hand, cars_online], type: integer, role: number, min: 50, max: 4000}
+          - {names: [avg_dwell_hours, mean_dwell_hours], type: real, role: number, min: 12, max: 60}
+
+  ride-hailing:
+    tables:
+      - key: markets
+        names: [markets, cities, service_areas]
+        id: [market_id, city_id, area_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, values: [Chicago, Houston, Atlanta, Phoenix, Seattle, Miami, Denver, Boston, San Diego, Austin]}
+          - {names: [launch_date, launched_date], type: date, role: date, min: "2012-01-01", max: "2022-12-31"}
+          - {names: [base_fare, minimum_base_fare], type: real, role: number, min: 1, max: 3.5}
+          - {names: [per_km_rate, rate_per_km], type: real, role: number, min: 0.6, max: 1.8}
+          - {names: [per_minute_rate, rate_per_minute], type: real, role: number, min: 0.15, max: 0.5, optional: true}
+
+      - key: drivers
+        names: [drivers]
+        id: [driver_id]
+        columns:
+          - {role: fk, ref: markets, type: integer}
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [signup_date, onboarded_date], type: date, role: date, min: "2014-01-01", max: "2025-12-31"}
+          - {names: [status, account_status], type: text, role: category, values: [active, inactive, suspended, deactivated]}
+          - {names: [acceptance_rate_pct, acceptance_rate], type: real, role: number, min: 40, max: 100}
+
+      - key: vehicles
+        names: [vehicles, cars]
+        id: [vehicle_id, car_id]
+        columns:
+          - {role: fk, ref: drivers, type: integer}
+          - {names: [make, manufacturer], type: text, role: category, values: [Toyota, Honda, Hyundai, Kia, Nissan, Ford, Chevrolet, Tesla]}
+          - {names: [service_tier, tier], type: text, role: category, values: [standard, XL, comfort, premium, green]}
+          - {names: [model_year], type: integer, role: number, min: 2012, max: 2026}
+          - {names: [inspection_date, last_inspected], type: date, role: date, min: "2022-01-01", max: "2025-12-31"}
+
+      - key: riders
+        names: [riders, passengers]
+        id: [rider_id, passenger_id]
+        columns:
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [signup_date, joined_date], type: date, role: date, min: "2012-01-01", max: "2025-12-31"}
+          - {names: [preferred_payment, payment_preference], type: text, role: category, values: [credit card, debit card, digital wallet, cash, corporate account], optional: true}
+          - {names: [is_subscriber, has_membership], type: integer, role: flag, optional: true}
+
+      - key: trips
+        names: [trips, rides]
+        id: [trip_id, ride_id]
+        columns:
+          - {role: fk, ref: drivers, type: integer}
+          - {role: fk, ref: riders, type: integer}
+          - {names: [requested_date, pickup_date], type: date, role: date, min: "2022-01-01", max: "2025-12-31"}
+          - {names: [service_level, product], type: text, role: category, values: [standard, shared, XL, comfort, premium]}
+          - {names: [distance_km], type: real, role: number, min: 0.5, max: 60}
+          - {names: [duration_min], type: integer, role: number, min: 3, max: 120}
+          - {names: [surge_multiplier, price_multiplier], type: real, role: number, min: 1, max: 3.5, optional: true}
+          - {names: [status], type: text, role: category, values: [completed, rider cancelled, driver cancelled, no show]}
+
+      - key: fares
+        names: [fares, payments]
+        id: [fare_id, payment_id]
+        columns:
+          - {role: fk, ref: trips, type: integer}
+          - {names: [charged_date, paid_date], type: date, role: date, min: "2022-01-01", max: "2025-12-31"}
+          - {names: [total_fare, amount_charged], type: real, role: number, min: 4, max: 180}
+          - {names: [tip_amount, tip], type: real, role: number, min: 0, max: 40}
+          - {names: [platform_fee, service_fee], type: real, role: number, min: 1, max: 45, optional: true}
+          - {names: [payment_method, method], type: text, role: category, values: [credit card, debit card, digital wallet, cash, corporate account]}
+
+      - key: ratings
+        names: [ratings, reviews]
+        id: [rating_id, review_id]
+        columns:
+          - {role: fk, ref: trips, type: integer}
+          - {names: [rated_date, submitted_date], type: date, role: date, min: "2022-01-01", max: "2025-12-31"}
+          - {names: [rated_by, reviewer], type: text, role: category, values: [rider, driver]}
+          - {names: [stars, star_rating], type: integer, role: number, min: 1, max: 5}
+
+      - key: promotions
+        names: [promotions, promo_codes]
+        id: [promotion_id, promo_code_id]
+        columns:
+          - {names: [code, promo_name], type: text, role: entity_name, values: [WELCOME10, RIDE5OFF, AIRPORT15, SUMMER20, FIRSTRIDE, NIGHTOWL, COMMUTE25]}
+          - {names: [discount_pct, percent_off], type: real, role: number, min: 5, max: 50}
+          - {names: [start_date, launch_date], type: date, role: date, min: "2020-01-01", max: "2025-12-31"}
+          - {names: [duration_days, valid_days], type: integer, role: number, min: 7, max: 90}
+
+      - key: redemptions
+        names: [redemptions, promo_redemptions]
+        id: [redemption_id, redemption_id]
+        columns:
+          - {role: fk, ref: promotions, type: integer}
+          - {role: fk, ref: riders, type: integer}
+          - {names: [redeemed_date, applied_date], type: date, role: date, min: "2020-01-01", max: "2025-12-31"}
+          - {names: [discount_amount, amount_saved], type: real, role: number, min: 1, max: 25}
+
+      - key: payouts
+        names: [payouts, driver_payouts]
+        id: [payout_id, payout_id]
+        columns:
+          - {role: fk, ref: drivers, type: integer}
+          - {names: [payout_date, paid_date], type: date, role: date, min: "2022-01-01", max: "2025-12-31"}
+          - {names: [gross_earnings, earnings], type: real, role: number, min: 50, max: 2500}
+          - {names: [trips_completed, completed_trips], type: integer, role: number, min: 0, max: 150}
+          - {names: [hours_online, online_hours], type: real, role: number, min: 1, max: 70}
+
+      - key: support_tickets
+        names: [support_tickets, complaints]
+        id: [ticket_id, complaint_id]
+        columns:
+          - {role: fk, ref: trips, type: integer}
+          - {names: [opened_date, filed_date], type: date, role: date, min: "2022-01-01", max: "2025-12-31"}
+          - {names: [issue_type, topic], type: text, role: category, values: [lost item, fare dispute, safety concern, route issue, cleanliness, driver conduct]}
+          - {names: [refund_amount, credit_issued], type: real, role: number, min: 0, max: 120}
+          - {names: [resolved, is_resolved], type: integer, role: flag}
+
+  parcel delivery:
+    tables:
+      - key: depots
+        names: [depots, facilities]
+        id: [depot_id, facility_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: parcel depot}
+          - {names: [site_type, network_role], type: text, role: category, values: [regional hub, sort center, delivery station]}
+          - {names: [city, metro_area], type: text, role: category, values: [Memphis, Louisville, Indianapolis, Dallas, Ontario, Newark, Atlanta, Phoenix]}
+          - {names: [sort_capacity_per_hour, hourly_sort_capacity], type: integer, role: number, min: 2000, max: 60000}
+          - {names: [opened_date], type: date, role: date, min: "1990-01-01", max: "2024-12-31", optional: true}
+
+      - key: couriers
+        names: [couriers, drivers]
+        id: [courier_id, driver_id]
+        columns:
+          - {role: fk, ref: depots, type: integer}
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [hire_date, start_date], type: date, role: date, min: "2010-01-01", max: "2025-12-31"}
+          - {names: [employment_type, contract_type], type: text, role: category, values: [employee, independent contractor, seasonal]}
+          - {names: [on_time_rate, on_time_pct], type: real, role: number, min: 85, max: 99.9}
+
+      - key: vans
+        names: [vans, delivery_vehicles]
+        id: [van_id, vehicle_id]
+        columns:
+          - {role: fk, ref: depots, type: integer}
+          - {names: [body_type, body_style], type: text, role: category, values: [step van, cargo van, box truck, cargo bike]}
+          - {names: [powertrain, fuel_type], type: text, role: category, values: [diesel, gasoline, electric, hybrid]}
+          - {names: [cargo_volume_m3, cargo_space_m3], type: real, role: number, min: 3, max: 25}
+          - {names: [in_service_date, acquired_date], type: date, role: date, min: "2012-01-01", max: "2025-12-31"}
+
+      - key: senders
+        names: [senders, shippers, merchants]
+        id: [sender_id, shipper_id, merchant_id]
+        columns:
+          - {names: [name, company_name], type: text, role: entity_name, kind: company}
+          - {names: [account_type, segment], type: text, role: category, values: [enterprise, mid-market, small business, marketplace seller]}
+          - {names: [account_since, customer_since], type: date, role: date, min: "2008-01-01", max: "2025-12-31"}
+          - {names: [monthly_parcels, parcels_per_month], type: integer, role: number, min: 10, max: 200000, optional: true}
+
+      - key: packages
+        names: [packages, parcels]
+        id: [package_id, parcel_id]
+        columns:
+          - {role: fk, ref: senders, type: integer}
+          - {role: fk, ref: depots, type: integer}
+          - {names: [label_date, created_date], type: date, role: date, min: "2023-01-01", max: "2025-12-31"}
+          - {names: [service_level, service], type: text, role: category, values: [ground, economy, two-day, express, overnight]}
+          - {names: [weight_kg, billed_weight_kg], type: real, role: number, min: 0.1, max: 30}
+          - {names: [declared_value, insured_value], type: real, role: number, min: 0, max: 2500, optional: true}
+          - {names: [signature_required, needs_signature], type: integer, role: flag, optional: true}
+
+      - key: tracking_scans
+        names: [tracking_scans, scan_events]
+        id: [scan_id, event_id]
+        columns:
+          - {role: fk, ref: packages, type: integer}
+          - {role: fk, ref: depots, type: integer}
+          - {names: [scan_date, scanned_date], type: date, role: date, min: "2023-01-01", max: "2025-12-31"}
+          - {names: [scan_type, event_type], type: text, role: category, values: [picked up, arrival scan, departure scan, out for delivery, delivered, exception]}
+          - {names: [dwell_hours, hours_at_site], type: real, role: number, min: 0, max: 72}
+
+      - key: delivery_attempts
+        names: [delivery_attempts, attempts]
+        id: [attempt_id, attempt_id]
+        columns:
+          - {role: fk, ref: packages, type: integer}
+          - {role: fk, ref: couriers, type: integer}
+          - {names: [attempt_date, attempted_date], type: date, role: date, min: "2023-01-01", max: "2025-12-31"}
+          - {names: [outcome, result], type: text, role: category, values: [delivered, no one home, access issue, refused, address not found, weather delay]}
+          - {names: [attempt_number, attempt_count], type: integer, role: number, min: 1, max: 3}
+          - {names: [gps_offset_m, distance_from_address_m], type: real, role: number, min: 0, max: 150, optional: true}
+
+      - key: routes
+        names: [routes, daily_routes]
+        id: [route_id, route_id]
+        columns:
+          - {role: fk, ref: couriers, type: integer}
+          - {role: fk, ref: vans, type: integer}
+          - {names: [route_date, service_date], type: date, role: date, min: "2023-01-01", max: "2025-12-31"}
+          - {names: [planned_stops, stop_count], type: integer, role: number, min: 40, max: 250}
+          - {names: [distance_km, route_km], type: real, role: number, min: 15, max: 320}
+          - {names: [hours_on_road, route_hours], type: real, role: number, min: 3, max: 12}
+
+      - key: claims
+        names: [claims, loss_claims]
+        id: [claim_id, claim_id]
+        columns:
+          - {role: fk, ref: packages, type: integer}
+          - {names: [claim_date, filed_date], type: date, role: date, min: "2023-01-01", max: "2025-12-31"}
+          - {names: [claim_type, reason], type: text, role: category, values: [lost, damaged, late, missing contents]}
+          - {names: [claim_amount, amount_claimed], type: real, role: number, min: 5, max: 2500}
+          - {names: [status, claim_status], type: text, role: category, values: [pending, approved, denied, paid]}
+
+      - key: pickups
+        names: [pickups, pickup_requests]
+        id: [pickup_id, request_id]
+        columns:
+          - {role: fk, ref: senders, type: integer}
+          - {role: fk, ref: couriers, type: integer}
+          - {names: [pickup_date, collected_date], type: date, role: date, min: "2023-01-01", max: "2025-12-31"}
+          - {names: [parcel_count, pieces_collected], type: integer, role: number, min: 1, max: 400}
+          - {names: [pickup_window, time_window], type: text, role: category, values: [morning, afternoon, evening]}
+          - {names: [pickup_fee, fee], type: real, role: number, min: 0, max: 25, optional: true}
+
+      - key: lockers
+        names: [lockers, parcel_lockers]
+        id: [locker_id, locker_id]
+        columns:
+          - {role: fk, ref: depots, type: integer}
+          - {names: [site_name, location_name], type: text, role: entity_name, kind: parcel locker}
+          - {names: [compartments, compartment_count], type: integer, role: number, min: 12, max: 200}
+          - {names: [installed_date, install_date], type: date, role: date, min: "2016-01-01", max: "2025-12-31"}
+          - {names: [utilization_pct, percent_used], type: real, role: number, min: 20, max: 100}
+
+  bike sharing:
+    tables:
+      - key: stations
+        names: [stations]
+        id: [station_id]
+        columns:
+          - {names: [name, station_name], type: text, role: entity_name, kind: transit station}
+          - {names: [neighborhood, district], type: text, role: category, values: [Downtown, Midtown, University District, Waterfront, Old Town, Riverside, Uptown, Arts District]}
+          - {names: [dock_count, docks], type: integer, role: number, min: 8, max: 60}
+          - {names: [installed_date, opened_date], type: date, role: date, min: "2010-01-01", max: "2024-12-31"}
+          - {names: [has_charging, is_electrified], type: integer, role: flag, optional: true}
+
+      - key: bikes
+        names: [bikes, bicycles]
+        id: [bike_id, bicycle_id]
+        columns:
+          - {names: [bike_type, model_type], type: text, role: category, values: [classic, e-bike, cargo e-bike, adaptive]}
+          - {names: [in_service_date, deployed_date], type: date, role: date, min: "2013-01-01", max: "2025-12-31"}
+          - {names: [odometer_km, lifetime_km], type: real, role: number, min: 0, max: 20000}
+          - {names: [status, fleet_status], type: text, role: category, values: [in service, under repair, retired, missing]}
+
+      - key: members
+        names: [members, riders]
+        id: [member_id, rider_id]
+        columns:
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [membership_type, plan_type], type: text, role: category, values: [annual, monthly, student, reduced fare, corporate]}
+          - {names: [join_date, signup_date], type: date, role: date, min: "2013-01-01", max: "2025-12-31"}
+          - {names: [birth_year], type: integer, role: number, min: 1945, max: 2007, optional: true}
+
+      - key: rides
+        names: [rides, trips]
+        id: [ride_id, trip_id]
+        columns:
+          - {role: fk, ref: bikes, type: integer}
+          - {role: fk, ref: members, type: integer}
+          - {role: fk, ref: stations, type: integer, names: [start_station_id, origin_station_id]}
+          - {role: fk, ref: stations, type: integer, names: [end_station_id, return_station_id]}
+          - {names: [started_date, checkout_date], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+          - {names: [duration_min, minutes], type: real, role: number, min: 1, max: 180}
+          - {names: [distance_km], type: real, role: number, min: 0.2, max: 35}
+          - {names: [overage_fee, extra_charge], type: real, role: number, min: 0, max: 30, optional: true}
+
+      - key: mechanics
+        names: [mechanics, technicians]
+        id: [mechanic_id, technician_id]
+        columns:
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [hire_date, start_date], type: date, role: date, min: "2013-01-01", max: "2025-12-31"}
+          - {names: [work_shift, shift_pattern], type: text, role: category, values: [day, evening, overnight]}
+          - {names: [hourly_wage, pay_rate], type: real, role: number, min: 18, max: 40}
+
+      - key: repairs
+        names: [repairs, maintenance_tickets]
+        id: [repair_id, ticket_id]
+        columns:
+          - {role: fk, ref: bikes, type: integer}
+          - {role: fk, ref: mechanics, type: integer}
+          - {names: [reported_date, opened_date], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+          - {names: [problem, fault], type: text, role: category, values: [flat tire, brake adjustment, broken chain, battery fault, damaged lock, bent wheel, frame damage]}
+          - {names: [parts_cost, cost_of_parts], type: real, role: number, min: 0, max: 450}
+          - {names: [labor_hours, hours_worked], type: real, role: number, min: 0.2, max: 6}
+
+      - key: rebalancing_moves
+        names: [rebalancing_moves, rebalancing_trips]
+        id: [move_id, rebalance_id]
+        columns:
+          - {role: fk, ref: stations, type: integer, names: [pickup_station_id, source_station_id]}
+          - {role: fk, ref: stations, type: integer, names: [dropoff_station_id, destination_station_id]}
+          - {names: [move_date, moved_date], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+          - {names: [bikes_moved, bike_count], type: integer, role: number, min: 1, max: 30}
+          - {names: [distance_km, truck_km], type: real, role: number, min: 0.5, max: 25}
+
+      - key: station_snapshots
+        names: [station_snapshots, availability_logs]
+        id: [snapshot_id, log_id]
+        columns:
+          - {role: fk, ref: stations, type: integer}
+          - {names: [observed_date, logged_date], type: date, role: date, min: "2024-01-01", max: "2025-12-31"}
+          - {names: [bikes_available, available_bikes], type: integer, role: number, min: 0, max: 60}
+          - {names: [hours_empty, empty_hours], type: real, role: number, min: 0, max: 24}
+
+      - key: payments
+        names: [payments, charges]
+        id: [payment_id, charge_id]
+        columns:
+          - {role: fk, ref: members, type: integer}
+          - {names: [billed_date, transaction_date], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+          - {names: [fee_type, purchase_type], type: text, role: category, values: [annual membership, monthly membership, overage fee, e-bike unlock fee, lost bike fee]}
+          - {names: [amount, amount_usd], type: real, role: number, min: 1, max: 200}
+
+      - key: station_issues
+        names: [station_issues, dock_faults]
+        id: [issue_id, fault_id]
+        columns:
+          - {role: fk, ref: stations, type: integer}
+          - {names: [reported_date, logged_date], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+          - {names: [problem_type, problem], type: text, role: category, values: [dock malfunction, kiosk offline, blocked access, vandalism, solar panel fault]}
+          - {names: [days_to_resolve, resolution_days], type: integer, role: number, min: 0, max: 30}
+          - {names: [repair_cost, cost], type: real, role: number, min: 0, max: 5000, optional: true}
+
+  car rental:
+    tables:
+      - key: branches
+        names: [branches]
+        id: [branch_id]
+        columns:
+          - {names: [name, branch_name], type: text, role: entity_name, kind: rental branch}
+          - {names: [location_type, site_type], type: text, role: category, values: [airport, downtown, suburban, train station, hotel]}
+          - {names: [region, sales_region], type: text, role: category, values: [Northeast, Southeast, Midwest, Southwest, West]}
+          - {names: [parking_spaces, lot_capacity], type: integer, role: number, min: 20, max: 2500}
+          - {names: [opened_date], type: date, role: date, min: "1975-01-01", max: "2024-12-31", optional: true}
+
+      - key: cars
+        names: [cars, vehicles]
+        id: [car_id, vehicle_id]
+        columns:
+          - {role: fk, ref: branches, type: integer, names: [home_branch_id, assigned_branch_id]}
+          - {names: [make, manufacturer], type: text, role: category, values: [Toyota, Nissan, Chevrolet, Ford, Hyundai, Kia, Jeep, Tesla]}
+          - {names: [size_class, rental_class], type: text, role: category, values: [economy, compact, midsize, full-size, SUV, minivan, luxury]}
+          - {names: [model_year], type: integer, role: number, min: 2019, max: 2026}
+          - {names: [odometer_miles, mileage], type: integer, role: number, min: 0, max: 90000}
+          - {names: [acquired_date, in_fleet_date], type: date, role: date, min: "2019-01-01", max: "2025-12-31"}
+          - {names: [purchase_price, acquisition_cost], type: real, role: number, min: 18000, max: 90000, optional: true}
+
+      - key: customers
+        names: [customers, renters]
+        id: [customer_id, renter_id]
+        columns:
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [birth_date, date_of_birth], type: date, role: date, min: "1945-01-01", max: "2004-12-31"}
+          - {names: [loyalty_tier, program_tier], type: text, role: category, values: [basic, silver, gold, platinum]}
+          - {names: [license_state, licensing_state], type: text, role: category, values: [CA, TX, FL, NY, IL, GA, AZ, WA], optional: true}
+
+      - key: rentals
+        names: [rentals, rental_agreements]
+        id: [rental_id, agreement_id]
+        columns:
+          - {role: fk, ref: customers, type: integer}
+          - {role: fk, ref: cars, type: integer}
+          - {role: fk, ref: branches, type: integer, names: [pickup_branch_id, checkout_branch_id]}
+          - {role: fk, ref: branches, type: integer, names: [return_branch_id, dropoff_branch_id]}
+          - {names: [pickup_date, checkout_date], type: date, role: date, min: "2021-01-01", max: "2025-12-31"}
+          - {names: [rental_days, days_rented], type: integer, role: number, min: 1, max: 30}
+          - {names: [miles_driven, distance_miles], type: integer, role: number, min: 5, max: 4000}
+          - {names: [total_charge, amount_billed], type: real, role: number, min: 35, max: 4500}
+          - {names: [booking_channel, channel], type: text, role: category, values: [website, mobile app, travel agent, walk-in, corporate account]}
+
+      - key: damage_reports
+        names: [damage_reports, damage_claims]
+        id: [report_id, claim_id]
+        columns:
+          - {role: fk, ref: rentals, type: integer}
+          - {names: [inspection_date, reported_date], type: date, role: date, min: "2021-01-01", max: "2025-12-31"}
+          - {names: [damage_type, damage_kind], type: text, role: category, values: [scratch, dent, windshield chip, tire damage, interior stain, collision]}
+          - {names: [severity, severity_level], type: text, role: category, values: [minor, moderate, severe]}
+          - {names: [repair_estimate, estimated_cost], type: real, role: number, min: 50, max: 15000}
+          - {names: [customer_liable, renter_at_fault], type: integer, role: flag}
+
+      - key: reservations
+        names: [reservations, bookings]
+        id: [reservation_id, booking_id]
+        columns:
+          - {role: fk, ref: customers, type: integer}
+          - {role: fk, ref: branches, type: integer}
+          - {names: [booked_date, created_date], type: date, role: date, min: "2021-01-01", max: "2025-12-31"}
+          - {names: [lead_days, days_in_advance], type: integer, role: number, min: 0, max: 180}
+          - {names: [quoted_daily_rate, daily_rate], type: real, role: number, min: 25, max: 300}
+          - {names: [status], type: text, role: category, values: [completed, cancelled, no show, upcoming]}
+
+      - key: maintenance_records
+        names: [maintenance_records, service_records]
+        id: [record_id, service_id]
+        columns:
+          - {role: fk, ref: cars, type: integer}
+          - {names: [service_date, completed_date], type: date, role: date, min: "2019-06-01", max: "2025-12-31"}
+          - {names: [work_type, service_type], type: text, role: category, values: [oil change, tire rotation, brake service, inspection, recall repair, detailing]}
+          - {names: [cost, cost_usd], type: real, role: number, min: 30, max: 6000}
+          - {names: [days_out_of_service, downtime_days], type: integer, role: number, min: 0, max: 21}
+
+      - key: employees
+        names: [employees, staff]
+        id: [employee_id, staff_id]
+        columns:
+          - {role: fk, ref: branches, type: integer}
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [job_title, position], type: text, role: category, values: [counter agent, lot attendant, branch manager, shuttle driver, technician]}
+          - {names: [hire_date, start_date], type: date, role: date, min: "1995-01-01", max: "2025-12-31"}
+          - {names: [hourly_wage, pay_rate], type: real, role: number, min: 15, max: 45, optional: true}
+
+      - key: rental_addons
+        names: [rental_addons, extras]
+        id: [addon_id, extra_id]
+        columns:
+          - {role: fk, ref: rentals, type: integer}
+          - {names: [product, item], type: text, role: category, values: [collision damage waiver, GPS unit, child seat, toll pass, roadside assistance, additional driver]}
+          - {names: [daily_price, price_per_day], type: real, role: number, min: 3, max: 35}
+          - {names: [days_charged, billed_days], type: integer, role: number, min: 1, max: 30}
+
+      - key: car_transfers
+        names: [car_transfers, fleet_transfers]
+        id: [transfer_id, transfer_id]
+        columns:
+          - {role: fk, ref: cars, type: integer}
+          - {role: fk, ref: branches, type: integer, names: [origin_branch_id, sending_branch_id]}
+          - {role: fk, ref: branches, type: integer, names: [destination_branch_id, receiving_branch_id]}
+          - {names: [transfer_date, moved_date], type: date, role: date, min: "2021-01-01", max: "2025-12-31"}
+          - {names: [distance_miles, miles_moved], type: real, role: number, min: 5, max: 1500}
+          - {names: [reason, transfer_reason], type: text, role: category, values: [one-way return, demand rebalancing, maintenance, seasonal shift, sale preparation]}

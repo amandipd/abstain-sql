@@ -13,10 +13,18 @@ def generated():
     return gen.generate(seed=0)
 
 
-def test_two_schemas_per_topic(generated):
+def test_eight_schemas_per_topic(generated):
     families = gen.families_with_templates()
     assert families, "no family has a template yet"
-    assert len(generated) == 2 * 5 * len(families)
+    all_families = gen.load_families()
+    topics = sum(len(all_families[f]["topics"]) for f in families)
+    assert len(generated) == gen.DEFAULT_PER_TOPIC * topics
+
+
+def test_every_table_list_allows_enough_designs():
+    for family in gen.families_with_templates():
+        for topic, template in gen.load_templates(family).items():
+            assert gen.count_designs(template) >= gen.MIN_DESIGNS, (family, topic)
 
 
 def test_three_to_eight_tables(generated):

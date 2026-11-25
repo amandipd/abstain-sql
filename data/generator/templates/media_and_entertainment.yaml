@@ -1,0 +1,1275 @@
+# Schema templates for the media and entertainment family (plan step 1.2).
+#
+# One template per topic in families.yaml. Each lists a pool of tables; the
+# generator samples 3-8 linked tables per schema and picks among the synonyms.
+# The format is documented in data/generator/schemas.py.
+
+topics:
+
+  music industry:
+    tables:
+      - key: artists
+        names: [artists, performers]
+        id: [artist_id, performer_id]
+        columns:
+          - {names: [name, stage_name], type: text, role: entity_name, kind: music artist}
+          - {names: [genre, primary_genre], type: text, role: category, values: [pop, hip-hop, rock, country, R&B, electronic, Latin, indie, jazz, classical]}
+          - {names: [home_country, origin_country], type: text, role: category, values: [United States, United Kingdom, Canada, Sweden, South Korea, Nigeria, Brazil, Australia, Germany, Mexico]}
+          - {names: [debut_date, first_release_date], type: date, role: date, min: "1990-01-01", max: "2024-12-31"}
+          - {names: [monthly_listeners], type: integer, role: number, min: 1000, max: 80000000, optional: true}
+          - {names: [is_solo, solo_act], type: integer, role: flag, optional: true}
+
+      - key: record_labels
+        names: [record_labels, labels]
+        id: [record_label_id, label_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: record label}
+          - {names: [label_tier, ownership], type: text, role: category, values: [major, major-owned imprint, independent, artist-owned]}
+          - {names: [founded_year, year_founded], type: integer, role: number, min: 1950, max: 2022}
+          - {names: [roster_size, artist_count], type: integer, role: number, min: 3, max: 400, optional: true}
+
+      - key: record_deals
+        names: [record_deals, contracts]
+        id: [deal_id, contract_id]
+        columns:
+          - {role: fk, ref: artists, type: integer}
+          - {role: fk, ref: record_labels, type: integer}
+          - {names: [signed_date, signing_date], type: date, role: date, min: "2010-01-01", max: "2025-12-31"}
+          - {names: [agreement_type], type: text, role: category, values: [standard, distribution, licensing, "360 deal", joint venture]}
+          - {names: [advance_amount, advance], type: real, role: number, min: 5000, max: 5000000}
+          - {names: [royalty_rate], type: real, role: number, min: 0.10, max: 0.30}
+          - {names: [term_years], type: integer, role: number, min: 1, max: 7, optional: true}
+
+      - key: albums
+        names: [albums, releases]
+        id: [album_id, release_id]
+        columns:
+          - {role: fk, ref: artists, type: integer}
+          - {names: [title], type: text, role: entity_name, kind: album}
+          - {names: [release_date], type: date, role: date, min: "2010-01-01", max: "2025-12-31"}
+          - {names: [record_type, project_type], type: text, role: category, values: [studio album, EP, live album, compilation, soundtrack]}
+          - {names: [track_count, number_of_tracks], type: integer, role: number, min: 4, max: 24}
+          - {names: [production_budget, recording_budget], type: real, role: number, min: 2000, max: 1500000, optional: true}
+
+      - key: tracks
+        names: [tracks, songs]
+        id: [track_id, song_id]
+        columns:
+          - {role: fk, ref: albums, type: integer}
+          - {names: [title], type: text, role: entity_name, kind: song}
+          - {names: [duration_seconds, runtime_seconds], type: integer, role: number, min: 90, max: 480}
+          - {names: [is_explicit, explicit_lyrics], type: integer, role: flag}
+          - {names: [tempo_bpm, bpm], type: integer, role: number, min: 60, max: 180, optional: true}
+          - {names: [is_single, released_as_single], type: integer, role: flag, optional: true}
+
+      - key: streaming_platforms
+        names: [streaming_platforms, services]
+        id: [platform_id, service_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: streaming platform}
+          - {names: [business_model], type: text, role: category, values: [subscription, ad-supported, freemium, download store, video]}
+          - {names: [payout_per_stream, per_stream_rate], type: real, role: number, min: 0.001, max: 0.012}
+          - {names: [launch_year, year_launched], type: integer, role: number, min: 2003, max: 2022, optional: true}
+
+      - key: monthly_streams
+        names: [monthly_streams, stream_counts]
+        id: [stream_record_id, count_id]
+        columns:
+          - {role: fk, ref: tracks, type: integer}
+          - {role: fk, ref: streaming_platforms, type: integer}
+          - {names: [period_start, month_start], type: date, role: date, min: "2018-01-01", max: "2025-12-01"}
+          - {names: [stream_count, plays], type: integer, role: number, min: 0, max: 50000000}
+          - {names: [payout, payout_amount], type: real, role: number, min: 0, max: 250000}
+          - {names: [listener_market, market], type: text, role: category, values: [North America, Latin America, Europe, Asia Pacific, Africa, Middle East], optional: true}
+
+      - key: royalty_payments
+        names: [royalty_payments, royalties]
+        id: [payment_id, royalty_id]
+        columns:
+          - {role: fk, ref: artists, type: integer}
+          - {names: [payment_date, paid_on], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+          - {names: [amount, gross_amount], type: real, role: number, min: 50, max: 900000}
+          - {names: [income_source, revenue_source], type: text, role: category, values: [streaming, radio airplay, sync licensing, physical sales, performance rights, digital downloads]}
+
+      - key: songwriters
+        names: [songwriters, composers]
+        id: [songwriter_id, composer_id]
+        columns:
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [rights_society, pro_affiliation], type: text, role: category, values: [ASCAP, BMI, SESAC, PRS, SOCAN, GEMA]}
+          - {names: [career_start_date, active_since], type: date, role: date, min: "1980-01-01", max: "2024-12-31"}
+          - {names: [is_also_performer], type: integer, role: flag, optional: true}
+
+      - key: writing_credits
+        names: [writing_credits, songwriting_splits]
+        id: [credit_id, split_id]
+        columns:
+          - {role: fk, ref: tracks, type: integer}
+          - {role: fk, ref: songwriters, type: integer}
+          - {names: [share_percent, ownership_share], type: real, role: number, min: 5, max: 100}
+          - {names: [contribution], type: text, role: category, values: [lyrics, music, lyrics and music, production, arrangement]}
+
+      - key: radio_spins
+        names: [radio_spins, airplay]
+        id: [spin_id, airplay_id]
+        columns:
+          - {role: fk, ref: tracks, type: integer}
+          - {names: [week_start, play_week], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+          - {names: [station_format], type: text, role: category, values: [top 40, rock, country, urban, adult contemporary, alternative, Latin]}
+          - {names: [spin_count, spins], type: integer, role: number, min: 1, max: 900}
+          - {names: [audience_millions, estimated_audience_millions], type: real, role: number, min: 0.05, max: 60}
+
+      - key: chart_entries
+        names: [chart_entries, chart_positions]
+        id: [entry_id, position_id]
+        columns:
+          - {role: fk, ref: tracks, type: integer}
+          - {names: [chart_week, week_ending], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+          - {names: [chart_name], type: text, role: category, values: [overall singles, streaming songs, radio songs, digital sales, viral]}
+          - {names: [chart_position, placement], type: integer, role: number, min: 1, max: 100}
+          - {names: [weeks_on_chart], type: integer, role: number, min: 1, max: 80}
+          - {names: [chart_points], type: real, role: number, min: 1000, max: 250000, optional: true}
+
+  concerts and festivals:
+    tables:
+      - key: venues
+        names: [venues]
+        id: [venue_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: venue}
+          - {names: [city], type: text, role: category, values: [Chicago, Austin, Nashville, Los Angeles, Atlanta, Seattle, Toronto, London, Berlin, Melbourne]}
+          - {names: [capacity, max_capacity], type: integer, role: number, min: 200, max: 80000}
+          - {names: [venue_type, setting], type: text, role: category, values: [arena, stadium, theater, club, amphitheater, outdoor park]}
+          - {names: [rental_fee, nightly_rental], type: real, role: number, min: 1500, max: 400000, optional: true}
+
+      - key: performers
+        names: [performers, acts]
+        id: [performer_id, act_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: music artist}
+          - {names: [genre], type: text, role: category, values: [rock, pop, hip-hop, electronic, country, indie, metal, jazz, folk, R&B]}
+          - {names: [booking_fee, standard_fee], type: real, role: number, min: 2000, max: 3000000}
+          - {names: [member_count, lineup_size], type: integer, role: number, min: 1, max: 9, optional: true}
+          - {names: [is_touring, currently_touring], type: integer, role: flag, optional: true}
+
+      - key: concerts
+        names: [concerts, shows]
+        id: [concert_id, show_id]
+        columns:
+          - {role: fk, ref: venues, type: integer}
+          - {names: [performance_date, start_date], type: date, role: date, min: "2016-01-01", max: "2025-12-31"}
+          - {names: [base_ticket_price, face_value], type: real, role: number, min: 15, max: 450}
+          - {names: [attendance, paid_attendance], type: integer, role: number, min: 50, max: 80000}
+          - {names: [is_sold_out, sold_out], type: integer, role: flag, optional: true}
+
+      - key: lineup_slots
+        names: [lineup_slots, bookings]
+        id: [slot_id, booking_id]
+        columns:
+          - {role: fk, ref: concerts, type: integer}
+          - {role: fk, ref: performers, type: integer}
+          - {names: [is_headliner, headliner], type: integer, role: flag}
+          - {names: [performance_fee, guarantee], type: real, role: number, min: 500, max: 3000000}
+          - {names: [set_minutes, set_length_minutes], type: integer, role: number, min: 20, max: 180}
+          - {names: [billing_slot, slot_number], type: integer, role: number, min: 1, max: 6, optional: true}
+
+      - key: fans
+        names: [fans, ticket_buyers]
+        id: [fan_id, buyer_id]
+        columns:
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [birth_date], type: date, role: date, min: "1950-01-01", max: "2008-12-31"}
+          - {names: [home_city], type: text, role: category, values: [Chicago, Austin, Nashville, Los Angeles, Atlanta, Seattle, Toronto, London, Berlin, Melbourne]}
+          - {names: [signup_date, account_created], type: date, role: date, min: "2014-01-01", max: "2025-12-31", optional: true}
+          - {names: [is_vip_member], type: integer, role: flag, optional: true}
+
+      - key: tickets
+        names: [tickets]
+        id: [ticket_id]
+        columns:
+          - {role: fk, ref: concerts, type: integer}
+          - {role: fk, ref: fans, type: integer}
+          - {names: [purchase_date, bought_on], type: date, role: date, min: "2015-06-01", max: "2025-12-31"}
+          - {names: [price_paid, ticket_price], type: real, role: number, min: 15, max: 1200}
+          - {names: [seat_section, section], type: text, role: category, values: [floor, lower bowl, upper bowl, balcony, general admission, VIP box]}
+          - {names: [sales_channel, purchase_channel], type: text, role: category, values: [primary online, box office, resale, presale, complimentary]}
+          - {names: [was_scanned, attended], type: integer, role: flag, optional: true}
+
+      - key: festivals
+        names: [festivals]
+        id: [festival_id]
+        columns:
+          - {role: fk, ref: venues, type: integer}
+          - {names: [name], type: text, role: entity_name, kind: festival}
+          - {names: [main_genre, genre_focus], type: text, role: category, values: [rock, electronic, hip-hop, country, jazz, folk, multi-genre, indie]}
+          - {names: [first_held_year, inaugural_year], type: integer, role: number, min: 1970, max: 2022}
+          - {names: [has_camping, camping_available], type: integer, role: flag, optional: true}
+
+      - key: festival_editions
+        names: [festival_editions, editions]
+        id: [festival_edition_id, edition_id]
+        columns:
+          - {role: fk, ref: festivals, type: integer}
+          - {names: [start_date, opening_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [duration_days, run_days], type: integer, role: number, min: 1, max: 5}
+          - {names: [attendance, total_attendance], type: integer, role: number, min: 2000, max: 400000}
+          - {names: [gross_revenue, revenue], type: real, role: number, min: 100000, max: 250000000}
+          - {names: [had_weather_delay, weather_disruption], type: integer, role: flag, optional: true}
+
+      - key: festival_sets
+        names: [festival_sets, festival_performances]
+        id: [set_id, performance_id]
+        columns:
+          - {role: fk, ref: festival_editions, type: integer}
+          - {role: fk, ref: performers, type: integer}
+          - {names: [stage, stage_area], type: text, role: category, values: [main stage, second stage, tent, dance arena, acoustic stage]}
+          - {names: [festival_day, day_number], type: integer, role: number, min: 1, max: 5}
+          - {names: [set_minutes, set_length_minutes], type: integer, role: number, min: 30, max: 120}
+          - {names: [performance_fee, guarantee], type: real, role: number, min: 1000, max: 4000000}
+
+      - key: sponsorships
+        names: [sponsorships, sponsor_deals]
+        id: [sponsorship_id, deal_id]
+        columns:
+          - {role: fk, ref: festivals, type: integer}
+          - {names: [sponsor, sponsor_name], type: text, role: entity_name, kind: company}
+          - {names: [sponsor_tier, tier], type: text, role: category, values: [title, presenting, platinum, gold, silver]}
+          - {names: [deal_value, amount], type: real, role: number, min: 10000, max: 8000000}
+          - {names: [signed_date, signing_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+
+      - key: settlements
+        names: [settlements, show_settlements]
+        id: [settlement_id, show_settlement_id]
+        columns:
+          - {role: fk, ref: concerts, type: integer}
+          - {names: [settled_on, settlement_date], type: date, role: date, min: "2016-01-01", max: "2025-12-31"}
+          - {names: [gross_receipts, gross_ticket_sales], type: real, role: number, min: 2000, max: 20000000}
+          - {names: [show_expenses, operating_costs], type: real, role: number, min: 1000, max: 6000000}
+          - {names: [promoter_share_pct, promoter_split], type: real, role: number, min: 5, max: 20, optional: true}
+
+      - key: merch_sales
+        names: [merch_sales, merchandise_sales]
+        id: [merch_sale_id, sale_id]
+        columns:
+          - {role: fk, ref: concerts, type: integer}
+          - {names: [item_type, product], type: text, role: category, values: [t-shirt, hoodie, poster, hat, vinyl record, tote bag]}
+          - {names: [units_sold, quantity], type: integer, role: number, min: 1, max: 5000}
+          - {names: [revenue, gross_sales], type: real, role: number, min: 20, max: 300000}
+
+  entertainment industry:
+    tables:
+      - key: studios
+        names: [studios, production_companies]
+        id: [studio_id, company_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: studio}
+          - {names: [ownership, ownership_type], type: text, role: category, values: [major, mini-major, independent, streamer-owned, broadcaster-owned]}
+          - {names: [headquarters_city, base_city], type: text, role: category, values: [Los Angeles, New York, London, Toronto, Atlanta, Vancouver, Mumbai, Seoul]}
+          - {names: [founded_year, year_founded], type: integer, role: number, min: 1912, max: 2022}
+          - {names: [annual_slate_budget, yearly_budget], type: real, role: number, min: 5000000, max: 3000000000, optional: true}
+
+      - key: productions
+        names: [productions, projects]
+        id: [production_id, project_id]
+        columns:
+          - {role: fk, ref: studios, type: integer}
+          - {names: [title, working_title], type: text, role: entity_name, kind: film}
+          - {names: [content_type, medium], type: text, role: category, values: [feature film, TV series, limited series, documentary, TV movie, animated feature]}
+          - {names: [genre], type: text, role: category, values: [drama, comedy, action, thriller, horror, science fiction, romance, family]}
+          - {names: [budget, approved_budget], type: real, role: number, min: 200000, max: 300000000}
+          - {names: [greenlight_date, approved_on], type: date, role: date, min: "2012-01-01", max: "2025-12-31"}
+          - {names: [runtime_minutes], type: integer, role: number, min: 22, max: 200, optional: true}
+
+      - key: people
+        names: [people, talent]
+        id: [person_id, talent_id]
+        columns:
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [birth_date, date_of_birth], type: date, role: date, min: "1940-01-01", max: "2010-12-31"}
+          - {names: [primary_craft, profession], type: text, role: category, values: [actor, director, writer, producer, cinematographer, composer, editor]}
+          - {names: [is_guild_member, union_member], type: integer, role: flag, optional: true}
+
+      - key: credits
+        names: [credits, screen_credits]
+        id: [credit_id, screen_credit_id]
+        columns:
+          - {role: fk, ref: productions, type: integer}
+          - {role: fk, ref: people, type: integer}
+          - {names: [credit_type, job], type: text, role: category, values: [lead actor, supporting actor, guest star, director, writer, producer, composer]}
+          - {names: [fee, compensation], type: real, role: number, min: 5000, max: 30000000}
+          - {names: [billing_slot, billing_number], type: integer, role: number, min: 1, max: 40, optional: true}
+          - {names: [days_on_set, work_days], type: integer, role: number, min: 1, max: 120, optional: true}
+
+      - key: distributors
+        names: [distributors]
+        id: [distributor_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: film distributor}
+          - {names: [channel, distribution_channel], type: text, role: category, values: [theatrical, streaming, broadcast TV, cable, home video]}
+          - {names: [market_share_pct, market_share], type: real, role: number, min: 0.1, max: 25, optional: true}
+
+      - key: releases
+        names: [releases]
+        id: [release_id]
+        columns:
+          - {role: fk, ref: productions, type: integer}
+          - {role: fk, ref: distributors, type: integer}
+          - {names: [release_date, premiere_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [territory, market], type: text, role: category, values: [United States, United Kingdom, France, Germany, Japan, South Korea, Brazil, India, Australia, Mexico]}
+          - {names: [release_channel, release_type], type: text, role: category, values: [theatrical, streaming, broadcast, home video, festival premiere]}
+          - {names: [opening_screens, screen_count], type: integer, role: number, min: 0, max: 4500, optional: true}
+          - {names: [marketing_spend, ad_spend], type: real, role: number, min: 50000, max: 150000000, optional: true}
+
+      - key: box_office
+        names: [box_office_weekends, weekend_grosses]
+        id: [weekend_id, gross_id]
+        columns:
+          - {role: fk, ref: releases, type: integer}
+          - {names: [weekend_start, weekend_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [gross, weekend_gross], type: real, role: number, min: 1000, max: 250000000}
+          - {names: [theater_count, theaters], type: integer, role: number, min: 1, max: 4600}
+          - {names: [weeks_in_release, week_number], type: integer, role: number, min: 1, max: 30}
+
+      - key: episodes
+        names: [episodes]
+        id: [episode_id]
+        columns:
+          - {role: fk, ref: productions, type: integer}
+          - {names: [season_number, season], type: integer, role: number, min: 1, max: 12}
+          - {names: [episode_number], type: integer, role: number, min: 1, max: 24}
+          - {names: [air_date, first_aired], type: date, role: date, min: "2012-01-01", max: "2025-12-31"}
+          - {names: [viewers_millions, audience_millions], type: real, role: number, min: 0.1, max: 25}
+          - {names: [episode_budget, cost], type: real, role: number, min: 500000, max: 20000000, optional: true}
+
+      - key: nominations
+        names: [award_nominations, nominations]
+        id: [award_nomination_id, nomination_id]
+        columns:
+          - {role: fk, ref: productions, type: integer}
+          - {names: [award_category, category], type: text, role: category, values: [best picture, best director, best lead performance, best supporting performance, best screenplay, best original score, best drama series, best comedy series]}
+          - {names: [awarding_body, ceremony], type: text, role: category, values: [national film academy, television academy, critics circle, international festival jury, guild awards]}
+          - {names: [ceremony_date, announced_on], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [is_winner, won], type: integer, role: flag}
+
+      - key: filming_locations
+        names: [filming_locations, shoot_locations]
+        id: [location_id, shoot_location_id]
+        columns:
+          - {role: fk, ref: productions, type: integer}
+          - {names: [city, shoot_city], type: text, role: category, values: [Atlanta, Vancouver, Toronto, Albuquerque, London, Budapest, Prague, Sydney, Wellington, Los Angeles]}
+          - {names: [start_date, shoot_start], type: date, role: date, min: "2012-01-01", max: "2025-12-31"}
+          - {names: [shoot_days, days_on_location], type: integer, role: number, min: 1, max: 90}
+          - {names: [location_cost, local_spend], type: real, role: number, min: 10000, max: 60000000}
+          - {names: [tax_incentive_rate, incentive_rate], type: real, role: number, min: 0, max: 0.40, optional: true}
+
+      - key: licensing_deals
+        names: [licensing_deals, license_agreements]
+        id: [deal_id, agreement_id]
+        columns:
+          - {role: fk, ref: productions, type: integer}
+          - {role: fk, ref: distributors, type: integer}
+          - {names: [signed_date, executed_on], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [license_fee, fee], type: real, role: number, min: 50000, max: 200000000}
+          - {names: [term_months, license_months], type: integer, role: number, min: 6, max: 120}
+          - {names: [is_exclusive, exclusive_rights], type: integer, role: flag}
+
+      - key: critic_reviews
+        names: [critic_reviews, reviews]
+        id: [critic_review_id, review_id]
+        columns:
+          - {role: fk, ref: productions, type: integer}
+          - {names: [review_date, published_on], type: date, role: date, min: "2012-01-01", max: "2025-12-31"}
+          - {names: [score, critic_score], type: real, role: number, min: 0, max: 100}
+          - {names: [outlet_type, publication_type], type: text, role: category, values: [newspaper, magazine, website, podcast, broadcast]}
+          - {names: [is_top_critic], type: integer, role: flag, optional: true}
+
+  gaming industry:
+    tables:
+      - key: developers
+        names: [developers, game_studios]
+        id: [developer_id, studio_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: game studio}
+          - {names: [home_country, headquarters_country], type: text, role: category, values: [United States, Japan, Canada, Sweden, Poland, South Korea, China, France, United Kingdom, Finland]}
+          - {names: [founded_year, year_founded], type: integer, role: number, min: 1975, max: 2022}
+          - {names: [headcount, employee_count], type: integer, role: number, min: 5, max: 9000}
+          - {names: [is_indie, independent], type: integer, role: flag, optional: true}
+
+      - key: games
+        names: [games]
+        id: [game_id]
+        columns:
+          - {role: fk, ref: developers, type: integer}
+          - {names: [title, name], type: text, role: entity_name, kind: game}
+          - {names: [genre], type: text, role: category, values: [action, role-playing, strategy, shooter, puzzle, sports, simulation, racing, platformer, survival]}
+          - {names: [release_date, launch_date], type: date, role: date, min: "2010-01-01", max: "2025-12-31"}
+          - {names: [base_price, launch_price], type: real, role: number, min: 0, max: 69.99}
+          - {names: [age_rating, content_rating], type: text, role: category, values: [E, E10+, T, M]}
+          - {names: [business_model, monetization], type: text, role: category, values: [premium, free-to-play, subscription, premium with microtransactions], optional: true}
+
+      - key: platforms
+        names: [platforms]
+        id: [platform_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, values: [Windows PC, Mac, Linux, home console, handheld console, iOS, Android, VR headset, cloud streaming]}
+          - {names: [store_commission, platform_fee_rate], type: real, role: number, min: 0.12, max: 0.30}
+          - {names: [launch_year, year_launched], type: integer, role: number, min: 1995, max: 2023}
+          - {names: [installed_base_millions, user_base_millions], type: real, role: number, min: 0.5, max: 250, optional: true}
+
+      - key: game_releases
+        names: [game_releases, platform_releases]
+        id: [game_release_id, platform_release_id]
+        columns:
+          - {role: fk, ref: games, type: integer}
+          - {role: fk, ref: platforms, type: integer}
+          - {names: [available_date, released_on], type: date, role: date, min: "2010-01-01", max: "2025-12-31"}
+          - {names: [price, list_price], type: real, role: number, min: 0, max: 69.99}
+          - {names: [download_size_gb, install_size_gb], type: real, role: number, min: 0.1, max: 150}
+
+      - key: players
+        names: [players, accounts]
+        id: [player_id, account_id]
+        columns:
+          - {names: [username, gamertag], type: text, role: entity_name, kind: gamer tag}
+          - {names: [country, home_country], type: text, role: category, values: [United States, Brazil, Germany, Japan, South Korea, United Kingdom, France, Mexico, Philippines, Poland]}
+          - {names: [signup_date, registered_on], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [birth_date], type: date, role: date, min: "1965-01-01", max: "2011-12-31", optional: true}
+          - {names: [is_premium, has_subscription], type: integer, role: flag, optional: true}
+
+      - key: play_sessions
+        names: [play_sessions, sessions]
+        id: [play_session_id, session_id]
+        columns:
+          - {role: fk, ref: players, type: integer}
+          - {role: fk, ref: games, type: integer}
+          - {names: [session_date, played_on], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+          - {names: [hours_played, duration_hours], type: real, role: number, min: 0.05, max: 10}
+          - {names: [device_type, device], type: text, role: category, values: [desktop, laptop, console, phone, tablet, VR headset]}
+          - {names: [levels_completed, stages_cleared], type: integer, role: number, min: 0, max: 25, optional: true}
+          - {names: [xp_earned, experience_points], type: integer, role: number, min: 0, max: 50000, optional: true}
+
+      - key: store_items
+        names: [store_items, virtual_items]
+        id: [item_id, virtual_item_id]
+        columns:
+          - {role: fk, ref: games, type: integer}
+          - {names: [name, item_name], type: text, role: entity_name, kind: virtual item}
+          - {names: [item_type, item_category], type: text, role: category, values: [cosmetic skin, loot box, battle pass, currency pack, character unlock, expansion, booster]}
+          - {names: [list_price, sticker_price], type: real, role: number, min: 0.99, max: 99.99}
+          - {names: [is_limited_time, limited_edition], type: integer, role: flag, optional: true}
+
+      - key: purchases
+        names: [purchases, transactions]
+        id: [purchase_id, transaction_id]
+        columns:
+          - {role: fk, ref: players, type: integer}
+          - {role: fk, ref: store_items, type: integer}
+          - {names: [purchase_date, bought_on], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+          - {names: [amount_paid, price_paid], type: real, role: number, min: 0.99, max: 99.99}
+          - {names: [currency, currency_code], type: text, role: category, values: [USD, EUR, GBP, JPY, BRL, KRW]}
+          - {names: [payment_method, paid_with], type: text, role: category, values: [credit card, digital wallet, gift card, carrier billing, platform balance]}
+          - {names: [is_refunded, refunded], type: integer, role: flag, optional: true}
+
+      - key: achievements
+        names: [achievements, trophies]
+        id: [achievement_id, trophy_id]
+        columns:
+          - {role: fk, ref: games, type: integer}
+          - {names: [name, title], type: text, role: entity_name, kind: achievement}
+          - {names: [tier, grade], type: text, role: category, values: [bronze, silver, gold, platinum]}
+          - {names: [points, reward_points], type: integer, role: number, min: 5, max: 200}
+          - {names: [unlock_rate_pct, percent_unlocked], type: real, role: number, min: 0.1, max: 95}
+
+      - key: player_achievements
+        names: [player_achievements, unlocks]
+        id: [player_achievement_id, unlock_id]
+        columns:
+          - {role: fk, ref: players, type: integer}
+          - {role: fk, ref: achievements, type: integer}
+          - {names: [unlocked_date, earned_on], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+          - {names: [hours_to_unlock, playtime_hours], type: real, role: number, min: 0.1, max: 400, optional: true}
+
+      - key: game_reviews
+        names: [game_reviews, player_reviews]
+        id: [game_review_id, player_review_id]
+        columns:
+          - {role: fk, ref: games, type: integer}
+          - {role: fk, ref: players, type: integer}
+          - {names: [review_date, posted_on], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+          - {names: [rating, score], type: integer, role: number, min: 1, max: 10}
+          - {names: [hours_at_review, playtime_hours], type: real, role: number, min: 0.5, max: 1500}
+          - {names: [is_recommended, recommended], type: integer, role: flag}
+
+      - key: patches
+        names: [patches, game_updates]
+        id: [patch_id, update_id]
+        columns:
+          - {role: fk, ref: games, type: integer}
+          - {names: [published_on, rollout_date], type: date, role: date, min: "2010-01-01", max: "2025-12-31"}
+          - {names: [change_type, content_type], type: text, role: category, values: [bug fix, balance, new content, seasonal event, security, performance]}
+          - {names: [download_size_gb, size_gb], type: real, role: number, min: 0.05, max: 80}
+          - {names: [is_hotfix, hotfix], type: integer, role: flag, optional: true}
+
+  esports:
+    tables:
+      - key: teams
+        names: [teams]
+        id: [team_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: esports team}
+          - {names: [region, home_region], type: text, role: category, values: [North America, Europe, Korea, China, Brazil, Southeast Asia, CIS, Oceania]}
+          - {names: [founded_date, established_on], type: date, role: date, min: "2000-01-01", max: "2023-12-31"}
+          - {names: [annual_budget, operating_budget], type: real, role: number, min: 100000, max: 40000000, optional: true}
+          - {names: [is_franchised, franchise_slot], type: integer, role: flag, optional: true}
+
+      - key: players
+        names: [players, pro_players]
+        id: [player_id, pro_player_id]
+        columns:
+          - {names: [handle, gamer_tag], type: text, role: entity_name, kind: gamer tag}
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [birth_date, date_of_birth], type: date, role: date, min: "1990-01-01", max: "2008-12-31"}
+          - {names: [nationality, country], type: text, role: category, values: [United States, South Korea, China, Denmark, Brazil, France, Sweden, Ukraine, Vietnam, Canada]}
+          - {names: [in_game_role, specialty], type: text, role: category, values: [captain, carry, support, entry fragger, sniper, flex, jungler]}
+
+      - key: games
+        names: [games, esports_titles]
+        id: [game_id, title_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: game}
+          - {names: [genre], type: text, role: category, values: [MOBA, tactical shooter, battle royale, fighting, sports simulation, card battler, real-time strategy]}
+          - {names: [release_year, launch_year], type: integer, role: number, min: 1998, max: 2023}
+          - {names: [team_size, players_per_side], type: integer, role: number, min: 1, max: 6}
+
+      - key: tournaments
+        names: [tournaments, events]
+        id: [tournament_id, event_id]
+        columns:
+          - {role: fk, ref: games, type: integer}
+          - {names: [name], type: text, role: entity_name, kind: tournament}
+          - {names: [start_date, opening_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [prize_pool, total_prize_pool], type: real, role: number, min: 5000, max: 40000000}
+          - {names: [tier, competitive_tier], type: text, role: category, values: [S-tier, A-tier, B-tier, C-tier, qualifier]}
+          - {names: [play_setting, venue_type], type: text, role: category, values: [LAN, online, hybrid]}
+          - {names: [team_slots, field_size], type: integer, role: number, min: 8, max: 64, optional: true}
+
+      - key: matches
+        names: [matches, series]
+        id: [match_id, series_id]
+        columns:
+          - {role: fk, ref: tournaments, type: integer}
+          - {role: fk, ref: teams, type: integer, names: [team_a_id]}
+          - {role: fk, ref: teams, type: integer, names: [team_b_id]}
+          - {names: [match_date, played_on], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [stage, bracket_stage], type: text, role: category, values: [group stage, round of 16, quarterfinal, semifinal, grand final]}
+          - {names: [best_of, max_games], type: integer, role: number, min: 1, max: 5}
+          - {names: [duration_minutes], type: real, role: number, min: 15, max: 300}
+          - {names: [team_a_won], type: integer, role: flag}
+
+      - key: tournament_entries
+        names: [tournament_entries, registrations]
+        id: [entry_id, registration_id]
+        columns:
+          - {role: fk, ref: tournaments, type: integer}
+          - {role: fk, ref: teams, type: integer}
+          - {names: [final_placement, placement], type: integer, role: number, min: 1, max: 32}
+          - {names: [prize_money, winnings], type: real, role: number, min: 0, max: 15000000}
+          - {names: [qualified_via, entry_route], type: text, role: category, values: [direct invite, open qualifier, regional league, last chance qualifier]}
+          - {names: [registered_on, signup_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31", optional: true}
+
+      - key: player_stats
+        names: [player_stats, stat_lines]
+        id: [player_stat_id, stat_line_id]
+        columns:
+          - {role: fk, ref: matches, type: integer}
+          - {role: fk, ref: players, type: integer}
+          - {names: [kills, eliminations], type: integer, role: number, min: 0, max: 45}
+          - {names: [deaths], type: integer, role: number, min: 0, max: 40}
+          - {names: [assists], type: integer, role: number, min: 0, max: 40}
+          - {names: [damage_dealt, total_damage], type: real, role: number, min: 500, max: 60000}
+          - {names: [is_mvp, mvp], type: integer, role: flag, optional: true}
+
+      - key: contracts
+        names: [contracts, player_contracts]
+        id: [contract_id, player_contract_id]
+        columns:
+          - {role: fk, ref: players, type: integer}
+          - {role: fk, ref: teams, type: integer}
+          - {names: [start_date, signed_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [monthly_salary, salary], type: real, role: number, min: 1500, max: 150000}
+          - {names: [term_months, duration_months], type: integer, role: number, min: 3, max: 48}
+          - {names: [buyout_fee, buyout_clause], type: real, role: number, min: 0, max: 5000000, optional: true}
+
+      - key: sponsors
+        names: [sponsors, brands]
+        id: [sponsor_id, brand_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: company}
+          - {names: [industry, sector], type: text, role: category, values: [energy drinks, PC hardware, peripherals, telecom, apparel, automotive, fast food, betting]}
+
+      - key: sponsorships
+        names: [sponsorships, sponsorship_deals]
+        id: [sponsorship_id, deal_id]
+        columns:
+          - {role: fk, ref: teams, type: integer}
+          - {role: fk, ref: sponsors, type: integer}
+          - {names: [signed_date, start_date], type: date, role: date, min: "2016-01-01", max: "2025-12-31"}
+          - {names: [annual_value, yearly_value], type: real, role: number, min: 20000, max: 20000000}
+          - {names: [term_months, deal_months], type: integer, role: number, min: 6, max: 60}
+          - {names: [placement_type, asset], type: text, role: category, values: [jersey front, jersey sleeve, naming rights, official supplier, stream overlay]}
+
+      - key: broadcasts
+        names: [broadcasts, viewership_reports]
+        id: [broadcast_id, report_id]
+        columns:
+          - {role: fk, ref: tournaments, type: integer}
+          - {names: [broadcast_date, air_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [peak_viewers, peak_concurrent_viewers], type: integer, role: number, min: 1000, max: 7000000}
+          - {names: [hours_watched, watch_hours], type: real, role: number, min: 5000, max: 200000000}
+          - {names: [stream_language, language], type: text, role: category, values: [English, Korean, Mandarin, Portuguese, Spanish, Russian, French, Vietnamese]}
+          - {names: [channel_type, platform], type: text, role: category, values: [live-streaming site, video site, TV broadcast, in-game client]}
+
+      - key: coaches
+        names: [coaches, coaching_staff]
+        id: [coach_id, staff_id]
+        columns:
+          - {role: fk, ref: teams, type: integer}
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [hire_date, joined_on], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [annual_salary, salary], type: real, role: number, min: 30000, max: 600000}
+          - {names: [job_title, staff_position], type: text, role: category, values: [head coach, assistant coach, analyst, performance coach, team manager]}
+
+  sports:
+    tables:
+      - key: leagues
+        names: [leagues, competitions]
+        id: [league_id, competition_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: league}
+          - {names: [division_level, tier_level], type: integer, role: number, min: 1, max: 4}
+          - {names: [founded_year, year_founded], type: integer, role: number, min: 1880, max: 2015}
+          - {names: [season_structure, competition_format], type: text, role: category, values: [single table, conferences, split season, promotion and relegation]}
+          - {names: [media_rights_revenue, broadcast_revenue], type: real, role: number, min: 5000000, max: 3000000000, optional: true}
+
+      - key: teams
+        names: [teams]
+        id: [team_id]
+        columns:
+          - {role: fk, ref: leagues, type: integer}
+          - {names: [name], type: text, role: entity_name, kind: sports team}
+          - {names: [home_city, city], type: text, role: category, values: [Boston, Denver, Seattle, Manchester, Madrid, Munich, Milan, Lyon, Toronto, Melbourne]}
+          - {names: [founded_year, year_founded], type: integer, role: number, min: 1870, max: 2020}
+          - {names: [stadium_capacity, home_capacity], type: integer, role: number, min: 5000, max: 90000}
+          - {names: [payroll, annual_payroll], type: real, role: number, min: 3000000, max: 400000000}
+
+      - key: players
+        names: [players, athletes]
+        id: [player_id, athlete_id]
+        columns:
+          - {role: fk, ref: teams, type: integer}
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [birth_date, date_of_birth], type: date, role: date, min: "1982-01-01", max: "2007-12-31"}
+          - {names: [jersey_number, shirt_number], type: integer, role: number, min: 0, max: 99}
+          - {names: [height_cm], type: integer, role: number, min: 160, max: 220}
+          - {names: [nationality, birth_country], type: text, role: category, values: [United States, Canada, Spain, France, Germany, Brazil, Argentina, Nigeria, Serbia, Australia], optional: true}
+
+      - key: games
+        names: [games, fixtures]
+        id: [game_id, fixture_id]
+        columns:
+          - {role: fk, ref: teams, type: integer, names: [home_team_id]}
+          - {role: fk, ref: teams, type: integer, names: [away_team_id]}
+          - {names: [played_on, scheduled_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [season_start_year, season], type: integer, role: number, min: 2015, max: 2025}
+          - {names: [home_score, home_points], type: integer, role: number, min: 0, max: 130}
+          - {names: [away_score, away_points], type: integer, role: number, min: 0, max: 130}
+          - {names: [attendance, crowd], type: integer, role: number, min: 1000, max: 90000}
+          - {names: [gate_revenue, ticket_revenue], type: real, role: number, min: 20000, max: 15000000, optional: true}
+
+      - key: player_game_stats
+        names: [player_game_stats, box_scores]
+        id: [stat_line_id, box_score_id]
+        columns:
+          - {role: fk, ref: games, type: integer}
+          - {role: fk, ref: players, type: integer}
+          - {names: [minutes_played, minutes_on_field], type: real, role: number, min: 0, max: 48}
+          - {names: [points, points_scored], type: integer, role: number, min: 0, max: 50}
+          - {names: [assists], type: integer, role: number, min: 0, max: 15}
+          - {names: [fouls, fouls_committed], type: integer, role: number, min: 0, max: 6}
+          - {names: [is_starter, started], type: integer, role: flag}
+
+      - key: coaches
+        names: [coaches, staff]
+        id: [coach_id, staff_id]
+        columns:
+          - {role: fk, ref: teams, type: integer}
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [hire_date, appointed_on], type: date, role: date, min: "2010-01-01", max: "2025-12-31"}
+          - {names: [annual_salary, salary], type: real, role: number, min: 80000, max: 15000000}
+          - {names: [job_title, staff_role], type: text, role: category, values: [head coach, assistant coach, fitness coach, scout, analyst]}
+
+      - key: injuries
+        names: [injuries, injury_reports]
+        id: [injury_id, injury_report_id]
+        columns:
+          - {role: fk, ref: players, type: integer}
+          - {names: [injury_date, reported_on], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [injury_type, diagnosis], type: text, role: category, values: [hamstring strain, ankle sprain, concussion, knee ligament tear, broken bone, back spasm, groin strain]}
+          - {names: [games_missed, missed_games], type: integer, role: number, min: 0, max: 82}
+          - {names: [rehab_cost, treatment_cost], type: real, role: number, min: 500, max: 400000, optional: true}
+          - {names: [is_season_ending, season_ending], type: integer, role: flag, optional: true}
+
+      - key: contracts
+        names: [contracts, player_contracts]
+        id: [contract_id, player_contract_id]
+        columns:
+          - {role: fk, ref: players, type: integer}
+          - {names: [signed_date, signing_date], type: date, role: date, min: "2012-01-01", max: "2025-12-31"}
+          - {names: [annual_value, average_annual_value], type: real, role: number, min: 50000, max: 55000000}
+          - {names: [term_years, contract_years], type: integer, role: number, min: 1, max: 6}
+          - {names: [contract_type, deal_type], type: text, role: category, values: [rookie, veteran, extension, two-way, league minimum]}
+          - {names: [signing_bonus], type: real, role: number, min: 0, max: 20000000, optional: true}
+
+      - key: transfers
+        names: [transfers, trades]
+        id: [transfer_id, trade_id]
+        columns:
+          - {role: fk, ref: players, type: integer}
+          - {role: fk, ref: teams, type: integer, names: [new_team_id, destination_team_id]}
+          - {names: [completed_on, effective_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [fee, deal_fee], type: real, role: number, min: 0, max: 150000000}
+          - {names: [move_type, acquisition_type], type: text, role: category, values: [trade, free agency, loan, waiver claim, permanent transfer]}
+
+      - key: ticket_sales
+        names: [ticket_sales]
+        id: [ticket_sale_id]
+        columns:
+          - {role: fk, ref: games, type: integer}
+          - {names: [sale_date, sold_on], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [seating_section, section], type: text, role: category, values: [lower bowl, upper deck, courtside, club level, standing, family zone]}
+          - {names: [tickets_sold, quantity], type: integer, role: number, min: 1, max: 20000}
+          - {names: [revenue, gross_sales], type: real, role: number, min: 20, max: 3000000}
+
+      - key: draft_picks
+        names: [draft_picks, draft_selections]
+        id: [pick_id, selection_id]
+        columns:
+          - {role: fk, ref: players, type: integer}
+          - {role: fk, ref: teams, type: integer, names: [drafting_team_id]}
+          - {names: [draft_date], type: date, role: date, min: "2008-01-01", max: "2025-12-31"}
+          - {names: [round_number, draft_round], type: integer, role: number, min: 1, max: 7}
+          - {names: [overall_pick, pick_number], type: integer, role: number, min: 1, max: 260}
+          - {names: [rookie_bonus, signing_bonus], type: real, role: number, min: 0, max: 12000000, optional: true}
+
+      - key: player_awards
+        names: [player_awards, honors]
+        id: [award_id, honor_id]
+        columns:
+          - {role: fk, ref: players, type: integer}
+          - {names: [award_type, distinction], type: text, role: category, values: [most valuable player, rookie of the year, defensive player of the year, top scorer, all-star selection, player of the month]}
+          - {names: [awarded_on, announced_on], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [bonus_paid, performance_bonus], type: real, role: number, min: 0, max: 2000000, optional: true}
+
+  social media:
+    tables:
+      - key: users
+        names: [users]
+        id: [user_id]
+        columns:
+          - {names: [username, handle], type: text, role: entity_name, kind: username}
+          - {names: [signup_date, joined_on], type: date, role: date, min: "2012-01-01", max: "2025-12-31"}
+          - {names: [country, home_country], type: text, role: category, values: [United States, India, Brazil, Indonesia, United Kingdom, Mexico, Japan, Germany, Nigeria, Philippines]}
+          - {names: [birth_date], type: date, role: date, min: "1950-01-01", max: "2011-12-31", optional: true}
+          - {names: [is_verified, verified], type: integer, role: flag}
+          - {names: [account_type], type: text, role: category, values: [personal, creator, business, nonprofit], optional: true}
+
+      - key: posts
+        names: [posts]
+        id: [post_id]
+        columns:
+          - {role: fk, ref: users, type: integer}
+          - {names: [posted_on, published_date], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+          - {names: [content_type, media_type], type: text, role: category, values: [text, photo, video, link, poll, short video]}
+          - {names: [char_count, caption_chars], type: integer, role: number, min: 0, max: 2200}
+          - {names: [share_count, reshares], type: integer, role: number, min: 0, max: 50000, optional: true}
+          - {names: [is_pinned, pinned], type: integer, role: flag, optional: true}
+
+      - key: follows
+        names: [follows, connections]
+        id: [follow_id, connection_id]
+        columns:
+          - {role: fk, ref: users, type: integer, names: [follower_id]}
+          - {role: fk, ref: users, type: integer, names: [followed_id]}
+          - {names: [followed_on, created_date], type: date, role: date, min: "2012-01-01", max: "2025-12-31"}
+          - {names: [is_muted, muted], type: integer, role: flag, optional: true}
+
+      - key: likes
+        names: [likes, post_likes]
+        id: [like_id, post_like_id]
+        columns:
+          - {role: fk, ref: users, type: integer}
+          - {role: fk, ref: posts, type: integer}
+          - {names: [liked_on, created_date], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+          - {names: [surface, source_surface], type: text, role: category, values: [home feed, profile, search, explore, notification]}
+
+      - key: comments
+        names: [comments, replies]
+        id: [comment_id, reply_id]
+        columns:
+          - {role: fk, ref: posts, type: integer}
+          - {role: fk, ref: users, type: integer}
+          - {names: [created_on, posted_date], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+          - {names: [char_count, text_length], type: integer, role: number, min: 1, max: 2200}
+          - {names: [sentiment_score, sentiment], type: real, role: number, min: -1, max: 1}
+          - {names: [is_hidden, hidden], type: integer, role: flag, optional: true}
+
+      - key: hashtags
+        names: [hashtags, tags]
+        id: [hashtag_id, tag_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: hashtag}
+          - {names: [topic_area, subject], type: text, role: category, values: [sports, music, politics, fashion, gaming, food, travel, technology]}
+          - {names: [first_used_on, created_on], type: date, role: date, min: "2010-01-01", max: "2025-12-31", optional: true}
+
+      - key: post_hashtags
+        names: [post_hashtags, post_tags]
+        id: [post_hashtag_id, post_tag_id]
+        columns:
+          - {role: fk, ref: posts, type: integer}
+          - {role: fk, ref: hashtags, type: integer}
+          - {names: [tag_position, slot], type: integer, role: number, min: 1, max: 10}
+
+      - key: advertisers
+        names: [advertisers, brands]
+        id: [advertiser_id, brand_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: company}
+          - {names: [industry, sector], type: text, role: category, values: [retail, gaming, finance, travel, food and beverage, beauty, automotive, software]}
+          - {names: [monthly_budget, spend_cap], type: real, role: number, min: 500, max: 2000000, optional: true}
+          - {names: [onboarded_on, account_opened], type: date, role: date, min: "2014-01-01", max: "2025-12-31", optional: true}
+
+      - key: ad_campaigns
+        names: [ad_campaigns, campaigns]
+        id: [ad_campaign_id, campaign_id]
+        columns:
+          - {role: fk, ref: advertisers, type: integer}
+          - {names: [name], type: text, role: entity_name, kind: ad campaign}
+          - {names: [objective, goal], type: text, role: category, values: [awareness, traffic, app installs, conversions, video views, lead generation]}
+          - {names: [start_date, launch_date], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+          - {names: [budget, lifetime_budget], type: real, role: number, min: 500, max: 2500000}
+          - {names: [target_age_group, audience_age], type: text, role: category, values: ["13-17", "18-24", "25-34", "35-44", "45-54", "55+"]}
+
+      - key: campaign_daily_stats
+        names: [campaign_daily_stats, ad_performance]
+        id: [stat_id, performance_id]
+        columns:
+          - {role: fk, ref: ad_campaigns, type: integer}
+          - {names: [report_date, stats_date], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+          - {names: [impressions], type: integer, role: number, min: 50000, max: 3000000}
+          - {names: [clicks, link_clicks], type: integer, role: number, min: 0, max: 40000}
+          - {names: [spend, amount_spent], type: real, role: number, min: 10, max: 60000}
+
+      - key: boosted_posts
+        names: [boosted_posts, promoted_posts]
+        id: [boost_id, promotion_id]
+        columns:
+          - {role: fk, ref: posts, type: integer}
+          - {role: fk, ref: ad_campaigns, type: integer}
+          - {names: [boost_start, promoted_on], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+          - {names: [spend, amount_spent], type: real, role: number, min: 5, max: 50000}
+          - {names: [reach, accounts_reached], type: integer, role: number, min: 100, max: 5000000}
+
+      - key: content_reports
+        names: [content_reports, moderation_reports]
+        id: [report_id, moderation_report_id]
+        columns:
+          - {role: fk, ref: posts, type: integer}
+          - {role: fk, ref: users, type: integer, names: [reporter_id, reported_by_id]}
+          - {names: [reported_on, filed_date], type: date, role: date, min: "2018-01-01", max: "2025-12-31"}
+          - {names: [reason, report_reason], type: text, role: category, values: [spam, harassment, misinformation, hate speech, violence, copyright, impersonation]}
+          - {names: [outcome, resolution], type: text, role: category, values: [removed, no action, warning issued, account suspended, label added]}
+          - {names: [review_hours, hours_to_review], type: real, role: number, min: 0.1, max: 240}
+
+  journalism:
+    tables:
+      - key: outlets
+        names: [news_outlets, publications]
+        id: [outlet_id, publication_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: news outlet}
+          - {names: [medium, business_type], type: text, role: category, values: [daily newspaper, digital native, weekly magazine, wire service, broadcast network, public radio]}
+          - {names: [founded_year, year_founded], type: integer, role: number, min: 1850, max: 2022}
+          - {names: [hq_city, headquarters_city], type: text, role: category, values: [New York, Washington, Chicago, Los Angeles, Atlanta, Boston, Seattle, Denver, Miami, Philadelphia]}
+          - {names: [is_nonprofit, nonprofit], type: integer, role: flag, optional: true}
+
+      - key: reporters
+        names: [reporters, journalists]
+        id: [reporter_id, journalist_id]
+        columns:
+          - {role: fk, ref: outlets, type: integer}
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [beat, coverage_area], type: text, role: category, values: [politics, business, health, sports, technology, local government, climate, culture, courts, education]}
+          - {names: [hire_date, joined_on], type: date, role: date, min: "1995-01-01", max: "2025-12-31"}
+          - {names: [employment_type, contract_status], type: text, role: category, values: [staff, contract, freelance, fellow]}
+          - {names: [annual_salary, salary], type: real, role: number, min: 38000, max: 220000, optional: true}
+
+      - key: articles
+        names: [articles, stories]
+        id: [article_id, story_id]
+        columns:
+          - {role: fk, ref: reporters, type: integer}
+          - {names: [headline], type: text, role: entity_name, kind: headline}
+          - {names: [section, desk], type: text, role: category, values: [national, world, business, sports, opinion, science, local, arts]}
+          - {names: [published_date, published_on], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [word_count, words], type: integer, role: number, min: 150, max: 9000}
+          - {names: [piece_type, genre], type: text, role: category, values: [breaking news, analysis, opinion, feature, investigation, explainer]}
+          - {names: [is_paywalled, paywalled], type: integer, role: flag, optional: true}
+
+      - key: sources
+        names: [sources, contacts]
+        id: [source_id, contact_id]
+        columns:
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [affiliation, sector], type: text, role: category, values: [government official, academic expert, company spokesperson, eyewitness, advocacy group, law enforcement, health professional]}
+          - {names: [first_contact_date, added_on], type: date, role: date, min: "2010-01-01", max: "2025-12-31"}
+          - {names: [is_confidential, confidential], type: integer, role: flag, optional: true}
+
+      - key: citations
+        names: [citations, source_citations]
+        id: [citation_id, source_citation_id]
+        columns:
+          - {role: fk, ref: articles, type: integer}
+          - {role: fk, ref: sources, type: integer}
+          - {names: [interview_date, interviewed_on], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [quote_count, quotes_used], type: integer, role: number, min: 0, max: 12}
+          - {names: [is_on_record, on_record], type: integer, role: flag}
+
+      - key: daily_traffic
+        names: [daily_traffic, page_view_counts]
+        id: [traffic_id, count_id]
+        columns:
+          - {role: fk, ref: articles, type: integer}
+          - {names: [view_date, traffic_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [pageviews, view_count], type: integer, role: number, min: 0, max: 2500000}
+          - {names: [avg_read_seconds, average_engaged_seconds], type: real, role: number, min: 5, max: 600}
+          - {names: [referral_source, referrer], type: text, role: category, values: [search, social, direct, newsletter, aggregator, push alert]}
+
+      - key: subscribers
+        names: [subscribers, readers]
+        id: [subscriber_id, reader_id]
+        columns:
+          - {role: fk, ref: outlets, type: integer}
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [signup_date, subscribed_on], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [plan_type, subscription_tier], type: text, role: category, values: [digital monthly, digital annual, print and digital, student, weekend print]}
+          - {names: [monthly_fee, monthly_price], type: real, role: number, min: 1, max: 45}
+          - {names: [is_active, active], type: integer, role: flag, optional: true}
+
+      - key: corrections
+        names: [corrections, errata]
+        id: [correction_id, erratum_id]
+        columns:
+          - {role: fk, ref: articles, type: integer}
+          - {names: [issued_on, posted_on], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [error_type, mistake_type], type: text, role: category, values: [factual, misspelled name, misquote, wrong figure, misattribution, missing context]}
+          - {names: [severity], type: text, role: category, values: [minor, significant, major]}
+
+      - key: expense_claims
+        names: [expense_claims, expenses]
+        id: [claim_id, expense_id]
+        columns:
+          - {role: fk, ref: reporters, type: integer}
+          - {names: [submitted_on, filed_on], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [amount, claimed_amount], type: real, role: number, min: 5, max: 8000}
+          - {names: [expense_type, cost_category], type: text, role: category, values: [travel, lodging, meals, records request fees, equipment, ride share]}
+          - {names: [is_approved, approved], type: integer, role: flag, optional: true}
+
+      - key: award_entries
+        names: [award_entries, prize_submissions]
+        id: [entry_id, submission_id]
+        columns:
+          - {role: fk, ref: articles, type: integer}
+          - {names: [prize_category, award_category], type: text, role: category, values: [investigative reporting, local reporting, feature writing, explanatory reporting, breaking news, public service]}
+          - {names: [submitted_on, filed_on], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [entry_fee, submission_fee], type: real, role: number, min: 50, max: 300, optional: true}
+          - {names: [is_winner, won], type: integer, role: flag}
+
+      - key: newsletters
+        names: [newsletters]
+        id: [newsletter_id]
+        columns:
+          - {role: fk, ref: outlets, type: integer}
+          - {names: [name], type: text, role: entity_name, kind: newsletter}
+          - {names: [cadence, send_frequency], type: text, role: category, values: [daily, weekly, twice weekly, breaking only]}
+          - {names: [launch_date, launched_on], type: date, role: date, min: "2010-01-01", max: "2025-12-31"}
+          - {names: [is_paid, paid_only], type: integer, role: flag, optional: true}
+
+      - key: newsletter_sends
+        names: [newsletter_sends, email_sends]
+        id: [send_id, email_send_id]
+        columns:
+          - {role: fk, ref: newsletters, type: integer}
+          - {names: [send_date, sent_on], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [recipients, recipient_count], type: integer, role: number, min: 500, max: 2000000}
+          - {names: [open_rate, opens_share], type: real, role: number, min: 0.1, max: 0.7}
+          - {names: [click_rate, click_share], type: real, role: number, min: 0.005, max: 0.15, optional: true}
+
+  museums:
+    tables:
+      - key: museums
+        names: [museums]
+        id: [museum_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: museum}
+          - {names: [museum_type, specialty], type: text, role: category, values: [art, natural history, science, history, maritime, design, archaeology]}
+          - {names: [city], type: text, role: category, values: [Chicago, Philadelphia, San Francisco, Boston, Cleveland, Minneapolis, Houston, Denver, Pittsburgh, Baltimore]}
+          - {names: [founded_year, year_founded], type: integer, role: number, min: 1850, max: 2015}
+          - {names: [annual_budget, operating_budget], type: real, role: number, min: 500000, max: 300000000}
+          - {names: [is_free_admission, free_admission], type: integer, role: flag, optional: true}
+
+      - key: collections
+        names: [collections]
+        id: [collection_id]
+        columns:
+          - {role: fk, ref: museums, type: integer}
+          - {names: [name], type: text, role: entity_name, values: [Ancient Egypt, Impressionism, Asian Art, Fossils, Textiles, Photography, Decorative Arts, Modern Art, Arms and Armor, Greek and Roman Antiquities, Minerals, Maritime History]}
+          - {names: [established_year, year_established], type: integer, role: number, min: 1880, max: 2020}
+          - {names: [gallery_count, galleries], type: integer, role: number, min: 1, max: 30, optional: true}
+
+      - key: objects
+        names: [objects, artifacts]
+        id: [object_id, artifact_id]
+        columns:
+          - {role: fk, ref: collections, type: integer}
+          - {names: [title, name], type: text, role: entity_name, kind: artwork}
+          - {names: [material, medium], type: text, role: category, values: [oil on canvas, bronze, marble, ceramic, photograph, textile, paper, wood, stone, gold]}
+          - {names: [acquisition_date, acquired_on], type: date, role: date, min: "1950-01-01", max: "2025-12-31"}
+          - {names: [insured_value, appraised_value], type: real, role: number, min: 500, max: 80000000}
+          - {names: [creation_year, year_made], type: integer, role: number, min: -3000, max: 2020, optional: true}
+          - {names: [is_on_display, on_view], type: integer, role: flag, optional: true}
+
+      - key: exhibitions
+        names: [exhibitions, shows]
+        id: [exhibition_id, show_id]
+        columns:
+          - {role: fk, ref: museums, type: integer}
+          - {names: [title], type: text, role: entity_name, kind: exhibition}
+          - {names: [opening_date, start_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [duration_days, run_days], type: integer, role: number, min: 30, max: 365}
+          - {names: [budget, production_budget], type: real, role: number, min: 20000, max: 5000000}
+          - {names: [is_traveling, touring], type: integer, role: flag, optional: true}
+
+      - key: exhibition_objects
+        names: [exhibition_objects, exhibit_items]
+        id: [exhibition_object_id, exhibit_item_id]
+        columns:
+          - {role: fk, ref: exhibitions, type: integer}
+          - {role: fk, ref: objects, type: integer}
+          - {names: [gallery_room, room_number], type: integer, role: number, min: 1, max: 60}
+          - {names: [is_highlight, featured], type: integer, role: flag}
+
+      - key: visitors
+        names: [visitors, guests]
+        id: [visitor_id, guest_id]
+        columns:
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [birth_date], type: date, role: date, min: "1940-01-01", max: "2018-12-31"}
+          - {names: [residence, home_region], type: text, role: category, values: [local, in-state, out-of-state, international]}
+          - {names: [registered_on, profile_created], type: date, role: date, min: "2015-01-01", max: "2025-12-31", optional: true}
+
+      - key: visits
+        names: [visits, admissions]
+        id: [visit_id, admission_id]
+        columns:
+          - {role: fk, ref: visitors, type: integer}
+          - {role: fk, ref: museums, type: integer}
+          - {names: [visited_on, entry_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [ticket_type, ticket_class], type: text, role: category, values: [adult, child, senior, student, member, free day]}
+          - {names: [ticket_price, amount_paid], type: real, role: number, min: 0, max: 45}
+          - {names: [party_size, group_size], type: integer, role: number, min: 1, max: 8}
+
+      - key: memberships
+        names: [memberships]
+        id: [membership_id]
+        columns:
+          - {role: fk, ref: visitors, type: integer}
+          - {role: fk, ref: museums, type: integer}
+          - {names: [start_date, joined_on], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [membership_tier, tier], type: text, role: category, values: [individual, dual, family, patron, benefactor]}
+          - {names: [annual_fee, fee], type: real, role: number, min: 50, max: 5000}
+          - {names: [auto_renew, is_auto_renew], type: integer, role: flag, optional: true}
+
+      - key: loans
+        names: [loans, object_loans]
+        id: [loan_id, object_loan_id]
+        columns:
+          - {role: fk, ref: objects, type: integer}
+          - {role: fk, ref: museums, type: integer, names: [borrower_museum_id, borrowing_museum_id]}
+          - {names: [loan_start, start_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [duration_days, loan_days], type: integer, role: number, min: 30, max: 730}
+          - {names: [loan_fee, fee], type: real, role: number, min: 0, max: 250000}
+          - {names: [purpose, loan_purpose], type: text, role: category, values: [exhibition, research, conservation, long-term display]}
+
+      - key: conservation_treatments
+        names: [conservation_treatments, restorations]
+        id: [treatment_id, restoration_id]
+        columns:
+          - {role: fk, ref: objects, type: integer}
+          - {names: [completed_on, finished_on], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [work_type, procedure], type: text, role: category, values: [cleaning, structural repair, retouching, stabilization, reframing, pest treatment]}
+          - {names: [cost, labor_cost], type: real, role: number, min: 200, max: 250000}
+          - {names: [labor_hours, hours_worked], type: integer, role: number, min: 1, max: 800}
+
+      - key: donations
+        names: [donations, gifts]
+        id: [donation_id, gift_id]
+        columns:
+          - {role: fk, ref: museums, type: integer}
+          - {names: [donor_type, giver_type], type: text, role: category, values: [individual, family foundation, corporation, government agency, estate]}
+          - {names: [received_on, pledged_on], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [amount, pledged_amount], type: real, role: number, min: 100, max: 50000000}
+          - {names: [is_restricted, restricted_purpose], type: integer, role: flag, optional: true}
+
+      - key: public_programs
+        names: [public_programs, education_programs]
+        id: [public_program_id, education_program_id]
+        columns:
+          - {role: fk, ref: museums, type: integer}
+          - {names: [program_type, activity_type], type: text, role: category, values: [lecture, school tour, workshop, family day, film screening, member preview]}
+          - {names: [held_on, program_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [attendees, headcount], type: integer, role: number, min: 5, max: 1500}
+          - {names: [ticket_price, admission_fee], type: real, role: number, min: 0, max: 60}
+
+  book publishing:
+    tables:
+      - key: publishers
+        names: [publishers, publishing_houses]
+        id: [publisher_id, house_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: publisher}
+          - {names: [size_class, market_segment], type: text, role: category, values: [large, mid-size, small press, university press, hybrid]}
+          - {names: [founded_year, year_founded], type: integer, role: number, min: 1820, max: 2022}
+          - {names: [hq_city, headquarters_city], type: text, role: category, values: [New York, London, Toronto, Boston, Chicago, Edinburgh, Sydney, San Francisco]}
+          - {names: [annual_revenue, yearly_revenue], type: real, role: number, min: 200000, max: 3000000000, optional: true}
+
+      - key: authors
+        names: [authors, writers]
+        id: [author_id, writer_id]
+        columns:
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [birth_date, date_of_birth], type: date, role: date, min: "1935-01-01", max: "2002-12-31"}
+          - {names: [nationality, citizenship], type: text, role: category, values: [American, British, Canadian, Irish, Australian, Nigerian, Indian, South African]}
+          - {names: [is_bestselling, bestseller_status], type: integer, role: flag, optional: true}
+
+      - key: literary_agents
+        names: [literary_agents, agents]
+        id: [literary_agent_id, agent_id]
+        columns:
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [commission_rate, commission], type: real, role: number, min: 0.10, max: 0.20}
+          - {names: [client_count, clients], type: integer, role: number, min: 5, max: 120}
+          - {names: [career_start_date, active_since], type: date, role: date, min: "1985-01-01", max: "2023-12-31", optional: true}
+
+      - key: books
+        names: [books, works]
+        id: [book_id, work_id]
+        columns:
+          - {role: fk, ref: authors, type: integer}
+          - {role: fk, ref: publishers, type: integer}
+          - {names: [title], type: text, role: entity_name, kind: book}
+          - {names: [genre], type: text, role: category, values: [literary fiction, mystery, romance, science fiction, fantasy, biography, history, self-help, young adult, thriller]}
+          - {names: [first_published, publication_date], type: date, role: date, min: "2005-01-01", max: "2025-12-31"}
+          - {names: [page_count, pages], type: integer, role: number, min: 64, max: 1100}
+
+      - key: editions
+        names: [editions]
+        id: [edition_id]
+        columns:
+          - {role: fk, ref: books, type: integer}
+          - {names: [binding, product_form], type: text, role: category, values: [hardcover, trade paperback, mass market paperback, ebook, audiobook, large print]}
+          - {names: [release_date, on_sale_date], type: date, role: date, min: "2005-01-01", max: "2025-12-31"}
+          - {names: [list_price, retail_price], type: real, role: number, min: 2.99, max: 60}
+          - {names: [is_first_edition], type: integer, role: flag, optional: true}
+
+      - key: retailers
+        names: [retailers, sales_channels]
+        id: [retailer_id, channel_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: bookstore}
+          - {names: [business_type, store_type], type: text, role: category, values: [independent bookstore, bookstore chain, online store, big-box store, library wholesaler, airport shop]}
+          - {names: [discount_rate, trade_discount], type: real, role: number, min: 0.35, max: 0.55}
+
+      - key: sales
+        names: [monthly_sales, sales_reports]
+        id: [sale_record_id, report_id]
+        columns:
+          - {role: fk, ref: editions, type: integer}
+          - {role: fk, ref: retailers, type: integer}
+          - {names: [period_start, month_start], type: date, role: date, min: "2015-01-01", max: "2025-12-01"}
+          - {names: [units_sold, copies_sold], type: integer, role: number, min: 0, max: 60000}
+          - {names: [net_revenue, revenue], type: real, role: number, min: 0, max: 900000}
+
+      - key: royalty_statements
+        names: [royalty_statements, royalty_payments]
+        id: [statement_id, payment_id]
+        columns:
+          - {role: fk, ref: authors, type: integer}
+          - {names: [statement_date, period_end], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [amount_paid, royalty_amount], type: real, role: number, min: 0, max: 500000}
+          - {names: [units_reported, copies_counted], type: integer, role: number, min: 0, max: 200000}
+
+      - key: contracts
+        names: [book_contracts, publishing_contracts]
+        id: [book_contract_id, publishing_contract_id]
+        columns:
+          - {role: fk, ref: authors, type: integer}
+          - {role: fk, ref: publishers, type: integer}
+          - {role: fk, ref: literary_agents, type: integer}
+          - {names: [signed_date, signing_date], type: date, role: date, min: "2010-01-01", max: "2025-12-31"}
+          - {names: [advance, advance_amount], type: real, role: number, min: 1000, max: 5000000}
+          - {names: [royalty_rate], type: real, role: number, min: 0.05, max: 0.25}
+          - {names: [title_count], type: integer, role: number, min: 1, max: 4}
+          - {names: [rights_scope, territory], type: text, role: category, values: [world, world English, North America, UK and Commonwealth], optional: true}
+
+      - key: foreign_rights
+        names: [foreign_rights, translation_rights]
+        id: [foreign_rights_id, translation_rights_id]
+        columns:
+          - {role: fk, ref: books, type: integer}
+          - {names: [language, target_language], type: text, role: category, values: [Spanish, German, French, Japanese, Italian, Portuguese, Korean, Mandarin]}
+          - {names: [sold_on, sale_date], type: date, role: date, min: "2010-01-01", max: "2025-12-31"}
+          - {names: [rights_fee, advance_paid], type: real, role: number, min: 500, max: 400000}
+          - {names: [term_years, license_years], type: integer, role: number, min: 3, max: 10, optional: true}
+
+      - key: book_reviews
+        names: [book_reviews, reviews]
+        id: [book_review_id, review_id]
+        columns:
+          - {role: fk, ref: books, type: integer}
+          - {names: [review_date, published_on], type: date, role: date, min: "2005-01-01", max: "2025-12-31"}
+          - {names: [rating, stars], type: integer, role: number, min: 1, max: 5}
+          - {names: [outlet_type, publication_type], type: text, role: category, values: [newspaper, trade magazine, literary journal, blog, podcast]}
+          - {names: [is_starred, starred_review], type: integer, role: flag, optional: true}
+
+      - key: print_runs
+        names: [print_runs, printings]
+        id: [print_run_id, printing_id]
+        columns:
+          - {role: fk, ref: editions, type: integer}
+          - {names: [print_date, printed_on], type: date, role: date, min: "2005-01-01", max: "2025-12-31"}
+          - {names: [copies_printed, quantity], type: integer, role: number, min: 500, max: 500000}
+          - {names: [unit_cost, cost_per_copy], type: real, role: number, min: 0.8, max: 9}
+          - {names: [printer_country, print_location], type: text, role: category, values: [United States, Canada, United Kingdom, China, Italy, Poland]}

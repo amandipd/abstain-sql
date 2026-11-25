@@ -183,6 +183,38 @@ topics:
           - {names: [days_on_well, drilling_days], type: integer, role: number, min: 5, max: 120}
           - {names: [cost, total_cost], type: real, role: number, min: 500000, max: 90000000}
 
+      - key: well_inspections
+        names: [well_inspections, inspections]
+        id: [inspection_id, inspection_id]
+        columns:
+          - {role: fk, ref: wells, type: integer}
+          - {names: [inspected_date, visit_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [inspection_type, purpose], type: text, role: category, values: [routine, complaint response, mechanical integrity test, pre-plugging, spill follow-up]}
+          - {names: [outcome, finding], type: text, role: category, values: [compliant, minor violation, major violation, shut-in ordered]}
+          - {names: [casing_pressure_psi, annulus_pressure_psi], type: real, role: number, min: 0, max: 3000}
+          - {names: [violations_cited, violation_count], type: integer, role: number, min: 0, max: 6, optional: true}
+
+      - key: processing_plants
+        names: [processing_plants, gas_plants]
+        id: [plant_id, plant_id]
+        columns:
+          - {role: fk, ref: basins, type: integer}
+          - {role: fk, ref: operators, type: integer}
+          - {names: [name], type: text, role: entity_name, kind: gas processing plant}
+          - {names: [process_type, technology], type: text, role: category, values: [cryogenic expansion, refrigeration, amine treating, fractionation]}
+          - {names: [capacity_mmcfd, inlet_capacity_mmcfd], type: real, role: number, min: 20, max: 2000}
+          - {names: [in_service_date, startup_date], type: date, role: date, min: "1970-01-01", max: "2025-12-31"}
+
+      - key: capital_budgets
+        names: [capital_budgets, capex_plans]
+        id: [budget_id, capex_plan_id]
+        columns:
+          - {role: fk, ref: operators, type: integer}
+          - {names: [fiscal_year, budget_year], type: integer, role: number, min: 2015, max: 2025}
+          - {names: [segment, business_segment], type: text, role: category, values: [exploration, development drilling, midstream, decommissioning, low-carbon]}
+          - {names: [capex_usd, planned_spend_usd], type: real, role: number, min: 50000000, max: 30000000000}
+          - {names: [approved_date, board_approval_date], type: date, role: date, min: "2014-10-01", max: "2025-12-31"}
+
   mining operations:
     tables:
       - key: companies
@@ -473,3 +505,533 @@ topics:
           - {names: [credits_issued, tonnes_issued], type: integer, role: number, min: 1000, max: 2000000}
           - {names: [price_per_credit, price_usd], type: real, role: number, min: 2, max: 40}
           - {names: [issued_date, issuance_date], type: date, role: date, min: "2013-01-01", max: "2025-12-31"}
+
+  agriculture:
+    tables:
+      - key: farms
+        names: [farms, farm_operations]
+        id: [farm_id, operation_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: farm}
+          - {names: [farm_type, business_structure], type: text, role: category, values: [family-owned, corporate, cooperative, tenant-operated]}
+          - {names: [state], type: text, role: category, values: [IA, IL, NE, KS, MN, ND, CA, TX]}
+          - {names: [total_acres, operated_acres], type: real, role: number, min: 40, max: 20000}
+
+      - key: fields
+        names: [fields, parcels]
+        id: [field_id, parcel_id]
+        columns:
+          - {role: fk, ref: farms, type: integer}
+          - {names: [name], type: text, role: entity_name, kind: farm field}
+          - {names: [acres, tillable_acres], type: real, role: number, min: 5, max: 640}
+          - {names: [soil_type, soil_texture], type: text, role: category, values: [silt loam, clay loam, sandy loam, loam, silty clay]}
+          - {names: [irrigated, is_irrigated], type: integer, role: flag}
+          - {names: [tile_drained, has_drainage_tile], type: integer, role: flag, optional: true}
+
+      - key: crops
+        names: [crops]
+        id: [crop_id]
+        columns:
+          - {names: [name, crop_name], type: text, role: entity_name, values: [corn, soybeans, winter wheat, spring wheat, sorghum, barley, oats, rice, canola]}
+          - {names: [seed_type, seed_class], type: text, role: category, values: [conventional, genetically modified, certified organic]}
+
+      - key: plantings
+        names: [plantings, seedings]
+        id: [planting_id, seeding_id]
+        columns:
+          - {role: fk, ref: fields, type: integer}
+          - {role: fk, ref: crops, type: integer}
+          - {names: [planted_date, sown_date], type: date, role: date, min: "2015-03-01", max: "2025-06-30"}
+          - {names: [acres_planted, planted_acres], type: real, role: number, min: 5, max: 640}
+          - {names: [seeds_per_acre, seed_rate], type: integer, role: number, min: 25000, max: 200000}
+          - {names: [seed_cost, seed_cost_usd], type: real, role: number, min: 500, max: 90000, optional: true}
+
+      - key: harvests
+        names: [harvests, harvest_records]
+        id: [harvest_id, record_id]
+        columns:
+          - {role: fk, ref: fields, type: integer}
+          - {role: fk, ref: crops, type: integer}
+          - {names: [harvested_date, completed_date], type: date, role: date, min: "2015-07-01", max: "2025-12-15"}
+          - {names: [yield_per_acre, yield_bu_per_acre], type: real, role: number, min: 20, max: 250}
+          - {names: [moisture_pct, grain_moisture_pct], type: real, role: number, min: 10, max: 30}
+          - {names: [test_weight_lb, bushel_weight_lb], type: real, role: number, min: 48, max: 62, optional: true}
+
+      - key: workers
+        names: [farm_workers, farmhands]
+        id: [worker_id, farmhand_id]
+        columns:
+          - {role: fk, ref: farms, type: integer}
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [job_role, duties], type: text, role: category, values: [equipment operator, irrigation technician, field hand, crop scout, farm manager]}
+          - {names: [hire_date, start_date], type: date, role: date, min: "2005-01-01", max: "2025-12-31"}
+          - {names: [hourly_wage, pay_rate], type: real, role: number, min: 12, max: 40}
+          - {names: [seasonal, is_seasonal], type: integer, role: flag, optional: true}
+
+      - key: machinery
+        names: [machinery, farm_equipment]
+        id: [machine_id, equipment_id]
+        columns:
+          - {role: fk, ref: farms, type: integer}
+          - {names: [unit_type, asset_type], type: text, role: category, values: [tractor, combine, planter, sprayer, grain cart, baler]}
+          - {names: [make, manufacturer], type: text, role: category, values: [John Deere, Case IH, New Holland, Kubota, Fendt, Claas]}
+          - {names: [purchase_date, acquired_date], type: date, role: date, min: "2000-01-01", max: "2025-12-31"}
+          - {names: [purchase_price, price_usd], type: real, role: number, min: 15000, max: 900000}
+          - {names: [engine_hours, hours_logged], type: integer, role: number, min: 0, max: 20000, optional: true}
+
+      - key: soil_tests
+        names: [soil_tests, soil_samples]
+        id: [test_id, sample_id]
+        columns:
+          - {role: fk, ref: fields, type: integer}
+          - {names: [sampled_date, collected_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [ph, soil_ph], type: real, role: number, min: 4.5, max: 8.5}
+          - {names: [nitrate_ppm, nitrate_n_ppm], type: real, role: number, min: 2, max: 60}
+          - {names: [phosphorus_ppm, olsen_p_ppm], type: real, role: number, min: 5, max: 120, optional: true}
+          - {names: [organic_matter_pct, som_pct], type: real, role: number, min: 0.5, max: 8}
+
+      - key: applications
+        names: [field_applications, input_applications]
+        id: [application_id, application_id]
+        columns:
+          - {role: fk, ref: fields, type: integer}
+          - {names: [applied_date, application_date], type: date, role: date, min: "2015-03-01", max: "2025-11-30"}
+          - {names: [product_type, input_type], type: text, role: category, values: [nitrogen fertilizer, phosphate fertilizer, herbicide, fungicide, insecticide, lime, manure]}
+          - {names: [acres_treated, treated_acres], type: real, role: number, min: 5, max: 640}
+          - {names: [cost, total_cost], type: real, role: number, min: 200, max: 90000}
+
+      - key: crop_sales
+        names: [crop_sales, grain_sales]
+        id: [sale_id, sale_id]
+        columns:
+          - {role: fk, ref: farms, type: integer}
+          - {role: fk, ref: crops, type: integer}
+          - {names: [sale_date, sold_date], type: date, role: date, min: "2015-08-01", max: "2025-12-31"}
+          - {names: [quantity_bushels, bushels_sold], type: real, role: number, min: 500, max: 200000}
+          - {names: [price_per_bushel, unit_price], type: real, role: number, min: 2.5, max: 15}
+          - {names: [buyer_type, buyer], type: text, role: category, values: [grain elevator, ethanol plant, export terminal, feedlot, food processor]}
+
+  aquaculture:
+    tables:
+      - key: farms
+        names: [fish_farms, farm_sites]
+        id: [farm_id, site_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: fish farm}
+          - {names: [country], type: text, role: category, values: [Norway, Chile, Scotland, Canada, Faroe Islands, Iceland, Ireland]}
+          - {names: [licensed_biomass_tonnes, max_allowed_biomass_tonnes], type: real, role: number, min: 500, max: 15000}
+          - {names: [licensed_date, license_granted_date], type: date, role: date, min: "1990-01-01", max: "2024-12-31"}
+
+      - key: pens
+        names: [pens, net_pens, cages]
+        id: [pen_id, net_pen_id, cage_id]
+        columns:
+          - {role: fk, ref: farms, type: integer}
+          - {names: [structure_type, design], type: text, role: category, values: [circular plastic ring, steel square frame, submersible, closed containment]}
+          - {names: [circumference_m, perimeter_m], type: real, role: number, min: 60, max: 200}
+          - {names: [depth_m, net_depth_m], type: real, role: number, min: 10, max: 50}
+          - {names: [installed_date, deployed_date], type: date, role: date, min: "2005-01-01", max: "2025-06-30"}
+
+      - key: stocks
+        names: [fish_stocks, cohorts, stock_batches]
+        id: [stock_id, cohort_id, batch_id]
+        columns:
+          - {role: fk, ref: pens, type: integer}
+          - {names: [species], type: text, role: category, values: [Atlantic salmon, rainbow trout, coho salmon, Arctic char, steelhead]}
+          - {names: [stocked_date, transfer_date], type: date, role: date, min: "2015-01-01", max: "2025-10-31"}
+          - {names: [smolts_stocked, initial_count], type: integer, role: number, min: 50000, max: 250000}
+          - {names: [avg_weight_g, mean_smolt_weight_g], type: real, role: number, min: 50, max: 250}
+
+      - key: feedings
+        names: [feedings, feeding_logs]
+        id: [feeding_id, log_id]
+        columns:
+          - {role: fk, ref: stocks, type: integer}
+          - {names: [fed_date, feeding_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [feed_kg, feed_amount_kg], type: real, role: number, min: 50, max: 15000}
+          - {names: [feed_type, diet], type: text, role: category, values: [starter crumble, standard grower pellet, high-energy pellet, medicated feed]}
+          - {names: [water_temp_c, sea_temp_c], type: real, role: number, min: 2, max: 18, optional: true}
+
+      - key: harvests
+        names: [harvests, harvest_events]
+        id: [harvest_id, event_id]
+        columns:
+          - {role: fk, ref: stocks, type: integer}
+          - {names: [harvested_date, slaughter_date], type: date, role: date, min: "2016-01-01", max: "2025-12-31"}
+          - {names: [fish_harvested, head_count], type: integer, role: number, min: 10000, max: 200000}
+          - {names: [avg_harvest_weight_kg, mean_weight_kg], type: real, role: number, min: 2.5, max: 7}
+          - {names: [price_per_kg, sale_price_per_kg], type: real, role: number, min: 4, max: 14}
+
+      - key: mortalities
+        names: [mortality_events, mortalities]
+        id: [mortality_id, mortality_id]
+        columns:
+          - {role: fk, ref: stocks, type: integer}
+          - {names: [recorded_date, observed_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [dead_fish, fish_lost], type: integer, role: number, min: 10, max: 50000}
+          - {names: [cause, suspected_cause], type: text, role: category, values: [sea lice, gill disease, algal bloom, handling stress, predator attack, low oxygen]}
+          - {names: [estimated_loss_usd, loss_value_usd], type: real, role: number, min: 100, max: 2000000, optional: true}
+
+      - key: water_readings
+        names: [water_quality_readings, water_samples]
+        id: [reading_id, sample_id]
+        columns:
+          - {role: fk, ref: pens, type: integer}
+          - {names: [measured_date, sampled_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [temperature_c, water_temp_c], type: real, role: number, min: 2, max: 20}
+          - {names: [dissolved_oxygen_mg_l, oxygen_mg_l], type: real, role: number, min: 4, max: 14}
+          - {names: [salinity_ppt, salinity_psu], type: real, role: number, min: 0, max: 36, optional: true}
+
+      - key: health_checks
+        names: [health_checks, fish_health_inspections]
+        id: [check_id, inspection_id]
+        columns:
+          - {role: fk, ref: pens, type: integer}
+          - {names: [inspected_date, examined_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [lice_per_fish, adult_female_lice], type: real, role: number, min: 0, max: 10}
+          - {names: [treatment, treatment_ordered], type: text, role: category, values: [none, hydrogen peroxide bath, thermal delousing, cleaner fish, freshwater bath]}
+          - {names: [treatment_cost, treatment_cost_usd], type: real, role: number, min: 0, max: 400000, optional: true}
+
+      - key: suppliers
+        names: [feed_suppliers]
+        id: [supplier_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: feed supplier}
+          - {names: [country, home_country], type: text, role: category, values: [Norway, Denmark, Scotland, Chile, Canada]}
+
+      - key: feed_deliveries
+        names: [feed_deliveries, feed_purchases]
+        id: [delivery_id, purchase_id]
+        columns:
+          - {role: fk, ref: farms, type: integer}
+          - {role: fk, ref: suppliers, type: integer}
+          - {names: [delivered_date, received_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [tonnes, quantity_tonnes], type: real, role: number, min: 5, max: 800}
+          - {names: [price_per_tonne, unit_price_usd], type: real, role: number, min: 900, max: 2200}
+
+      - key: staff
+        names: [farm_staff, employees]
+        id: [staff_id, employee_id]
+        columns:
+          - {role: fk, ref: farms, type: integer}
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [job_role, position], type: text, role: category, values: [site manager, feed technician, commercial diver, fish health biologist, boat operator]}
+          - {names: [hire_date, start_date], type: date, role: date, min: "2005-01-01", max: "2025-12-31"}
+          - {names: [hourly_wage, pay_rate], type: real, role: number, min: 18, max: 60}
+
+  wildlife conservation:
+    tables:
+      - key: reserves
+        names: [reserves, protected_areas]
+        id: [reserve_id, area_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: wildlife reserve}
+          - {names: [country], type: text, role: category, values: [Kenya, Tanzania, South Africa, Botswana, Namibia, Zambia, Uganda]}
+          - {names: [size_km2, extent_km2], type: real, role: number, min: 50, max: 20000}
+          - {names: [management, managed_by], type: text, role: category, values: [state wildlife authority, private conservancy, community conservancy, NGO co-managed]}
+          - {names: [established_date, gazetted_date], type: date, role: date, min: "1950-01-01", max: "2020-12-31", optional: true}
+
+      - key: species
+        names: [species]
+        id: [species_id]
+        columns:
+          - {names: [common_name, name], type: text, role: entity_name, values: [African elephant, black rhino, white rhino, lion, cheetah, leopard, African wild dog, plains zebra, reticulated giraffe, ground pangolin]}
+          - {names: [monitoring_priority, priority], type: text, role: category, values: [high, medium, low]}
+          - {names: [tracked_since, monitoring_start], type: date, role: date, min: "1995-01-01", max: "2020-12-31"}
+
+      - key: rangers
+        names: [rangers, wardens]
+        id: [ranger_id, warden_id]
+        columns:
+          - {role: fk, ref: reserves, type: integer}
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [grade, service_grade], type: text, role: category, values: [field ranger, corporal, sergeant, section leader, unit commander]}
+          - {names: [hire_date, start_date], type: date, role: date, min: "2000-01-01", max: "2025-12-31"}
+          - {names: [monthly_salary, monthly_pay_usd], type: real, role: number, min: 250, max: 1800}
+
+      - key: surveys
+        names: [population_surveys, census_counts]
+        id: [survey_id, census_id]
+        columns:
+          - {role: fk, ref: reserves, type: integer}
+          - {role: fk, ref: species, type: integer}
+          - {names: [conducted_date, counted_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [method, count_method], type: text, role: category, values: [aerial count, camera trap, line transect, dung count, call-up station]}
+          - {names: [animals_counted, estimated_population], type: integer, role: number, min: 0, max: 5000}
+          - {names: [effort_hours, field_hours], type: real, role: number, min: 2, max: 400}
+
+      - key: sightings
+        names: [sightings, observations]
+        id: [sighting_id, observation_id]
+        columns:
+          - {role: fk, ref: species, type: integer}
+          - {role: fk, ref: rangers, type: integer}
+          - {names: [seen_date, recorded_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [group_size, animals_seen], type: integer, role: number, min: 1, max: 80}
+          - {names: [distance_m, observer_distance_m], type: real, role: number, min: 5, max: 800}
+          - {names: [behavior, activity], type: text, role: category, values: [feeding, resting, moving, mating, hunting, drinking], optional: true}
+
+      - key: patrols
+        names: [patrols, patrol_logs]
+        id: [patrol_id, log_id]
+        columns:
+          - {role: fk, ref: rangers, type: integer}
+          - {names: [patrol_date, started_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [mode, patrol_mode], type: text, role: category, values: [foot, vehicle, aircraft, boat, horseback]}
+          - {names: [distance_km, km_covered], type: real, role: number, min: 2, max: 300}
+          - {names: [duration_hours, hours_out], type: real, role: number, min: 1, max: 72}
+          - {names: [snares_removed, snares_found], type: integer, role: number, min: 0, max: 60, optional: true}
+
+      - key: poaching
+        names: [poaching_incidents, poaching_cases]
+        id: [incident_id, case_id]
+        columns:
+          - {role: fk, ref: reserves, type: integer}
+          - {role: fk, ref: species, type: integer}
+          - {names: [occurred_date, reported_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [incident_type, evidence_type], type: text, role: category, values: [snare found, carcass found, arrest made, shots heard, ivory seizure]}
+          - {names: [animals_killed, carcasses], type: integer, role: number, min: 0, max: 12}
+          - {names: [arrests, suspects_arrested], type: integer, role: number, min: 0, max: 8}
+          - {names: [response_hours, hours_to_respond], type: real, role: number, min: 0.2, max: 72}
+
+      - key: collars
+        names: [tracking_collars, collars]
+        id: [collar_id, collar_id]
+        columns:
+          - {role: fk, ref: species, type: integer}
+          - {role: fk, ref: reserves, type: integer}
+          - {names: [collar_type, technology], type: text, role: category, values: [GPS, satellite, VHF, GPS-GSM]}
+          - {names: [fitted_date, deployed_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [animal_sex, sex], type: text, role: category, values: [F, M]}
+          - {names: [unit_cost, cost_usd], type: real, role: number, min: 300, max: 7000}
+          - {names: [still_active, is_transmitting], type: integer, role: flag}
+
+      - key: grants
+        names: [conservation_grants, donor_grants]
+        id: [grant_id, grant_id]
+        columns:
+          - {role: fk, ref: reserves, type: integer}
+          - {names: [funder_type, donor_type], type: text, role: category, values: [government agency, international NGO, private foundation, corporate donor, tourism levy]}
+          - {names: [amount_usd, award_amount], type: real, role: number, min: 5000, max: 5000000}
+          - {names: [awarded_date, signed_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [purpose, funded_activity], type: text, role: category, values: [anti-poaching, habitat restoration, community programs, research, ranger training]}
+
+      - key: vet_cases
+        names: [vet_interventions, veterinary_cases]
+        id: [intervention_id, case_id]
+        columns:
+          - {role: fk, ref: species, type: integer}
+          - {role: fk, ref: reserves, type: integer}
+          - {names: [treated_date, attended_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [treatment_type, procedure_type], type: text, role: category, values: [snare wound treatment, translocation, dehorning, disease testing, collar fitting]}
+          - {names: [animals_treated, animals_handled], type: integer, role: number, min: 1, max: 20}
+          - {names: [cost, cost_usd], type: real, role: number, min: 200, max: 60000}
+
+  weather monitoring:
+    tables:
+      - key: stations
+        names: [weather_stations, stations]
+        id: [station_id, station_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: weather station}
+          - {names: [station_type, network], type: text, role: category, values: [automated surface, cooperative observer, mesonet, road weather, agricultural]}
+          - {names: [telemetry, data_link], type: text, role: category, values: [cellular, satellite, radio, manual upload]}
+          - {names: [elevation_m, altitude_m], type: real, role: number, min: 0, max: 3500}
+          - {names: [installed_date, commissioned_date], type: date, role: date, min: "1950-01-01", max: "2023-12-31"}
+
+      - key: sensors
+        names: [sensors, instruments]
+        id: [sensor_id, instrument_id]
+        columns:
+          - {role: fk, ref: stations, type: integer}
+          - {names: [measures, variable_measured], type: text, role: category, values: [air temperature, wind speed, precipitation, barometric pressure, relative humidity, solar radiation]}
+          - {names: [manufacturer, make], type: text, role: category, values: [Vaisala, Campbell Scientific, Davis Instruments, Met One, Lufft, R. M. Young]}
+          - {names: [installed_date, mounted_date], type: date, role: date, min: "2010-01-01", max: "2025-12-31"}
+          - {names: [unit_cost, purchase_cost], type: real, role: number, min: 150, max: 12000, optional: true}
+
+      - key: daily_readings
+        names: [daily_readings, daily_observations]
+        id: [reading_id, observation_id]
+        columns:
+          - {role: fk, ref: stations, type: integer}
+          - {names: [measurement_date, recorded_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [mean_temp_c, avg_temperature_c], type: real, role: number, min: -30, max: 38}
+          - {names: [precip_mm, precipitation_mm], type: real, role: number, min: 0, max: 250}
+          - {names: [max_gust_kmh, peak_gust_kmh], type: real, role: number, min: 0, max: 180}
+          - {names: [mean_humidity_pct, avg_relative_humidity], type: real, role: number, min: 5, max: 100, optional: true}
+          - {names: [pressure_hpa, sea_level_pressure_hpa], type: real, role: number, min: 950, max: 1050, optional: true}
+
+      - key: storms
+        names: [storm_events, severe_weather_events]
+        id: [storm_id, event_id]
+        columns:
+          - {role: fk, ref: stations, type: integer}
+          - {names: [began_date, onset_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [event_type, hazard_type], type: text, role: category, values: [thunderstorm, hail, tornado, blizzard, tropical storm, flash flood, ice storm]}
+          - {names: [peak_wind_kmh, max_wind_kmh], type: real, role: number, min: 30, max: 320}
+          - {names: [total_precip_mm, rainfall_mm], type: real, role: number, min: 0, max: 600}
+          - {names: [damage_usd, property_damage_usd], type: real, role: number, min: 0, max: 500000000, optional: true}
+          - {names: [injuries, people_injured], type: integer, role: number, min: 0, max: 200, optional: true}
+
+      - key: warnings
+        names: [warnings, weather_alerts]
+        id: [warning_id, alert_id]
+        columns:
+          - {role: fk, ref: storms, type: integer}
+          - {names: [issued_date, broadcast_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [severity, urgency_level], type: text, role: category, values: [advisory, watch, warning, emergency]}
+          - {names: [lead_time_hours, hours_of_notice], type: real, role: number, min: 0, max: 72}
+          - {names: [counties_covered, counties], type: integer, role: number, min: 1, max: 40}
+
+      - key: calibrations
+        names: [calibrations, calibration_checks]
+        id: [calibration_id, check_id]
+        columns:
+          - {role: fk, ref: sensors, type: integer}
+          - {names: [calibrated_date, checked_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [offset_correction, correction_applied], type: real, role: number, min: -2, max: 2}
+          - {names: [passed, within_tolerance], type: integer, role: flag}
+          - {names: [service_cost, cost_usd], type: real, role: number, min: 50, max: 1500, optional: true}
+
+      - key: faults
+        names: [sensor_faults, sensor_failures]
+        id: [fault_id, failure_id]
+        columns:
+          - {role: fk, ref: sensors, type: integer}
+          - {names: [detected_date, reported_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [problem, failure_mode], type: text, role: category, values: [power loss, icing, communication dropout, calibration drift, physical damage, insect nest]}
+          - {names: [hours_down, downtime_hours], type: real, role: number, min: 0.5, max: 2000}
+          - {names: [resolved, is_resolved], type: integer, role: flag, optional: true}
+
+      - key: technicians
+        names: [technicians, field_technicians]
+        id: [technician_id, technician_id]
+        columns:
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [certification, specialty], type: text, role: category, values: [electronics, meteorological instruments, telemetry, general maintenance]}
+          - {names: [hire_date, start_date], type: date, role: date, min: "2000-01-01", max: "2025-12-31"}
+          - {names: [hourly_rate, pay_rate], type: real, role: number, min: 22, max: 70}
+
+      - key: visits
+        names: [maintenance_visits, site_visits]
+        id: [visit_id, visit_id]
+        columns:
+          - {role: fk, ref: stations, type: integer}
+          - {role: fk, ref: technicians, type: integer}
+          - {names: [service_date, visited_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [purpose, visit_reason], type: text, role: category, values: [routine inspection, sensor replacement, emergency repair, calibration, vegetation clearing]}
+          - {names: [hours_on_site, labor_hours], type: real, role: number, min: 0.5, max: 12}
+          - {names: [travel_km, distance_driven_km], type: real, role: number, min: 1, max: 600, optional: true}
+
+  national parks:
+    tables:
+      - key: parks
+        names: [parks, national_parks]
+        id: [park_id, park_id]
+        columns:
+          - {names: [name], type: text, role: entity_name, kind: national park}
+          - {names: [state], type: text, role: category, values: [UT, CA, WY, MT, AZ, CO, WA, ME, TN, AK]}
+          - {names: [area_km2, total_area_km2], type: real, role: number, min: 30, max: 33000}
+          - {names: [established_date, designated_date], type: date, role: date, min: "1872-03-01", max: "2020-12-31"}
+          - {names: [annual_budget, operating_budget], type: real, role: number, min: 2000000, max: 60000000, optional: true}
+
+      - key: trails
+        names: [trails, hiking_trails]
+        id: [trail_id, trail_id]
+        columns:
+          - {role: fk, ref: parks, type: integer}
+          - {names: [name], type: text, role: entity_name, kind: trail}
+          - {names: [length_km, distance_km], type: real, role: number, min: 0.5, max: 60}
+          - {names: [difficulty, difficulty_rating], type: text, role: category, values: [easy, moderate, strenuous, very strenuous]}
+          - {names: [elevation_gain_m, climb_m], type: integer, role: number, min: 0, max: 1800}
+          - {names: [dogs_allowed, pets_allowed], type: integer, role: flag, optional: true}
+
+      - key: campgrounds
+        names: [campgrounds]
+        id: [campground_id]
+        columns:
+          - {role: fk, ref: parks, type: integer}
+          - {names: [name], type: text, role: entity_name, kind: campground}
+          - {names: [total_sites, campsites], type: integer, role: number, min: 10, max: 500}
+          - {names: [nightly_fee, fee_per_night], type: real, role: number, min: 10, max: 60}
+          - {names: [reservable, takes_reservations], type: integer, role: flag}
+          - {names: [has_hookups, rv_hookups], type: integer, role: flag, optional: true}
+
+      - key: visitors
+        names: [visitors, park_visitors]
+        id: [visitor_id, visitor_id]
+        columns:
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [home_state, residence], type: text, role: category, values: [CA, TX, NY, FL, IL, WA, CO, international]}
+          - {names: [pass_type, annual_pass], type: text, role: category, values: [none, America the Beautiful, senior pass, access pass, military pass]}
+          - {names: [registered_date, account_created], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+
+      - key: reservations
+        names: [campsite_reservations, bookings]
+        id: [reservation_id, booking_id]
+        columns:
+          - {role: fk, ref: campgrounds, type: integer}
+          - {role: fk, ref: visitors, type: integer}
+          - {names: [arrival_date, check_in_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [nights, nights_stayed], type: integer, role: number, min: 1, max: 14}
+          - {names: [party_size, guests], type: integer, role: number, min: 1, max: 8}
+          - {names: [total_fee, amount_paid], type: real, role: number, min: 10, max: 840}
+
+      - key: permits
+        names: [permits, park_permits]
+        id: [permit_id, permit_id]
+        columns:
+          - {role: fk, ref: parks, type: integer}
+          - {role: fk, ref: visitors, type: integer}
+          - {names: [permit_type, activity], type: text, role: category, values: [backcountry camping, wilderness climbing, fishing, river rafting, special use, commercial filming]}
+          - {names: [issued_date, valid_from], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [group_size, people_covered], type: integer, role: number, min: 1, max: 12}
+          - {names: [fee, permit_fee], type: real, role: number, min: 0, max: 500}
+
+      - key: closures
+        names: [trail_closures]
+        id: [closure_id]
+        columns:
+          - {role: fk, ref: trails, type: integer}
+          - {names: [closed_date, closure_start], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [reason, closure_reason], type: text, role: category, values: [rockfall, flooding, bear activity, maintenance, snow and ice, wildfire]}
+          - {names: [days_closed, closure_days], type: integer, role: number, min: 1, max: 365}
+          - {names: [repair_cost, repair_cost_usd], type: real, role: number, min: 0, max: 2000000, optional: true}
+
+      - key: visitation
+        names: [monthly_visitation, visitation_counts]
+        id: [visitation_id, tally_id]
+        columns:
+          - {role: fk, ref: parks, type: integer}
+          - {names: [period_month, reporting_month], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [recreation_visits, visits], type: integer, role: number, min: 1000, max: 1500000}
+          - {names: [fee_revenue, entrance_fee_revenue], type: real, role: number, min: 0, max: 12000000}
+          - {names: [overnight_stays, overnights], type: integer, role: number, min: 0, max: 200000, optional: true}
+
+      - key: staff
+        names: [park_staff, employees]
+        id: [staff_id, employee_id]
+        columns:
+          - {role: fk, ref: parks, type: integer}
+          - {names: [first_name], type: text, role: first_name}
+          - {names: [last_name], type: text, role: last_name}
+          - {names: [job_title, position], type: text, role: category, values: [law enforcement ranger, interpretive ranger, maintenance worker, wildlife biologist, fee collector]}
+          - {names: [hire_date, start_date], type: date, role: date, min: "1995-01-01", max: "2025-12-31"}
+          - {names: [annual_salary, salary], type: real, role: number, min: 32000, max: 120000}
+          - {names: [seasonal, is_seasonal], type: integer, role: flag, optional: true}
+
+      - key: rescues
+        names: [rescue_incidents, search_and_rescue]
+        id: [incident_id, mission_id]
+        columns:
+          - {role: fk, ref: trails, type: integer}
+          - {names: [occurred_date, reported_date], type: date, role: date, min: "2015-01-01", max: "2025-12-31"}
+          - {names: [incident_type, emergency_type], type: text, role: category, values: [lost hiker, fall injury, heat illness, cardiac event, wildlife encounter, drowning]}
+          - {names: [people_involved, persons_assisted], type: integer, role: number, min: 1, max: 12}
+          - {names: [rescue_hours, response_hours], type: real, role: number, min: 0.5, max: 96}
+          - {names: [helicopter_used, air_support], type: integer, role: flag, optional: true}

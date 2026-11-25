@@ -38,27 +38,28 @@ The GPU image needs glibc 2.31 or newer, the system C library that Ubuntu 20.04 
 The training data comes from one hierarchy. Each level is built from the one above it; the right-hand column says which plan step builds it and whether it exists yet.
 
 ```
-5 families                                    step 1.1   done
-│   healthcare, finance, logistics and transport,
-│   retail and consumer, energy and natural resources
+6 families                                        step 1.1   done
+│   healthcare, finance, logistics and transport, retail
+│   and consumer, energy and natural resources, media
+│   and entertainment
 │
-└──► 5 topics per family = 25 topics          step 1.1   done
-     │   e.g. healthcare → hospitals, public health,
-     │   mental health, pharmaceuticals, biotechnology
+└──► 10 topics per family = 60 topics             step 1.1   done
+     │   e.g. healthcare → hospitals, public health, dental
+     │   care, veterinary care, medical devices, and 5 more
      │
-     └──► 1 table list per topic = 25 lists   step 1.2   done
-          │   each lists 9-11 tables that fit the topic;
-          │   one file per family holds its 5 lists
+     └──► 1 table list per topic = 60 lists       step 1.2   done
+          │   each lists 9-12 tables that fit the topic and
+          │   allows at least 20 different designs
           │
-          └──► 2 designs per topic = 50 designs        step 1.2   done
+          └──► 8 designs per topic = 480          step 1.2   done
                │   each picks 3-8 linked tables from its table list;
                │   empty tables: columns and links, no rows
                │
-               ├──► 3-5 filled copies per design         step 1.3   next
-               │       = 150-250 SQLite databases;
+               ├──► 5 filled copies per design    step 1.3   next
+               │       = 2,400 SQLite databases;
                │       same tables, different made-up rows
                │
-               └──► questions per design              steps 1.4-1.6
+               └──► questions per design          steps 1.4-1.6
                     ├──► answerable, about 70%:
                     │       question + gold SQL, correct only
                     │       if it matches on every filled copy
@@ -66,7 +67,7 @@ The training data comes from one hierarchy. Each level is built from the one abo
                             unanswerable, ambiguous, out-of-scope
 ```
 
-One path through it: the healthcare family contains the public health topic; its table list offers 10 tables; design `healthcare__public_health__02` picks 5 of them (districts, facilities, funding awards, staff, screenings); step 1.3 fills that design 3 to 5 times; step 1.4 writes its questions. Step 3.1 then splits whole designs, never single questions, into train, dev, calibration, and test sets.
+One path through it: the healthcare family contains the public health topic; its table list offers 10 tables; design `healthcare__public_health__02` picks 5 of them (districts, facilities, funding awards, staff, screenings); step 1.3 fills that design 5 times; step 1.4 writes its questions. Step 3.1 then splits whole topics, never single designs or questions, into train, dev, calibration, and test sets, so the model is always tested on topics it never trained on.
 
 ## Codebase map
 
@@ -86,9 +87,9 @@ abstain-sql/
     download_external.py     # fetches BIRD dev and TrustSQL, checks pinned fingerprints
     check_external.py        # recounts both and reruns every gold query; writes the numbers
     generator/               # synthetic schemas, data, questions, declines (Phase 1)
-      families.yaml          # 5 schema families of 5 topics each (step 1.1)
+      families.yaml          # 6 schema families of 10 topics each (step 1.1)
       templates/             # one file per family: a table list for each topic (step 1.2)
-      schemas.py             # samples 3-8 linked tables per schema; writes 50 schemas (step 1.2)
+      schemas.py             # samples 3-8 linked tables per schema; writes 480 schemas (step 1.2)
     splits/                  # empty: train / dev / calibration / test manifests (Phase 3)
     external/                # gitignored: BIRD dev and TrustSQL, rebuilt by the script above
     instances/               # gitignored: generated schemas, then their SQLite instances (Phase 1)
@@ -112,7 +113,7 @@ abstain-sql/
     local_gguf.py            # stub: laptop latency harness (step 11.3)
   tests/
     test_imports.py          # every CPU-side module imports
-    test_families.py         # families.yaml keeps 5 families of 5 distinct topics
+    test_families.py         # families.yaml keeps 6 families of 10 distinct topics
     test_schemas.py          # every generated schema keeps the plan's rules; bad templates fail
   results/
     models.md                # the 3 models: architecture, vocabulary, license, thinking switch
