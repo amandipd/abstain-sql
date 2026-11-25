@@ -95,21 +95,55 @@ A design, properly a schema, is the layout of a database with no data in it: whi
 
 For healthcare, step 1.2 produced:
 
-1. **A menu (template) per topic,** 5 in all, each listing 9 to 11 tables that make sense for the topic, with every column's type and role (a category from a fixed list, a number in a range, a date in a range, a name, or a link). See [data/generator/templates/healthcare.yaml](../data/generator/templates/healthcare.yaml).
-2. **A program that builds designs from menus** ([data/generator/schemas.py](../data/generator/schemas.py)): it picks 3 to 8 linked tables and varies names ("doctors" or "physicians"), twice per topic, giving 10 designs. The same command always gives the same designs.
+1. **A table list (template) per topic,** 5 in all, each listing 9 to 11 tables that make sense for the topic, with every column's type and role (a category from a fixed list, a number in a range, a date in a range, a name, or a link). See [data/generator/templates/healthcare.yaml](../data/generator/templates/healthcare.yaml).
+2. **A program that builds designs from table lists** ([data/generator/schemas.py](../data/generator/schemas.py)): it picks 3 to 8 linked tables and varies names ("doctors" or "physicians"), twice per topic, giving 10 designs. The same command always gives the same designs.
 3. **Automatic checks** ([tests/test_schemas.py](../tests/test_schemas.py)) that every design has 3 to 8 tables, links that point at included tables, all 4 column types, and SQL that runs.
 
 Reviewing the 10 designs turned up 2 problems, both fixed: designs with 3 or 4 tables almost never came out, because the program discarded the chosen size along with oversized starting tables, and some names mismatched, such as a table called "facilities" with a column called "center_name".
 
-### If I wrote the menus myself, what was the point of Gretel?
+### If I wrote the table lists myself, what was the point of Gretel?
 
 A small but real one: Gretel supplied the topics, not the data. Its role was 3 things.
 
 1. **A list to choose from.** Its 100 business topics gave the 25 picks an outside starting point with breadth, instead of whatever topics came to mind first. Sorting all 100 also exposed the near-duplicates and in-between topics that were dropped.
-2. **Hints for what each menu should hold.** Gretel's one-line descriptions shaped several menus. Pharmaceuticals is described as "clinical trial outcomes, drug approval data, sales figures, R&D expenditures", and its menu has a table for each; logistics' "freight forwarding, warehouse management, route optimization, reverse logistics" became shipments, warehouses, routes, and returns.
+2. **Hints for what each table list should hold.** Gretel's one-line descriptions shaped several table lists. Pharmaceuticals is described as "clinical trial outcomes, drug approval data, sales figures, R&D expenditures", and its table list has a table for each; logistics' "freight forwarding, warehouse management, route optimization, reverse logistics" became shipments, warehouses, routes, and returns.
 3. **A citable source for the paper.** "Topics were drawn from the 100-domain taxonomy of gretelai/synthetic_text_to_sql (Apache 2.0); none of its examples were used" is a reproducible, defensible sentence; "I picked topics I liked" is not.
 
 None of its questions, databases, or SQL were used, for the reasons in the Gretel entry above. The project could have run without it; the topic choice would just have been harder to justify.
+
+### Why these numbers: 5 families, 5 topics, 2 designs, and so on?
+
+Some come from the plan, some are judgment calls; each says which.
+
+- **5 families (judgment, within the plan's 4–6):** Phase 9 calibrates on one family and tests on another, so 5 give 20 such pairs; 1 or 2 can be held out of training with 3 or 4 left to train on; and each family needs about 1,000 calibration questions of its own, so more families would spread the data thinner.
+- **5 topics per family (judgment):** enough variety inside a family that it is not one topic's quirks, while capping the hand-written table lists at 25.
+- **1 table list per topic (structure):** each topic has its own tables and vocabulary, written once and reused for every design.
+- **9–11 tables per table list (judgment):** more than the 8-table maximum design, so 2 designs from one table list can pick different tables.
+- **2 designs per topic (plan):** Phase 1's target is 50 designs, and 50 ÷ 25 topics = 2. This is a starting point, not a ceiling: step 3.1 splits whole designs into train, dev, calibration, and test sets, and 50 may prove too few, so the generator makes more with one setting.
+- **3–8 tables per design (plan):** at least 3 so questions can join tables; at most 8 so the schema, which goes into every prompt, stays short and queries stay fast.
+- **3–5 filled copies (plan; 5 recommended):** more copies make it harder for a wrong query to match by luck; each costs a little execution time per answer during training, and the tables are small, so 5 is cheap.
+- **Tens to a few hundred rows per table (plan):** enough rows for filters and totals to mean something, few enough that checking stays fast inside training.
+- **About 70% answerable, 30% to decline (plan):** with too many declines, a model can learn to decline everything ("abstention collapse"); Abstain-R1 used about the same split.
+- **About 1,000 training questions, 500 minimum (plan, gate G1):** a 300-step run draws 8 questions per step, 2,400 draws, so each question is seen 2 or 3 times.
+
+### How do I read the "from 5 families down to questions" diagram?
+
+Read it top to bottom: each arrow means "each one of these leads to the next level". One path through it, using hotels:
+
+1. **Family:** retail and consumer, one of the 5 big groups.
+2. **Topic:** hospitality (hotels), one of that family's 5 topics.
+3. **Table list:** the hotel table list, listing 10 tables a hotel database could have.
+4. **Design:** an empty hotel database that picks 6 of those tables. It has column headers but no rows yet. Each topic gets 2 designs.
+5. **Filled copies (step 1.3):** the same design filled with made-up rows, 3 to 5 times, each with different guests and bookings.
+6. **Questions (steps 1.4–1.6):** written for each design. About 70% can be answered from the tables, such as how many bookings were paid by credit card; about 30% should be declined, such as which guests will book again next year, which the data cannot know.
+
+The last 2 levels both hang off a design: its questions are checked against all of its filled copies. Green marks finished steps, orange the next one.
+
+### What exactly is a "table list" for a topic? (first called a "menu")
+
+The nickname "menu" was renamed "table list" on 2026-11-24 because it confused more than it helped; older answers in this log have been updated to match.
+
+A list of every table that makes sense for one topic, with each table's columns and the kind of value each column holds. "1 table list per topic" just means every topic gets its own list, because different topics need different tables: a hotel database needs rooms, guests, and bookings, while a bank database needs accounts, cards, and transactions, so the hotel list is useless for a bank. 25 topics, so 25 lists. Like a restaurant menu, it is not used whole: each database design orders 3 to 8 tables from it. The hospitality table list offers 10 tables (hotels, room types, rooms, guests, bookings, payments, reviews, staff, services, service charges); design `retail_and_consumer__hospitality__01` picked 6 of them (hotels, guests, room types, rooms, bookings, payments, with hotels renamed "properties"). Within a table, the table list says what fills each column: rooms have a room number from 100 to 2400, a floor from 1 to 40, and an accessible yes/no flag. It also lists synonyms, so a table can appear as "bookings" in one design and "reservations" in another. The proper term is a template; the 25 table lists live in `data/generator/templates/`, one file per family.
 
 ### What are the 3 candidate models, and why do we need 3?
 
@@ -126,7 +160,7 @@ A milestone recap at the end of step 1.2; each item has its own entry above or b
 - **Phase 0, setup.** The repo layout (every phase has a home), exact software versions (runs stay comparable, laptop and GPU identical), a check that all 3 candidate models load (incompatibility found for free, before any GPU spend), both outside benchmarks downloaded with pinned fingerprints (standard tests the paper compares against), a Modal account with a $30 cap (the laptop cannot train), and the spend and decision logs (every dollar and choice traceable in the write-up).
 - **Why build our own data at all:** no existing dataset has "should decline" questions for training, fresh databases rule out contamination (models cannot have memorized them), and we control everything, including filling each database several times so the checker can catch lucky matches.
 - **Step 1.1:** 5 clearly different topic families of 5 topics each, because Phase 9 tests whether the error guarantee survives a change of topic.
-- **Step 1.2:** a menu of tables per topic and 50 empty database designs built from them, repeatable from one command, with every column's role recorded for the steps that fill data and write questions.
+- **Step 1.2:** a table list per topic and 50 empty database designs built from them, repeatable from one command, with every column's role recorded for the steps that fill data and write questions.
 - **Cleanup:** the benchmark numbers now come from a saved script, so the paper's numbers can be rebuilt; rerunning it caught an addition error (5,538 gold queries, not 7,008).
 
 ### Can this be published at the end?
@@ -143,4 +177,4 @@ The paperwork is light: every dataset and model used allows research use and pub
 
 ### What are the "other 20 templates"?
 
-Every topic needs its own template (menu of tables), and there are 25 topics: 5 families of 5. The healthcare checkpoint built the first 5. The remaining 20 cover the other 4 families: finance (financial services, finance, insurance, venture capital, blockchain), logistics and transport (logistics, ocean shipping, public transportation, aerospace, automotive), retail and consumer (retail, fashion retail, beauty industry, restaurant operations, hospitality), and energy and natural resources (energy, oil and gas, mining operations, water resources, forestry). Each topic belongs to exactly one family, so that is one menu per topic and 5 per family, stored as one file per family (`data/generator/templates/<family>.yaml`). The program and its checks are already done and work for any family; only the menus are missing. With all 25, the program writes all 50 designs.
+Every topic needs its own template (table list), and there are 25 topics: 5 families of 5. The healthcare checkpoint built the first 5. The remaining 20 cover the other 4 families: finance (financial services, finance, insurance, venture capital, blockchain), logistics and transport (logistics, ocean shipping, public transportation, aerospace, automotive), retail and consumer (retail, fashion retail, beauty industry, restaurant operations, hospitality), and energy and natural resources (energy, oil and gas, mining operations, water resources, forestry). Each topic belongs to exactly one family, so that is one table list per topic and 5 per family, stored as one file per family (`data/generator/templates/<family>.yaml`). The program and its checks are already done and work for any family; only the table lists are missing. With all 25, the program writes all 50 designs.

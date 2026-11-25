@@ -46,12 +46,12 @@ The training data comes from one hierarchy. Each level is built from the one abo
      │   e.g. healthcare → hospitals, public health,
      │   mental health, pharmaceuticals, biotechnology
      │
-     └──► 1 menu per topic = 25 menus         step 1.2   done
+     └──► 1 table list per topic = 25 lists   step 1.2   done
           │   each lists 9-11 tables that fit the topic;
-          │   one file per family holds its 5 menus
+          │   one file per family holds its 5 lists
           │
           └──► 2 designs per topic = 50 designs        step 1.2   done
-               │   each picks 3-8 linked tables from its menu;
+               │   each picks 3-8 linked tables from its table list;
                │   empty tables: columns and links, no rows
                │
                ├──► 3-5 filled copies per design         step 1.3   next
@@ -66,7 +66,7 @@ The training data comes from one hierarchy. Each level is built from the one abo
                             unanswerable, ambiguous, out-of-scope
 ```
 
-One path through it: the healthcare family contains the public health topic; its menu offers 10 tables; design `healthcare__public_health__02` picks 5 of them (districts, facilities, funding awards, staff, screenings); step 1.3 fills that design 3 to 5 times; step 1.4 writes its questions. Step 3.1 then splits whole designs, never single questions, into train, dev, calibration, and test sets.
+One path through it: the healthcare family contains the public health topic; its table list offers 10 tables; design `healthcare__public_health__02` picks 5 of them (districts, facilities, funding awards, staff, screenings); step 1.3 fills that design 3 to 5 times; step 1.4 writes its questions. Step 3.1 then splits whole designs, never single questions, into train, dev, calibration, and test sets.
 
 ## Codebase map
 
@@ -87,7 +87,7 @@ abstain-sql/
     check_external.py        # recounts both and reruns every gold query; writes the numbers
     generator/               # synthetic schemas, data, questions, declines (Phase 1)
       families.yaml          # 5 schema families of 5 topics each (step 1.1)
-      templates/             # one file per family: a menu of tables for each topic (step 1.2)
+      templates/             # one file per family: a table list for each topic (step 1.2)
       schemas.py             # samples 3-8 linked tables per schema; writes 50 schemas (step 1.2)
     splits/                  # empty: train / dev / calibration / test manifests (Phase 3)
     external/                # gitignored: BIRD dev and TrustSQL, rebuilt by the script above
