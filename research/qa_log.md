@@ -111,6 +111,24 @@ A small but real one: Gretel supplied the topics, not the data. Its role was 3 t
 
 None of its questions, databases, or SQL were used, for the reasons in the Gretel entry above. The project could have run without it; the topic choice would just have been harder to justify.
 
+### What are the 3 candidate models, and why do we need 3?
+
+- **Qwen3.5-2B, the main model.** The original brief named it: the project trains a model of 4B parameters or fewer, because the budget is $30–50 on one GPU, small models are the ones that err most, and a small model also runs on the laptop for the latency test (step 11.3). It is also the riskiest for tooling: it accepts images, mixes 2 kinds of layers, needed a pre-release vLLM when it launched, and its own page warns the 2B size can reason in loops.
+- **SmolLM3-3B, the backup and the comparison model.** A conventional text-only model that works in every training tool. If Qwen3.5-2B fails the first paid test run (step 5), the project switches to SmolLM3-3B the same day (decision D5). Otherwise it serves as the control: one run on a different model family shows the result is not a quirk of Qwen.
+- **Gemma 4 E2B, the spare.** The brief allowed it as the control too, but it loads 5.1 billion parameters into memory despite the "2B" in its name, so SmolLM3-3B is preferred. Gemma 4 E2B becomes the control only if SmolLM3-3B has to become the main model.
+
+All 3 are Apache 2.0 and load under the pinned versions (step 0.3). See [results/models.md](../results/models.md).
+
+### What has been done so far, and why? (2026-11-24)
+
+A milestone recap at the end of step 1.2; each item has its own entry above or below.
+
+- **Phase 0, setup.** The repo layout (every phase has a home), exact software versions (runs stay comparable, laptop and GPU identical), a check that all 3 candidate models load (incompatibility found for free, before any GPU spend), both outside benchmarks downloaded with pinned fingerprints (standard tests the paper compares against), a Modal account with a $30 cap (the laptop cannot train), and the spend and decision logs (every dollar and choice traceable in the write-up).
+- **Why build our own data at all:** no existing dataset has "should decline" questions for training, fresh databases rule out contamination (models cannot have memorized them), and we control everything, including filling each database several times so the checker can catch lucky matches.
+- **Step 1.1:** 5 clearly different topic families of 5 topics each, because Phase 9 tests whether the error guarantee survives a change of topic.
+- **Step 1.2:** a menu of tables per topic and 50 empty database designs built from them, repeatable from one command, with every column's role recorded for the steps that fill data and write questions.
+- **Cleanup:** the benchmark numbers now come from a saved script, so the paper's numbers can be rebuilt; rerunning it caught an addition error (5,538 gold queries, not 7,008).
+
 ### Can this be published at the end?
 
 Yes, and the plan already ends in a release (step 13.4): code on GitHub, the trained adapter on Hugging Face, and a write-up. The publishing routes, from easiest to hardest:
