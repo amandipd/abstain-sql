@@ -111,6 +111,16 @@ A small but real one: Gretel supplied the topics, not the data. Its role was 3 t
 
 None of its questions, databases, or SQL were used, for the reasons in the Gretel entry above. The project could have run without it; the topic choice would just have been harder to justify.
 
+### How do we verify that the answers to our questions are correct? (2026-11-25)
+
+The answer to an answerable question is whatever its gold SQL returns on each filled copy, so the data itself cannot be "wrong". What can go wrong is the link between the English and the SQL: the question asks one thing and the SQL computes another, the question allows 2 readings, or the answer is so degenerate that a wrong query matches it. Three layers check this:
+
+1. **Construction:** the SQL is written first, and the English is filled from the same template with the same values (the same category, cutoff, year), so they agree by design. A mismatch would be a template bug, repeated in every question that template makes.
+2. **Mechanical checks on all 9,600:** every gold query runs on all 5 copies and returns rows; no lone 0 or NULL; no tie at a top-N cutoff; every condition changes the answer on at least 2 copies; the columns it reads are recorded exactly.
+3. **Review:** an independent reviewer wrote down the expected SQL for 20 random questions before reading the gold, then compared: 0 broken.
+
+20 is a small sample for a paper. Because errors come from templates, the stronger checks are a template audit (one example of every template, so every pattern gets read once) and a larger differential audit: an independent writer produces SQL from the English alone for about 200 random questions, the results are compared on all 5 copies, and every disagreement is read by hand. The agreement rate, with its error margin, then goes in the paper. This uses a model to audit data quality, not to score the model, so it does not break the rule against an LLM as judge. BIRD and TrustSQL, whose gold queries people wrote, add an outside reference.
+
 ### Should we test different prompts, and how do we know the prompt is good enough? (2026-11-25)
 
 For the trained models, no: the prompt is held fixed on purpose. The experiment compares training methods (accuracy-only against abstention rewards at several penalties), and changing the prompt between them would mix 2 causes into one result. Reinforcement learning also adapts the model to whatever prompt it trains on, so an "optimal" prompt matters far less after training than before. The goal is a prompt that is good enough and identical everywhere, not the best possible one.
