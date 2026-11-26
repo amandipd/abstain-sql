@@ -111,6 +111,35 @@ A small but real one: Gretel supplied the topics, not the data. Its role was 3 t
 
 None of its questions, databases, or SQL were used, for the reasons in the Gretel entry above. The project could have run without it; the topic choice would just have been harder to justify.
 
+### Should we test different prompts, and how do we know the prompt is good enough? (2026-11-25)
+
+For the trained models, no: the prompt is held fixed on purpose. The experiment compares training methods (accuracy-only against abstention rewards at several penalties), and changing the prompt between them would mix 2 causes into one result. Reinforcement learning also adapts the model to whatever prompt it trains on, so an "optimal" prompt matters far less after training than before. The goal is a prompt that is good enough and identical everywhere, not the best possible one.
+
+Where prompts do matter, and what to do:
+
+1. **Before training (step 3.2's trial run):** measure how often the untrained model's output parses as the required JSON, with thinking on and off. A low parse rate is the signal to fix the wording once, then freeze it.
+2. **For the prompted baselines (Phase 10):** untrained and frontier models rely entirely on the prompt, so a weak prompt would make them look unfairly bad. Try 2 or 3 wordings and keep the best, chosen on the dev split.
+3. **A robustness check (Phase 11):** run the trained model on 2 reworded prompts at test time and show the results hold. It costs only inference, a few dollars.
+
+Any prompt choice is made on the dev split, never on calibration or test data, so the guarantee and the reported numbers stay honest.
+
+### What is the prompt format? (2026-11-25)
+
+Every question reaches the model as 2 messages, built by `data/generator/prompt.py` and identical in training and testing:
+
+1. **System message:** "write SQLite queries; if the question can't be answered from the schema, is ambiguous, or isn't a database question, abstain instead of guessing; you may reason briefly, then end with exactly one JSON object."
+2. **User message:** the database layout as `CREATE TABLE` statements (minus any hidden column), then the question, then the required ending: either `{"sql": "SELECT ...", "abstain": false, "reason": ""}` or `{"sql": null, "abstain": true, "reason": "..."}`.
+
+The thinking switch is passed separately and always set on purpose. An example prompt is about 460 tokens. The accuracy-only baseline uses the same format with the abstain option removed.
+
+### Why write the answerable questions before the ones to decline? Isn't that biased? (2026-11-25)
+
+The criteria came first; only the building came second. The plan fixed the 3 decline kinds (from TrustSQL's taxonomy), the 70/30 split, and the question shapes before any code ran, and the record format was written before either generator.
+
+The building order follows one dependency: the main unanswerable kind is made from an answerable question by hiding the column it needs, so the answerable question must exist first. That is a guard against bias, not a source of it: the question to decline reads exactly like an answerable one, so the model cannot learn "this wording means decline" and must check the schema instead. The other kinds (a missing attribute, ambiguous, out of scope) are built from the schema alone.
+
+The real risk is a different one: the templates for ambiguous and out-of-scope questions have their own style ("best", "recently", "email this list"), and a model could learn those surface cues instead of the skill. Two things check for that: the hidden-column pairs, whose wording matches exactly, and evaluation on TrustSQL, whose questions people wrote, not our templates. If the model only learned our templates, it would fail there.
+
 ### How many plan steps can be batched together? (2026-11-24)
 
 Everything up to gate G1 can run as one batch, because none of it spends money or needs a decision only the user can make: 12 steps (1.3–1.7, 2.1–2.6, 3.1). Some are chained and some are independent, so the batch runs as parallel tracks:

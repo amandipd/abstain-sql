@@ -12,7 +12,7 @@ Research phase complete; verdict: go. As of 2026-11-04, no published work combin
 
 What to do next lives in [plan.md](plan.md): 14 phases with checkboxes, 5 gates that must pass before money moves, the reward table, open decisions with defaults, and the proposed repo structure. Why each step is there lives in [research/REPORT.md](research/REPORT.md), in 3 parts: the flags that changed the plan and the go/no-go verdict (Part 1), the novelty table with one row per paper (Part 2), and the cost model, where the full 8-run matrix is estimated at $16–36 against a $30–50 budget (Part 3). The raw research notes behind it sit in [research/notes/](research/notes/).
 
-Phase 0 is complete. The repo follows the layout in plan.md, every dependency is pinned, all 3 candidate models load under those pins, the external evaluation data downloads and runs, a Modal account is open with a $30 monthly cap, and the spend and decision logs have started (steps 0.1 to 0.6). The code folders hold stubs that name the plan step each file implements. Training has not started, and no money has been spent.
+Phase 0 is complete. The repo follows the layout in plan.md, every dependency is pinned, all 3 candidate models load under those pins, the external evaluation data downloads and runs, a Modal account is open with a $30 monthly cap, and the spend and decision logs have started (steps 0.1 to 0.6). Phase 1 is built: one command writes 480 database designs, fills each 5 times (2,400 SQLite files), and writes 13,440 labeled questions, 71% answerable and 29% to decline (steps 1.1 to 1.7). Code folders for later phases hold stubs that name the plan step each file implements. Training has not started, and no money has been spent.
 
 ## Setup
 
@@ -21,10 +21,11 @@ I pinned every dependency in one `pyproject.toml` and one `uv.lock`, so the lapt
 ```bash
 uv sync                          # laptop: data generation, checker, calibration, analysis
 uv sync --frozen --extra train   # cloud GPU: adds TRL, vLLM, torch, transformers, PEFT
-uv run pytest
+uv run python -m pytest                   # runs the tests (works even where Windows blocks pytest.exe)
 uv run ruff check . && uv run ruff format .   # style check, then auto-format
 uv run python data/download_external.py   # BIRD dev and TrustSQL, about 470 MB
 uv run python data/check_external.py      # recount and rerun them; a few minutes
+uv run python -m data.generator.build      # all of Phase 1: designs, filled copies, questions; under a minute
 ```
 
 The external data is not in git. The download script fetches it from the official sources and stops if any file's fingerprint differs from the one pinned in the script, since a changed upstream file would make results incomparable. The check script then recomputes every number in `results/external_data.md` and saves them to `results/external_check.json`.
@@ -55,15 +56,16 @@ The training data comes from one hierarchy. Each level is built from the one abo
                │   each picks 3-8 linked tables from its table list;
                │   empty tables: columns and links, no rows
                │
-               ├──► 5 filled copies per design    step 1.3   next
+               ├──► 5 filled copies per design    step 1.3   done
                │       = 2,400 SQLite databases;
                │       same tables, different made-up rows
                │
-               └──► questions per design          steps 1.4-1.6
-                    ├──► answerable, about 70%:
+               └──► 28 questions per design       steps 1.4-1.6  done
+                    │       = 13,440 questions
+                    ├──► answerable, 71% (9,600):
                     │       question + gold SQL, correct only
                     │       if it matches on every filled copy
-                    └──► should decline, about 30%:
+                    └──► should decline, 29% (3,840):
                             unanswerable, ambiguous, out-of-scope
 ```
 
@@ -90,9 +92,17 @@ abstain-sql/
       families.yaml          # 6 schema families of 10 topics each (step 1.1)
       templates/             # one file per family: a table list for each topic (step 1.2)
       schemas.py             # samples 3-8 linked tables per schema; writes 480 schemas (step 1.2)
+      fill.py                # fills each schema 5 times with made-up rows (step 1.3)
+      names.py               # the made-up names: clinics, teams, tail numbers, and 100 more kinds
+      copies.py              # runs a query read-only on a filled copy, with a time limit
+      questions.py           # answerable questions, SQL first, checked on every copy (step 1.4)
+      declines.py            # unanswerable, ambiguous, and out-of-scope questions (step 1.5)
+      build.py               # one command for all of Phase 1, plus the 70/30 mix (step 1.6)
+      prompt.py              # what the model sees: schema, question, answer format (step 1.7)
+      README.md              # the pipeline, and the exact format of copies and question records
     splits/                  # empty: train / dev / calibration / test manifests (Phase 3)
     external/                # gitignored: BIRD dev and TrustSQL, rebuilt by the script above
-    instances/               # gitignored: generated schemas, then their SQLite instances (Phase 1)
+    instances/               # gitignored: 480 schemas, 2,400 filled copies, questions.jsonl (Phase 1)
   checker/
     execute.py               # stub: read-only sandboxed SQL execution (step 2.1)
     testsuite.py             # stub: multi-instance correctness oracle (steps 2.2-2.4)
@@ -115,6 +125,11 @@ abstain-sql/
     test_imports.py          # every CPU-side module imports
     test_families.py         # families.yaml keeps 6 families of 10 distinct topics
     test_schemas.py          # every generated schema keeps the plan's rules; bad templates fail
+    test_fill.py             # every filled copy keeps the filler's guarantees
+    test_questions.py        # answerable questions: format, shapes, gold runs on every copy
+    test_declines.py         # questions to decline: format, subtypes, hidden columns really hidden
+    test_prompt.py           # the prompt text is fixed and hidden columns stay hidden
+    test_build.py            # the one-command build and its 70/30 mix
   results/
     models.md                # the 3 models: architecture, vocabulary, license, thinking switch
     external_data.md         # BIRD and TrustSQL breakdown, gold-query runs, checker rules

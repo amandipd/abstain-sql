@@ -87,6 +87,21 @@ These were settled during Phase 0 and sit outside the plan's table.
 - **Why these families:** each differs from the others in vocabulary and table shapes, has at least 5 Gretel topics, supports every query shape in step 1.4, and supports the decline categories in step 1.5. Energy and natural resources resembles no external test database, which makes it the natural candidate to hold out. Media and entertainment, and public sector and education, were the runners-up.
 - **Why these topics:** each family's topics cover different sub-areas. 18 topics were dropped as near-duplicates or as straddling 2 families; the file lists each with its reason.
 
+### One frozen prompt for training; prompt checks around it (2026-11-25)
+
+- **Choice:** every training run and every evaluation of a trained model uses one prompt (`data/generator/prompt.py`), frozen after step 3.2's trial run. Prompts vary in only 2 places: the prompted baselines get 2 or 3 wordings each, keeping the best on the dev split (step 10.5), and the trained model is re-tested on 2 reworded prompts (step 11.4).
+- **Why:** the experiment compares training methods, so the prompt must not change alongside them, or a result could come from either. Reinforcement learning adapts the model to its training prompt, so the exact wording matters far less after training than before it; untrained and frontier baselines, by contrast, live or die by their prompt, and a weak one would make them look unfairly bad. The reworded-prompt check shows whether the result depends on exact wording.
+- **Rule:** every prompt choice is made on the dev split, never on calibration or test data, so the guarantee and the reported numbers stay honest.
+
+### How Phase 1 builds its questions (2026-11-24)
+
+- **Filled copies:** 5 per schema, columns filled independently. Rows can contradict each other (a booking's total is not tied to its nights); correctness never depends on realism, because every gold answer comes from running its query on the copies.
+- **Answerable questions:** literal values come from the schema (category lists, the middle of number ranges, years inside date ranges), never from one copy, so a question means the same on every copy. A gold query is kept only if it returns rows on all 5 copies, is not a lone 0 or NULL, and, for top-N questions, has no tie touching its first N+1 values. Joins through 2 links to the same table, and counts per year, are skipped for now: the year can come back as text or a number, which a strict checker could misjudge.
+- **The mix:** every answerable question is kept, plus at most 3 declines per 7, taken in turn from the 3 kinds starting with a different kind in each schema: 71.4% answerable overall. Rounding up would give 9 declines per 20 and drop the share to 69%, below the plan's 70% floor.
+- **Fixes from the independent review:** every WHERE and HAVING condition must change the answer on at least 2 of the 5 copies when removed, so a model that ignores a condition cannot be scored correct (411 of 6,841 conditions failed this before the fix, 0 after); cutoffs on year columns are round decades or centuries; decline questions no longer assert unchecked facts about the data ("Why are X higher?" became "Why does X vary?").
+- **Requirement this sets for Phase 2:** the checker must compare decimal results at 4 decimal places or finer, because the build's condition check compares at 4; coarser rounding could blur differences the build relies on.
+- **Requirements this sets for Phase 4:** the reward parser must treat a missing `"abstain"` field as false, since the accuracy-only baseline's answer format has only `"sql"`; and if SmolLM3-3B is used, its chat template's date must be pinned, because it writes today's date into every prompt and would make training and evaluation prompts differ.
+
 ### Scale up to 60 topics and 480 designs (2026-11-24)
 
 - **Choice:** 6 families of 10 topics (60 topics, up from 25), with media and entertainment as the sixth family; 8 designs per topic (480, up from 50); every table list must allow at least 20 distinct designs; 5 filled copies per design kept. Calibration and test sets aim for 2,000 to 3,000 questions each.
